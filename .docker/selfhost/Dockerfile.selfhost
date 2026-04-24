@@ -43,13 +43,15 @@ COPY .prettierrc .prettierignore .oxlintrc.json ./
 RUN corepack enable && yarn install
 
 # ── Build backend ─────────────────────────────────────────────
-# @affine/server-native ya es JS puro — no necesita compilación Rust
+# El backend usa el comando `build` del CLI personalizado de affine
 RUN yarn affine @affine/server build
 
 # ── Build frontends ───────────────────────────────────────────
-RUN yarn affine @affine/web build
-RUN yarn affine @affine/admin build
-RUN yarn affine @affine/mobile build
+# Los frontends tienen "build": "affine bundle" en su package.json
+# → yarn workspace ejecuta ESE script (bundle, no build)
+RUN yarn workspace @affine/web build
+RUN yarn workspace @affine/admin build
+RUN yarn workspace @affine/mobile build
 
 # ── Preparar node_modules de producción (replica CI build-images) ──
 # 1. Instalar solo deps de producción (sin devDeps)
