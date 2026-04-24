@@ -158,7 +158,7 @@ echo ""
 info "Ejecutando: docker build -t ${IMAGE_NAME} ..."
 
 docker build \
-  -f "$REPO_ROOT/.github/deployment/node/Dockerfile" \
+  -f "$SCRIPT_DIR/Dockerfile.selfhost" \
   -t "$IMAGE_NAME" \
   "$REPO_ROOT"
 

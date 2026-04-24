@@ -1,0 +1,84 @@
+# syntax=docker/dockerfile:1.7
+# ============================================================
+#  GD docs — Dockerfile de construcción completa (self-hosted)
+#
+#  A diferencia del Dockerfile de CI (.github/deployment/node/Dockerfile),
+#  este compila TODO desde el código fuente dentro de Docker.
+#  No requiere Node.js ni yarn en el servidor host.
+#
+#  Etapas:
+#    1. builder  — instala dependencias y compila frontend + backend
+#    2. assets   — copia solo los artefactos necesarios y limpia
+#    3. runtime  — imagen final liviana lista para producción
+# ============================================================
+
+# ---- Etapa 1: build completo ----
+FROM node:22-bookworm-slim AS builder
+WORKDIR /repo
+
+# Copiar archivos de configuración de yarn primero (mejor cache)
+COPY .yarn/releases/ .yarn/releases/
+COPY .yarnrc.yml package.json yarn.lock ./
+
+# Copiar todos los package.json del monorepo para que yarn resuelva el workspace
+# (se hace antes del COPY . . para aprovechar el cache de capas de Docker)
+COPY packages/ packages/
+COPY blocksuite/ blocksuite/
+COPY tools/ tools/
+
+# Variables de build para selfhosted (sin Sentry, sin telemetría externa)
+ENV BUILD_TYPE=selfhosted \
+    NODE_OPTIONS="--max-old-space-size=8192" \
+    NPM_TOKEN=NONE \
+    SENTRY_AUTH_TOKEN="" \
+    PERFSEE_TOKEN=""
+
+# Instalar dependencias
+RUN corepack enable && \
+    yarn install --immutable 2>&1 | tail -5
+
+# Compilar backend
+RUN yarn affine @affine/server build
+
+# Compilar frontends
+RUN yarn affine @affine/web build
+RUN yarn affine @affine/admin build
+RUN yarn affine @affine/mobile build
+
+# ---- Etapa 2: preparar artefactos ----
+FROM node:22-bookworm-slim AS assets
+WORKDIR /app
+
+# Solo los artefactos compilados — sin código fuente ni node_modules del build
+COPY --from=builder /repo/packages/backend/server /app
+COPY --from=builder /repo/packages/frontend/apps/web/dist /app/static
+COPY --from=builder /repo/packages/frontend/admin/dist /app/static/admin
+COPY --from=builder /repo/packages/frontend/apps/mobile/dist /app/static/mobile
+
+ARG TARGETARCH
+ARG TARGETVARIANT
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openssl ca-certificates && \
+    rm -rf /var/lib/apt/lists/*
+
+# Limpiar archivos de desarrollo que no son necesarios en producción
+RUN AFFINE_DOCKER_CLEAN=1 TARGETARCH="${TARGETARCH}" TARGETVARIANT="${TARGETVARIANT}" \
+    node ./scripts/docker-clean.mjs
+
+# ---- Etapa 3: imagen de producción ----
+FROM node:22-bookworm-slim
+WORKDIR /app
+
+COPY --from=assets /app /app
+
+RUN apt-get update && \
+    apt-get install -y --no-install-recommends openssl libjemalloc2 && \
+    rm -rf /var/lib/apt/lists/*
+
+# jemalloc mejora el rendimiento de memoria en Node.js
+ENV LD_PRELOAD=libjemalloc.so.2
+
+EXPOSE 3010
+
+CMD ["node", "./dist/main.js"]
