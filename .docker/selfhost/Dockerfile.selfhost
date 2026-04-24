@@ -34,13 +34,12 @@ ENV BUILD_TYPE=selfhosted \
     PERFSEE_TOKEN=""
 
 # Instalar dependencias
-RUN corepack enable && \
-    yarn install --immutable 2>&1 | tail -5
+RUN corepack enable && yarn install
 
 # Compilar backend
 RUN yarn affine @affine/server build
 
-# Compilar frontends
+# Compilar frontends (en pasos separados para mejor diagnóstico y cache)
 RUN yarn affine @affine/web build
 RUN yarn affine @affine/admin build
 RUN yarn affine @affine/mobile build
