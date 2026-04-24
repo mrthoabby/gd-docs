@@ -42,25 +42,11 @@ info "Verificando dependencias..."
 
 install_docker() {
   info "Docker no encontrado — instalando automáticamente..."
-  if command -v apt-get &>/dev/null; then
-    apt-get update -qq
-    apt-get install -y ca-certificates curl gnupg lsb-release
-    install -m 0755 -d /etc/apt/keyrings
-    # Detectar distro: Ubuntu o Debian
-    DISTRO_ID="$(. /etc/os-release && echo "$ID")"
-    if [[ "$DISTRO_ID" == "debian" ]]; then
-      DOCKER_REPO="https://download.docker.com/linux/debian"
-    else
-      DOCKER_REPO="https://download.docker.com/linux/ubuntu"
-    fi
-    curl -fsSL "${DOCKER_REPO}/gpg" | \
-      gpg --dearmor -o /etc/apt/keyrings/docker.gpg
-    chmod a+r /etc/apt/keyrings/docker.gpg
-    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-${DOCKER_REPO} $(lsb_release -cs) stable" \
-      > /etc/apt/sources.list.d/docker.list
-    apt-get update -qq
-    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+  if command -v curl &>/dev/null || command -v apt-get &>/dev/null; then
+    # Instalar curl si hace falta
+    command -v curl &>/dev/null || apt-get install -y curl
+    info "Descargando instalador oficial de Docker (soporta Ubuntu, Debian, etc.)..."
+    curl -fsSL https://get.docker.com | sh
     systemctl enable docker
     systemctl start docker
     # Agregar usuario actual al grupo docker (evita sudo en el futuro)
@@ -70,7 +56,7 @@ ${DOCKER_REPO} $(lsb_release -cs) stable" \
     fi
     success "Docker instalado correctamente."
   else
-    error "No se puede instalar Docker automáticamente en este sistema. Instalalo manualmente: https://docs.docker.com/get-docker/"
+    error "No se puede instalar Docker automáticamente. Instalalo manualmente: https://docs.docker.com/get-docker/"
   fi
 }
 
