@@ -13,7 +13,6 @@ import { useServices } from '@toeverything/infra';
 import { useCallback } from 'react';
 
 import { useAppSettingHelper } from '../../../../../components/hooks/affine/use-app-setting-helper';
-import { relatedLinks } from './config';
 import * as styles from './style.css';
 import { UpdateCheckSection } from './update-check-section';
 
@@ -115,30 +114,7 @@ export const AboutAffine = () => {
           />
         </SettingRow>
       </SettingWrapper>
-      <SettingWrapper title={t['com.affine.aboutAFFiNE.contact.title']()}>
-        {/* [SELFHOST PATCH] Links externos de AFFiNE eliminados */}
-      </SettingWrapper>
-      <SettingWrapper title={t['com.affine.aboutAFFiNE.community.title']()}>
-        <div className={styles.communityWrapper}>
-          {relatedLinks.map(({ icon, title, link }) => {
-            return (
-              <div
-                className={styles.communityItem}
-                onClick={() => {
-                  urlService.openPopupWindow(link);
-                }}
-                key={title}
-              >
-                {icon}
-                <p>{title}</p>
-              </div>
-            );
-          })}
-        </div>
-      </SettingWrapper>
-      <SettingWrapper title={t['com.affine.aboutAFFiNE.legal.title']()}>
-        {/* [SELFHOST PATCH] Links legales externos de AFFiNE eliminados */}
-      </SettingWrapper>
+      {/* [SELFHOST PATCH] Secciones contact/community/legal de AFFiNE eliminadas */}
     </>
   );
 };

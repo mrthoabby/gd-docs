@@ -64,14 +64,7 @@ const Empty = () => {
         {t['com.affine.template-list.empty']()}
       </span>
       <div className={styles.space} />
-      <a
-        href="https://affine.pro/blog/how-to-use-template"
-        target="_blank"
-        rel="noopener noreferrer"
-        className={styles.link}
-      >
-        <IconButton icon={<DualLinkIcon />} />
-      </a>
+      {/* [SELFHOST PATCH] Link de blog AFFiNE eliminado */}
     </div>
   );
 };

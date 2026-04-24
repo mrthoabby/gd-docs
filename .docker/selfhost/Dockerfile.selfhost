@@ -22,7 +22,8 @@ ENV HUSKY=0 \
     NODE_OPTIONS="--max-old-space-size=8192" \
     NPM_TOKEN=NONE \
     SENTRY_AUTH_TOKEN="" \
-    PERFSEE_TOKEN=""
+    PERFSEE_TOKEN="" \
+    GITHUB_SHA=selfhosted
 
 # ── Yarn runtime (capa raramente cambia) ─────────────────────
 COPY .yarn/releases/ .yarn/releases/

@@ -48,15 +48,7 @@ export const MeetingsWelcomePage = () => {
               li: <li />,
             }}
           />
-          <a
-            className={styles.learnMoreLink}
-            href="https://discord.com/channels/959027316334407691/1358384103925350542"
-            target="_blank"
-            rel="noreferrer"
-          >
-            {t['com.affine.settings.meetings.setting.welcome.learn-more']()}
-            <DualLinkIcon className={styles.linkIcon} />
-          </a>
+          {/* [SELFHOST PATCH] Link de Discord AFFiNE eliminado */}
           <div className={styles.betaFreePrompt}>
             <Trans
               i18nKey="com.affine.settings.meetings.setting.prompt.2"

@@ -108,10 +108,6 @@ export const AFFINE_FLAGS = {
       'com.affine.settings.workspace.experimental-features.enable-emoji-folder-icon.name',
     description:
       'com.affine.settings.workspace.experimental-features.enable-emoji-folder-icon.description',
-
-    feedbackType: 'discord',
-    feedbackLink:
-      'https://discord.com/channels/959027316334407691/1280014319865696351/1280014319865696351',
     configurable: true,
     defaultState: true,
   },
@@ -121,9 +117,6 @@ export const AFFINE_FLAGS = {
       'com.affine.settings.workspace.experimental-features.enable-emoji-doc-icon.name',
     description:
       'com.affine.settings.workspace.experimental-features.enable-emoji-doc-icon.description',
-    feedbackType: 'discord',
-    feedbackLink:
-      'https://discord.com/channels/959027316334407691/1280014319865696351',
     configurable: true,
     defaultState: true,
   },

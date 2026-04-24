@@ -10,21 +10,7 @@ export const OthersGroup = () => {
 
   return (
     <SettingGroup title={t['com.affine.mobile.setting.others.title']()}>
-      <RowLayout
-        label={
-          <div style={{ display: 'flex', alignItems: 'center', gap: 8 }}>
-            {t['com.affine.mobile.setting.others.discord']()}
-            <div className={hotTag}>Hot</div>
-          </div>
-        }
-        href="https://discord.com/invite/whd5mjYqVw"
-      />
-      <RowLayout
-        label={t['com.affine.mobile.setting.others.github']()}
-        href="https://github.com/toeverything/AFFiNE"
-      />
-
-      {/* [SELFHOST PATCH] Links externos de AFFiNE eliminados */}
+      {/* [SELFHOST PATCH] Links Discord/GitHub de AFFiNE eliminados */}
       <DeleteAccount />
     </SettingGroup>
   );
