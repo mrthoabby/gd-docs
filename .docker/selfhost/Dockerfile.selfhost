@@ -1,38 +1,22 @@
 # syntax=docker/dockerfile:1.7
 # ============================================================
-#  GD docs — Dockerfile de construcción completa (self-hosted)
+#  GD docs — Dockerfile self-hosted (sin Rust, sin Sentry)
 #
-#  Replica exactamente el pipeline de CI de AFFiNE para el
-#  servidor, pero en un solo Dockerfile sin infraestructura CI.
+#  @affine/server-native reemplazado por stubs JavaScript puros.
+#  No requiere Rust, Cargo ni binarios nativos.
 #
-#  Fases del builder (replica jobs de CI):
-#    1. Instalar Rust + Node
-#    2. yarn install (full — para compilar)
-#    3. Build native Rust (server-native.node)   ← CI: build-server-native
-#    4. Build backend + frontends                ← CI: build-server / build-web
-#    5. yarn workspaces focus --production       ← CI: build-images "Install Node.js deps"
-#    6. prisma generate                          ← CI: build-images "Generate Prisma client"
-#    7. mv node_modules → packages/backend/server ← CI: build-images "Mv node_modules"
-#
-#  Etapas Docker:
-#    builder  — todo el proceso de compilación
-#    assets   — copia artefactos + limpia (docker-clean.mjs)
+#  Etapas:
+#    builder  — instala deps y compila frontend + backend
+#    assets   — copia artefactos + limpia
 #    runtime  — imagen final de producción
 #
-#  Tiempo de build:
-#    Primera vez: 40-60 min (Rust + yarn + compilación)
-#    Siguientes:  5-15 min  (cache de capas Docker)
+#  Tiempo: ~15-25 min la primera vez, ~5 min con cache
 # ============================================================
 
-# ── Etapa 1: build completo ──────────────────────────────────
+# ── Etapa 1: build ───────────────────────────────────────────
 FROM node:22-bookworm-slim AS builder
 WORKDIR /repo
 
-# Variables de entorno de build
-# HUSKY=0     → evita que husky falle (no hay .git en el contexto Docker)
-# NPM_TOKEN   → no requerido para paquetes públicos
-# SENTRY_*    → desactivado
-# PERFSEE_*   → desactivado
 ENV HUSKY=0 \
     BUILD_TYPE=selfhosted \
     NODE_OPTIONS="--max-old-space-size=8192" \
@@ -40,88 +24,49 @@ ENV HUSKY=0 \
     SENTRY_AUTH_TOKEN="" \
     PERFSEE_TOKEN=""
 
-# ── 1a. Dependencias del sistema ─────────────────────────────
-# Rust necesita: curl (rustup), build-essential (cc/ar), pkg-config, libssl-dev
-RUN apt-get update && \
-    apt-get install -y --no-install-recommends \
-      curl ca-certificates \
-      build-essential pkg-config \
-      libssl-dev && \
-    rm -rf /var/lib/apt/lists/*
-
-# ── 1b. Rust toolchain ───────────────────────────────────────
-# @affine/server-native es un addon NAPI-rs compilado en Rust.
-# Necesita compilarse antes del build del servidor.
-COPY rust-toolchain.toml ./
-RUN curl --proto '=https' --tlsv1.2 -sSf https://sh.rustup.rs | \
-      sh -s -- -y --profile minimal --default-toolchain none && \
-    /root/.cargo/bin/rustup toolchain install \
-      "$(grep 'channel' rust-toolchain.toml | head -1 | sed 's/.*= *"\(.*\)".*/\1/')" \
-      --profile minimal
-ENV PATH="/root/.cargo/bin:${PATH}"
-
-# ── 1c. Yarn runtime (cambia raramente → capa separada para cache) ─
+# ── Yarn runtime (capa raramente cambia) ─────────────────────
 COPY .yarn/releases/ .yarn/releases/
 COPY .yarn/patches/  .yarn/patches/
 COPY .yarnrc.yml yarn.lock ./
 
-# ── 1d. Manifiestos del workspace ────────────────────────────
-COPY package.json     ./
-COPY packages/        packages/
-COPY blocksuite/      blocksuite/
-COPY tools/           tools/
+# ── Manifiestos del workspace ─────────────────────────────────
+COPY package.json  ./
+COPY packages/     packages/
+COPY blocksuite/   blocksuite/
+COPY tools/        tools/
 
-# ── 1e. Config raíz requerida por `yarn affine init` (postinstall) ─
+# ── Config raíz (requerida por `yarn affine init` en postinstall) ─
 COPY tsconfig.json tsconfig.node.json tsconfig.web.json tsconfig.eslint.json ./
 COPY .prettierrc .prettierignore .oxlintrc.json ./
 
-# ── 1f. Manifiestos Rust (para cache de capas de cargo) ──────
-COPY Cargo.toml Cargo.lock ./
-
-# ── 1g. Instalar TODAS las dependencias (dev + prod para compilar) ─
+# ── Instalar dependencias ─────────────────────────────────────
 RUN corepack enable && yarn install
 
-# ── 1h. Compilar módulo nativo Rust ──────────────────────────
-# Produce: packages/backend/native/server-native.node
-# La primera vez descarga los crates de Rust (~15-20 min)
-RUN yarn workspace @affine/server-native build
-
-# ── 1i. Build backend ─────────────────────────────────────────
-# rspack bundlea dist/main.js y copia server-native.node a dist/
+# ── Build backend ─────────────────────────────────────────────
+# @affine/server-native ya es JS puro — no necesita compilación Rust
 RUN yarn affine @affine/server build
 
-# ── 1j. Build frontends (pasos separados → mejor cache) ──────
+# ── Build frontends ───────────────────────────────────────────
 RUN yarn affine @affine/web build
 RUN yarn affine @affine/admin build
 RUN yarn affine @affine/mobile build
 
-# ── 1k. Preparar node_modules de PRODUCCIÓN (replica CI build-images) ──
-# Esto es exactamente lo que hace el job "build-images" de CI:
-#   1. `yarn workspaces focus @affine/server --production`
-#      → reinstala solo las deps de producción del servidor (sin devDeps)
-#   2. `yarn workspace @affine/server prisma generate`
-#      → genera el cliente Prisma con los binarios nativos
-#   3. `mv ./node_modules ./packages/backend/server/`
-#      → mueve los node_modules al directorio del servidor para que
-#        el COPY de la etapa siguiente los incluya
+# ── Preparar node_modules de producción (replica CI build-images) ──
+# 1. Instalar solo deps de producción (sin devDeps)
+# 2. Generar cliente Prisma
+# 3. Mover node_modules al directorio del servidor
 RUN yarn workspaces focus @affine/server --production && \
     yarn workspace @affine/server prisma generate && \
     mv /repo/node_modules /repo/packages/backend/server/node_modules
 
 
-# ── Etapa 2: preparar artefactos ────────────────────────────
+# ── Etapa 2: artefactos ──────────────────────────────────────
 FROM node:22-bookworm-slim AS assets
 WORKDIR /app
 
-# Copia el servidor completo con:
-#   dist/main.js               — bundle del servidor
-#   dist/server-native.node    — addon Rust
-#   node_modules/              — deps de producción + .prisma/client/
-COPY --from=builder /repo/packages/backend/server          /app
-
-# Frontends
-COPY --from=builder /repo/packages/frontend/apps/web/dist  /app/static
-COPY --from=builder /repo/packages/frontend/admin/dist     /app/static/admin
+COPY --from=builder /repo/packages/backend/server            /app
+COPY --from=builder /repo/packages/frontend/apps/web/dist    /app/static
+COPY --from=builder /repo/packages/frontend/admin/dist       /app/static/admin
 COPY --from=builder /repo/packages/frontend/apps/mobile/dist /app/static/mobile
 
 ARG TARGETARCH
@@ -131,12 +76,11 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends openssl ca-certificates && \
     rm -rf /var/lib/apt/lists/*
 
-# Limpia sourcemaps del frontend, binarios de otras arquitecturas, etc.
 RUN AFFINE_DOCKER_CLEAN=1 TARGETARCH="${TARGETARCH}" TARGETVARIANT="${TARGETVARIANT}" \
     node ./scripts/docker-clean.mjs
 
 
-# ── Etapa 3: imagen de producción ───────────────────────────
+# ── Etapa 3: producción ──────────────────────────────────────
 FROM node:22-bookworm-slim
 WORKDIR /app
 
@@ -146,7 +90,6 @@ RUN apt-get update && \
     apt-get install -y --no-install-recommends openssl libjemalloc2 && \
     rm -rf /var/lib/apt/lists/*
 
-# jemalloc reduce fragmentación de memoria en Node.js de larga duración
 ENV LD_PRELOAD=libjemalloc.so.2
 
 EXPOSE 3010

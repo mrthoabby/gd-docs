@@ -164,6 +164,9 @@ docker build \
 
 success "Imagen construida: ${IMAGE_NAME}"
 
+# Eliminar imágenes dangling (las que quedan sin tag tras cada rebuild)
+docker image prune -f 2>/dev/null || true
+
 # ---------- Levantar servicios ----------
 echo ""
 info "Iniciando GD docs..."

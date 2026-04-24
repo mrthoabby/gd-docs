@@ -93,6 +93,9 @@ docker build \
   "$REPO_ROOT"
 
 success "Imagen reconstruida: ${IMAGE_NAME}"
+
+# Eliminar imágenes dangling (evita acumulación tras cada actualización)
+docker image prune -f 2>/dev/null || true
 echo ""
 
 # ---------- 4. Migraciones + reinicio ----------
