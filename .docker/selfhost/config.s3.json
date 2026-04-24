@@ -1,0 +1,48 @@
+{
+  "$schema": "https://github.com/toeverything/affine/releases/latest/download/config.schema.json",
+
+  "server": {
+    "name": "GD docs Server (S3)"
+  },
+
+  "auth": {
+    "allowSignup": true,
+    "requireEmailVerification": false,
+    "passwordRequirements": {
+      "min": 8,
+      "max": 128
+    }
+  },
+
+  "storages": {
+    "avatar.storage": {
+      "provider": "s3",
+      "bucket": "my-affine-avatars",
+      "config": {
+        "region": "us-east-1",
+        "endpoint": "https://s3.amazonaws.com",
+        "accessKeyId": "TU_ACCESS_KEY_ID",
+        "secretAccessKey": "TU_SECRET_ACCESS_KEY"
+      }
+    },
+    "blob.storage": {
+      "provider": "s3",
+      "bucket": "my-affine-blobs",
+      "config": {
+        "region": "us-east-1",
+        "endpoint": "https://s3.amazonaws.com",
+        "accessKeyId": "TU_ACCESS_KEY_ID",
+        "secretAccessKey": "TU_SECRET_ACCESS_KEY"
+      }
+    }
+  },
+
+  "telemetry": {
+    "ga4.measurementId": "",
+    "ga4.apiSecret": ""
+  },
+
+  "metrics": {
+    "enabled": false
+  }
+}

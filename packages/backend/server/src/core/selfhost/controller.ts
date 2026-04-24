@@ -1,0 +1,170 @@
+import { Body, Controller, Get, Post, Req, Res } from '@nestjs/common';
+import type { Request, Response } from 'express';
+
+import {
+  ActionForbidden,
+  Config,
+  InternalServerError,
+  Mutex,
+  PasswordRequired,
+  UseNamedGuard,
+} from '../../base';
+import { Models } from '../../models';
+import { AuthService, Public } from '../auth';
+import { ServerService } from '../config';
+import { FeatureService } from '../features';
+import { validators } from '../utils/validators';
+
+interface CreateUserInput {
+  name?: string;
+  email: string;
+  password: string;
+}
+
+@UseNamedGuard('selfhost')
+@Controller('/api/setup')
+export class CustomSetupController {
+  constructor(
+    private readonly config: Config,
+    private readonly models: Models,
+    private readonly auth: AuthService,
+    private readonly mutex: Mutex,
+    private readonly server: ServerService,
+    private readonly feature: FeatureService
+  ) {}
+
+  @Public()
+  @Post('/create-admin-user')
+  async createAdmin(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() input: CreateUserInput
+  ) {
+    if (await this.server.initialized()) {
+      throw new ActionForbidden('First user already created');
+    }
+
+    validators.assertValidEmail(input.email);
+
+    if (!input.password) {
+      throw new PasswordRequired();
+    }
+
+    validators.assertValidPassword(
+      input.password,
+      this.config.auth.passwordRequirements
+    );
+
+    await using lock = await this.mutex.acquire('createFirstAdmin');
+
+    if (!lock) {
+      throw new InternalServerError();
+    }
+    const user = await this.models.user.create({
+      name: input.name || undefined,
+      email: input.email,
+      password: input.password,
+      registered: true,
+    });
+
+    try {
+      await this.models.userFeature.add(
+        user.id,
+        'administrator',
+        'selfhost setup'
+      );
+
+      await this.auth.setCookies(req, res, user.id);
+      res.send({ id: user.id, email: user.email, name: user.name });
+    } catch (e) {
+      await this.models.user.delete(user.id);
+      throw e;
+    }
+  }
+
+  // -------------------------------------------------------------------------
+  // [SELFHOST PATCH] Endpoints para el Panel Root Admin
+  // Permiten leer y persistir feature flag overrides en la BD del servidor.
+  // Solo accesibles cuando la sesión del usuario tiene rol 'administrator'.
+  // -------------------------------------------------------------------------
+
+  /**
+   * GET /api/setup/admin-flags
+   * Devuelve los feature flags actuales del servidor (módulo 'flags' de appConfig).
+   * Requiere sesión de usuario admin (verificada en static.ts al servir /admin/root).
+   */
+  @Get('/admin-flags')
+  async getAdminFlags(@Req() req: Request, @Res() res: Response) {
+    await this.requireAdminSession(req, res);
+
+    const fullConfig = this.server.getConfig();
+    const flags = (fullConfig as any)?.flags ?? {};
+
+    return res.json({ flags });
+  }
+
+  /**
+   * POST /api/setup/admin-flags
+   * Guarda overrides de feature flags en la BD del servidor.
+   * Body: { flags: { [key: string]: boolean } }
+   */
+  @Post('/admin-flags')
+  async setAdminFlags(
+    @Req() req: Request,
+    @Res() res: Response,
+    @Body() body: { flags: Record<string, boolean> }
+  ) {
+    const userId = await this.requireAdminSession(req, res);
+    if (!userId) return; // res ya fue enviado (403/redirect)
+
+    const flags = body?.flags;
+    if (!flags || typeof flags !== 'object') {
+      return res.status(400).json({ error: 'Body debe tener { flags: {...} }' });
+    }
+
+    const updates = Object.entries(flags).map(([key, value]) => ({
+      key: `flags.${key}`,
+      value,
+    }));
+
+    await this.models.appConfig.save(userId, updates);
+
+    return res.json({ ok: true, saved: Object.keys(flags).length });
+  }
+
+  /**
+   * Verifica que la request tenga una sesión de usuario admin activa.
+   * Retorna el userId si OK, o envía 403 y retorna null si no.
+   */
+  private async requireAdminSession(
+    req: Request,
+    res: Response
+  ): Promise<string | null> {
+    try {
+      const { sessionId, userId } =
+        this.auth.getSessionOptionsFromRequest(req);
+
+      if (!sessionId) {
+        res.status(401).json({ error: 'No autenticado' });
+        return null;
+      }
+
+      const userSession = await this.auth.getUserSession(sessionId, userId);
+      if (!userSession) {
+        res.status(401).json({ error: 'Sesión inválida' });
+        return null;
+      }
+
+      const isAdmin = await this.feature.isAdmin(userSession.user.id);
+      if (!isAdmin) {
+        res.status(403).json({ error: 'Se requiere rol de administrador' });
+        return null;
+      }
+
+      return userSession.user.id;
+    } catch {
+      res.status(500).json({ error: 'Error interno verificando sesión' });
+      return null;
+    }
+  }
+}

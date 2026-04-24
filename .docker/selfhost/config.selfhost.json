@@ -1,0 +1,47 @@
+{
+  "$schema": "https://github.com/toeverything/affine/releases/latest/download/config.schema.json",
+
+  "server": {
+    "name": "GD docs Server"
+  },
+
+  "auth": {
+    "allowSignup": true,
+    "allowSignupForOauth": true,
+    "requireEmailVerification": false,
+    "requireEmailDomainVerification": false,
+    "passwordRequirements": {
+      "min": 8,
+      "max": 128
+    },
+    "session.ttl": 2592000,
+    "session.ttr": 604800
+  },
+
+  "flags": {
+    "allowGuestDemoWorkspace": true
+  },
+
+  "telemetry": {
+    "allowedOrigin": ["localhost", "127.0.0.1"],
+    "ga4.measurementId": "",
+    "ga4.apiSecret": ""
+  },
+
+  "metrics": {
+    "enabled": false
+  },
+
+  "storages": {
+    "avatar.storage": {
+      "provider": "fs",
+      "bucket": "avatars",
+      "config": { "path": "~/.affine/storage" }
+    },
+    "blob.storage": {
+      "provider": "fs",
+      "bucket": "blobs",
+      "config": { "path": "~/.affine/storage" }
+    }
+  }
+}

@@ -1,0 +1,1048 @@
+<!DOCTYPE html>
+<html lang="es">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>GD docs — Root Admin Panel</title>
+  <style>
+    :root {
+      --bg: #0f1117;
+      --bg2: #1a1d27;
+      --bg3: #242738;
+      --border: #2e3347;
+      --text: #e2e8f0;
+      --text2: #94a3b8;
+      --accent: #6366f1;
+      --accent2: #818cf8;
+      --success: #10b981;
+      --warn: #f59e0b;
+      --error: #ef4444;
+      --radius: 8px;
+    }
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+    body {
+      font-family: 'Inter', system-ui, sans-serif;
+      background: var(--bg);
+      color: var(--text);
+      min-height: 100vh;
+    }
+    header {
+      background: var(--bg2);
+      border-bottom: 1px solid var(--border);
+      padding: 16px 32px;
+      display: flex;
+      align-items: center;
+      gap: 16px;
+      position: sticky;
+      top: 0;
+      z-index: 100;
+    }
+    header h1 { font-size: 18px; font-weight: 700; color: var(--text); }
+    header .badge {
+      background: var(--accent);
+      color: white;
+      font-size: 10px;
+      font-weight: 700;
+      padding: 2px 8px;
+      border-radius: 99px;
+      text-transform: uppercase;
+      letter-spacing: 0.05em;
+    }
+    header .server-url { color: var(--text2); font-size: 12px; margin-left: auto; }
+    .layout { display: flex; min-height: calc(100vh - 57px); }
+    nav {
+      width: 220px;
+      min-width: 220px;
+      background: var(--bg2);
+      border-right: 1px solid var(--border);
+      padding: 20px 0;
+      position: sticky;
+      top: 57px;
+      height: calc(100vh - 57px);
+      overflow-y: auto;
+    }
+    nav .section-title {
+      font-size: 10px;
+      font-weight: 700;
+      text-transform: uppercase;
+      letter-spacing: 0.08em;
+      color: var(--text2);
+      padding: 8px 20px 4px;
+    }
+    nav a {
+      display: block;
+      padding: 8px 20px;
+      color: var(--text2);
+      text-decoration: none;
+      font-size: 13px;
+      border-radius: 0;
+      transition: all 0.15s;
+    }
+    nav a:hover, nav a.active {
+      background: var(--bg3);
+      color: var(--text);
+    }
+    nav a.active { border-left: 3px solid var(--accent); }
+    main { flex: 1; padding: 32px; overflow-y: auto; }
+    .section { display: none; }
+    .section.active { display: block; }
+    .section-header { margin-bottom: 24px; }
+    .section-header h2 { font-size: 22px; font-weight: 700; margin-bottom: 4px; }
+    .section-header p { color: var(--text2); font-size: 14px; }
+    .grid { display: grid; grid-template-columns: repeat(auto-fit, minmax(280px, 1fr)); gap: 16px; margin-bottom: 24px; }
+    .card {
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      padding: 20px;
+    }
+    .card h3 { font-size: 13px; color: var(--text2); margin-bottom: 8px; text-transform: uppercase; letter-spacing: 0.05em; }
+    .card .value { font-size: 28px; font-weight: 700; }
+    .card .sub { font-size: 12px; color: var(--text2); margin-top: 4px; }
+    .card.success { border-color: var(--success); }
+    .card.warn { border-color: var(--warn); }
+    .card.error { border-color: var(--error); }
+    .card.loading .value { color: var(--text2); }
+    table { width: 100%; border-collapse: collapse; background: var(--bg2); border-radius: var(--radius); overflow: hidden; }
+    th { text-align: left; padding: 10px 16px; font-size: 12px; color: var(--text2); border-bottom: 1px solid var(--border); background: var(--bg3); font-weight: 600; text-transform: uppercase; letter-spacing: 0.05em; }
+    td { padding: 10px 16px; font-size: 13px; border-bottom: 1px solid var(--border); }
+    tr:last-child td { border-bottom: none; }
+    tr:hover td { background: var(--bg3); }
+    .badge-pill {
+      display: inline-block;
+      padding: 2px 8px;
+      border-radius: 99px;
+      font-size: 11px;
+      font-weight: 600;
+    }
+    .badge-pill.ok { background: rgba(16,185,129,0.15); color: var(--success); }
+    .badge-pill.warn { background: rgba(245,158,11,0.15); color: var(--warn); }
+    .badge-pill.err { background: rgba(239,68,68,0.15); color: var(--error); }
+    .badge-pill.info { background: rgba(99,102,241,0.15); color: var(--accent2); }
+    .form-group { margin-bottom: 20px; }
+    label { display: block; font-size: 13px; color: var(--text2); margin-bottom: 6px; font-weight: 500; }
+    input[type=text], input[type=email], input[type=number], textarea, select {
+      width: 100%;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 8px 12px;
+      font-size: 13px;
+      outline: none;
+      transition: border-color 0.15s;
+    }
+    input:focus, textarea:focus, select:focus { border-color: var(--accent); }
+    .toggle-row {
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      padding: 12px 16px;
+      background: var(--bg2);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      margin-bottom: 8px;
+    }
+    .toggle-row .info { flex: 1; }
+    .toggle-row .name { font-size: 13px; font-weight: 500; }
+    .toggle-row .desc { font-size: 11px; color: var(--text2); margin-top: 2px; }
+    .toggle {
+      position: relative;
+      width: 36px;
+      height: 20px;
+      min-width: 36px;
+      margin-left: 16px;
+    }
+    .toggle input { opacity: 0; width: 0; height: 0; }
+    .toggle-slider {
+      position: absolute;
+      cursor: pointer;
+      top: 0; left: 0; right: 0; bottom: 0;
+      background: var(--border);
+      border-radius: 99px;
+      transition: 0.2s;
+    }
+    .toggle-slider:before {
+      content: '';
+      position: absolute;
+      height: 14px; width: 14px;
+      left: 3px; bottom: 3px;
+      background: white;
+      border-radius: 50%;
+      transition: 0.2s;
+    }
+    .toggle input:checked + .toggle-slider { background: var(--accent); }
+    .toggle input:checked + .toggle-slider:before { transform: translateX(16px); }
+    .btn {
+      padding: 8px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      font-weight: 600;
+      cursor: pointer;
+      border: none;
+      transition: all 0.15s;
+    }
+    .btn-primary { background: var(--accent); color: white; }
+    .btn-primary:hover { background: var(--accent2); }
+    .btn-secondary { background: var(--bg3); color: var(--text); border: 1px solid var(--border); }
+    .btn-secondary:hover { background: var(--border); }
+    .btn-danger { background: rgba(239,68,68,0.15); color: var(--error); border: 1px solid var(--error); }
+    .btn-danger:hover { background: var(--error); color: white; }
+    .toolbar { display: flex; gap: 8px; margin-bottom: 16px; align-items: center; }
+    .toolbar .spacer { flex: 1; }
+    input.search {
+      width: 240px;
+      background: var(--bg3);
+      border: 1px solid var(--border);
+      border-radius: var(--radius);
+      color: var(--text);
+      padding: 7px 12px;
+      font-size: 13px;
+      outline: none;
+    }
+    input.search:focus { border-color: var(--accent); }
+    .alert {
+      padding: 12px 16px;
+      border-radius: var(--radius);
+      font-size: 13px;
+      margin-bottom: 16px;
+      display: flex;
+      align-items: center;
+      gap: 10px;
+    }
+    .alert.info { background: rgba(99,102,241,0.1); border: 1px solid rgba(99,102,241,0.3); color: var(--accent2); }
+    .alert.success { background: rgba(16,185,129,0.1); border: 1px solid rgba(16,185,129,0.3); color: var(--success); }
+    .alert.warn { background: rgba(245,158,11,0.1); border: 1px solid rgba(245,158,11,0.3); color: var(--warn); }
+    pre { background: var(--bg3); border: 1px solid var(--border); border-radius: var(--radius); padding: 16px; font-size: 12px; overflow-x: auto; line-height: 1.6; }
+    .two-col { display: grid; grid-template-columns: 1fr 1fr; gap: 24px; }
+    @media (max-width: 768px) { .two-col { grid-template-columns: 1fr; } .layout { flex-direction: column; } nav { width: 100%; height: auto; position: relative; top: 0; } }
+    .tab-bar { display: flex; gap: 2px; border-bottom: 1px solid var(--border); margin-bottom: 24px; }
+    .tab-bar button { background: none; border: none; color: var(--text2); padding: 10px 16px; font-size: 13px; cursor: pointer; border-bottom: 2px solid transparent; margin-bottom: -1px; }
+    .tab-bar button.active { color: var(--text); border-bottom-color: var(--accent); font-weight: 600; }
+    .tab-content { display: none; }
+    .tab-content.active { display: block; }
+    #toast { position: fixed; bottom: 24px; right: 24px; z-index: 9999; display: flex; flex-direction: column; gap: 8px; }
+    .toast-item { background: var(--bg2); border: 1px solid var(--border); border-radius: var(--radius); padding: 12px 16px; font-size: 13px; animation: fadeIn 0.2s ease; }
+    .toast-item.ok { border-color: var(--success); color: var(--success); }
+    .toast-item.err { border-color: var(--error); color: var(--error); }
+    @keyframes fadeIn { from { opacity:0; transform:translateY(8px); } to { opacity:1; transform:translateY(0); } }
+  </style>
+</head>
+<body>
+<header>
+  <h1>🔐 GD docs</h1>
+  <span class="badge">Root Admin</span>
+  <span class="server-url" id="server-url">cargando...</span>
+</header>
+<div class="layout">
+  <nav>
+    <div class="section-title">General</div>
+    <a href="#" class="active" data-section="dashboard">📊 Dashboard</a>
+    <a href="#" data-section="server">⚙️ Servidor</a>
+    <div class="section-title">Usuarios</div>
+    <a href="#" data-section="users">👥 Usuarios</a>
+    <a href="#" data-section="features">🏷️ Features por usuario</a>
+    <div class="section-title">Workspaces</div>
+    <a href="#" data-section="workspaces">📁 Workspaces</a>
+    <div class="section-title">Configuración</div>
+    <a href="#" data-section="flags">🚩 Feature Flags</a>
+    <a href="#" data-section="config">🔧 Config del servidor</a>
+    <a href="#" data-section="auth">🔑 Autenticación</a>
+    <a href="#" data-section="storage">💾 Almacenamiento</a>
+    <div class="section-title">Monitoreo</div>
+    <a href="#" data-section="health">❤️ Salud del sistema</a>
+    <a href="#" data-section="logs">📜 Diagnóstico</a>
+  </nav>
+
+  <main>
+    <!-- DASHBOARD -->
+    <div class="section active" id="dashboard">
+      <div class="section-header">
+        <h2>Dashboard</h2>
+        <p>Estado general del servidor GD docs</p>
+      </div>
+      <div class="grid" id="stats-cards">
+        <div class="card loading"><h3>Usuarios</h3><div class="value" id="stat-users">—</div><div class="sub">registrados</div></div>
+        <div class="card loading"><h3>Workspaces</h3><div class="value" id="stat-workspaces">—</div><div class="sub">activos</div></div>
+        <div class="card loading"><h3>Versión del servidor</h3><div class="value" id="stat-version">—</div><div class="sub">GD docs Server</div></div>
+        <div class="card loading"><h3>Estado</h3><div class="value" id="stat-status">—</div><div class="sub">base de datos + redis</div></div>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <h3 style="margin-bottom:12px">Información del servidor</h3>
+        <table>
+          <tbody id="server-info-table">
+            <tr><td>Cargando...</td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- SERVIDOR -->
+    <div class="section" id="server">
+      <div class="section-header">
+        <h2>Configuración del servidor</h2>
+        <p>Información del servidor GraphQL y configuración aplicada</p>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <h3 style="margin-bottom:12px">GraphQL Endpoint</h3>
+        <pre id="graphql-endpoint">Cargando...</pre>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:12px">Configuración actual del servidor</h3>
+        <pre id="server-config-raw">Cargando...</pre>
+      </div>
+    </div>
+
+    <!-- USUARIOS -->
+    <div class="section" id="users">
+      <div class="section-header">
+        <h2>Gestión de usuarios</h2>
+        <p>Administrar usuarios del sistema</p>
+      </div>
+      <div class="alert info">ℹ️ Esta sección consulta la API GraphQL del servidor. Necesitás estar autenticado como administrador.</div>
+      <div class="toolbar">
+        <input class="search" type="text" id="user-search" placeholder="Buscar usuario...">
+        <span class="spacer"></span>
+        <button class="btn btn-primary" onclick="loadUsers()">↺ Recargar</button>
+      </div>
+      <table id="users-table">
+        <thead>
+          <tr><th>Nombre</th><th>Email</th><th>Creado</th><th>Rol</th><th>Acciones</th></tr>
+        </thead>
+        <tbody id="users-tbody">
+          <tr><td colspan="5" style="color:var(--text2);text-align:center">Cargando usuarios...</td></tr>
+        </tbody>
+      </table>
+    </div>
+
+    <!-- FEATURES POR USUARIO -->
+    <div class="section" id="features">
+      <div class="section-header">
+        <h2>Features por usuario</h2>
+        <p>Habilitar o deshabilitar features especiales por usuario</p>
+      </div>
+      <div class="two-col">
+        <div>
+          <div class="form-group">
+            <label>Email del usuario</label>
+            <input type="email" id="feature-user-email" placeholder="usuario@empresa.com">
+          </div>
+          <div class="form-group">
+            <label>Feature a asignar</label>
+            <select id="feature-name">
+              <option value="administrator">🔐 Administrador del sistema</option>
+              <option value="early_access">⭐ Early Access (todas las features)</option>
+              <option value="unlimited_workspace">📁 Workspaces ilimitados</option>
+              <option value="ai_early_access">🤖 AI Early Access</option>
+              <option value="copilot">🤖 Copilot (AI)</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label>Razón (para auditoría)</label>
+            <input type="text" id="feature-reason" placeholder="Ej: Admin self-hosted">
+          </div>
+          <div style="display:flex;gap:8px">
+            <button class="btn btn-primary" onclick="grantFeature()">✅ Otorgar feature</button>
+            <button class="btn btn-danger" onclick="revokeFeature()">❌ Revocar feature</button>
+          </div>
+        </div>
+        <div>
+          <div class="card">
+            <h3 style="margin-bottom:12px">Features disponibles</h3>
+            <table>
+              <tbody>
+                <tr><td><span class="badge-pill ok">administrator</span></td><td style="color:var(--text2);font-size:12px">Acceso total al admin</td></tr>
+                <tr><td><span class="badge-pill info">early_access</span></td><td style="color:var(--text2);font-size:12px">Features experimentales</td></tr>
+                <tr><td><span class="badge-pill info">unlimited_workspace</span></td><td style="color:var(--text2);font-size:12px">Sin límite de workspaces</td></tr>
+                <tr><td><span class="badge-pill info">ai_early_access</span></td><td style="color:var(--text2);font-size:12px">Acceso temprano a IA</td></tr>
+                <tr><td><span class="badge-pill warn">copilot</span></td><td style="color:var(--text2);font-size:12px">AI Copilot (requiere API key)</td></tr>
+              </tbody>
+            </table>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- WORKSPACES -->
+    <div class="section" id="workspaces">
+      <div class="section-header">
+        <h2>Workspaces</h2>
+        <p>Listado de todos los workspaces en el servidor</p>
+      </div>
+      <div class="toolbar">
+        <input class="search" type="text" id="ws-search" placeholder="Buscar workspace...">
+        <span class="spacer"></span>
+        <button class="btn btn-primary" onclick="loadWorkspaces()">↺ Recargar</button>
+      </div>
+      <table>
+        <thead><tr><th>ID</th><th>Propietario</th><th>Tipo</th><th>Miembros</th><th>Creado</th></tr></thead>
+        <tbody id="ws-tbody"><tr><td colspan="5" style="color:var(--text2);text-align:center">Cargando...</td></tr></tbody>
+      </table>
+    </div>
+
+    <!-- FEATURE FLAGS -->
+    <div class="section" id="flags">
+      <div class="section-header">
+        <h2>Feature Flags del cliente</h2>
+        <p>Flags experimentales disponibles en el cliente web. Los cambios aquí son solo informativos — se configuran en el <code>localStorage</code> del navegador del usuario.</p>
+      </div>
+      <div class="alert warn">⚠️ Estos flags se guardan en <code>localStorage</code> de cada navegador, no en el servidor. Para cambiarlos globalmente, modifica el archivo <code>feature-flag/constant.ts</code> y haz rebuild.</div>
+      <div id="flags-list">
+        <!-- generado por JS -->
+      </div>
+    </div>
+
+    <!-- CONFIG -->
+    <div class="section" id="config">
+      <div class="section-header">
+        <h2>Configuración del servidor</h2>
+        <p>Archivo <code>gd-docs.json</code> — se aplica en el próximo reinicio del servidor</p>
+      </div>
+      <div class="alert info">ℹ️ Los cambios en la configuración requieren reiniciar el servidor: <code>docker compose restart affine</code></div>
+      <div class="tab-bar">
+        <button class="active" onclick="switchTab('config','schema')">📋 Schema completo</button>
+        <button onclick="switchTab('config','current')">🔍 Config actual</button>
+        <button onclick="switchTab('config','edit')">✏️ Editor</button>
+      </div>
+      <div class="tab-content active" id="config-schema">
+        <pre id="schema-content">Cargando schema de configuración...</pre>
+      </div>
+      <div class="tab-content" id="config-current">
+        <pre id="current-config">Cargando configuración actual...</pre>
+      </div>
+      <div class="tab-content" id="config-edit">
+        <div class="alert warn">⚠️ Editar directamente en el servidor requiere acceso SSH. Aquí se genera la configuración — descargala y súbela a <code>~/.affine/self-host/config/gd-docs.json</code></div>
+        <div id="config-form"><!-- generado --></div>
+        <div style="margin-top:16px;display:flex;gap:8px">
+          <button class="btn btn-primary" onclick="downloadConfig()">⬇️ Descargar config</button>
+          <button class="btn btn-secondary" onclick="copyConfig()">📋 Copiar al portapapeles</button>
+        </div>
+        <pre id="config-preview" style="margin-top:16px"></pre>
+      </div>
+    </div>
+
+    <!-- AUTH -->
+    <div class="section" id="auth">
+      <div class="section-header">
+        <h2>Autenticación</h2>
+        <p>Configuración de registro de usuarios y OAuth</p>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <h3 style="margin-bottom:16px">Opciones de registro</h3>
+        <div id="auth-toggles">
+          <div class="toggle-row">
+            <div class="info"><div class="name">Permitir registro público</div><div class="desc"><code>auth.allowSignup</code> — Si está OFF, solo admins pueden crear cuentas</div></div>
+            <label class="toggle"><input type="checkbox" id="toggle-signup" checked><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="info"><div class="name">Verificación de email requerida</div><div class="desc"><code>auth.requireEmailVerification</code> — Recomendado OFF en self-hosted</div></div>
+            <label class="toggle"><input type="checkbox" id="toggle-email-verify"><span class="toggle-slider"></span></label>
+          </div>
+          <div class="toggle-row">
+            <div class="info"><div class="name">Permitir OAuth para nuevos usuarios</div><div class="desc"><code>auth.allowSignupForOauth</code> — Login con Google/GitHub para cuentas nuevas</div></div>
+            <label class="toggle"><input type="checkbox" id="toggle-oauth-signup" checked><span class="toggle-slider"></span></label>
+          </div>
+        </div>
+        <div style="margin-top:16px">
+          <button class="btn btn-primary" onclick="generateAuthConfig()">⬇️ Generar config</button>
+        </div>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:16px">OAuth Providers</h3>
+        <div class="form-group">
+          <label>Google Client ID</label>
+          <input type="text" id="google-client-id" placeholder="xxx.apps.googleusercontent.com">
+        </div>
+        <div class="form-group">
+          <label>Google Client Secret</label>
+          <input type="text" id="google-client-secret" placeholder="GOCSPX-...">
+        </div>
+        <div class="form-group">
+          <label>GitHub Client ID</label>
+          <input type="text" id="github-client-id" placeholder="Ov23li...">
+        </div>
+        <div class="form-group">
+          <label>GitHub Client Secret</label>
+          <input type="text" id="github-client-secret" placeholder="abc123...">
+        </div>
+        <div class="form-group">
+          <label>OIDC Issuer (para SSO empresarial)</label>
+          <input type="text" id="oidc-issuer" placeholder="https://sso.tuempresa.com">
+        </div>
+        <button class="btn btn-primary" onclick="generateOAuthConfig()">⬇️ Generar config OAuth</button>
+        <pre id="oauth-config-output" style="margin-top:12px"></pre>
+      </div>
+    </div>
+
+    <!-- STORAGE -->
+    <div class="section" id="storage">
+      <div class="section-header">
+        <h2>Almacenamiento</h2>
+        <p>Configuración de persistencia de archivos e imágenes</p>
+      </div>
+      <div class="tab-bar">
+        <button class="active" onclick="switchTab('storage','fs')">📂 Filesystem (local)</button>
+        <button onclick="switchTab('storage','s3')">☁️ S3 / MinIO</button>
+      </div>
+      <div class="tab-content active" id="storage-fs">
+        <div class="card">
+          <h3 style="margin-bottom:12px">Almacenamiento local (filesystem)</h3>
+          <div class="form-group">
+            <label>Ruta de almacenamiento</label>
+            <input type="text" id="fs-path" value="~/.affine/storage">
+          </div>
+          <button class="btn btn-primary" onclick="generateFsConfig()">⬇️ Generar config</button>
+          <pre id="fs-config-output" style="margin-top:12px"></pre>
+        </div>
+      </div>
+      <div class="tab-content" id="storage-s3">
+        <div class="card">
+          <h3 style="margin-bottom:12px">Almacenamiento S3 / MinIO / Cloudflare R2</h3>
+          <div class="two-col">
+            <div>
+              <div class="form-group"><label>Región</label><input type="text" id="s3-region" value="us-east-1"></div>
+              <div class="form-group"><label>Endpoint (dejar vacío para AWS S3)</label><input type="text" id="s3-endpoint" placeholder="https://minio.tudominio.com"></div>
+              <div class="form-group"><label>Bucket para blobs</label><input type="text" id="s3-blob-bucket" value="gddocs-blobs"></div>
+              <div class="form-group"><label>Bucket para avatares</label><input type="text" id="s3-avatar-bucket" value="gddocs-avatars"></div>
+            </div>
+            <div>
+              <div class="form-group"><label>Access Key ID</label><input type="text" id="s3-key-id" placeholder="AKIAIOSFODNN7EXAMPLE"></div>
+              <div class="form-group"><label>Secret Access Key</label><input type="text" id="s3-secret" placeholder="wJalrXUtnFEMI/..."></div>
+              <div class="form-group"><label>Forzar path style (necesario para MinIO)</label>
+                <select id="s3-path-style"><option value="false">No (AWS S3 estándar)</option><option value="true">Sí (MinIO, Cloudflare R2)</option></select>
+              </div>
+            </div>
+          </div>
+          <button class="btn btn-primary" onclick="generateS3Config()">⬇️ Generar config S3</button>
+          <pre id="s3-config-output" style="margin-top:12px"></pre>
+        </div>
+      </div>
+    </div>
+
+    <!-- HEALTH -->
+    <div class="section" id="health">
+      <div class="section-header">
+        <h2>Salud del sistema</h2>
+        <p>Estado de los componentes del servidor</p>
+      </div>
+      <div id="health-cards" class="grid">
+        <div class="card loading"><h3>API GraphQL</h3><div class="value" id="health-api">Verificando...</div></div>
+        <div class="card loading"><h3>Base de datos</h3><div class="value" id="health-db">Verificando...</div></div>
+        <div class="card loading"><h3>WebSocket (co-edición)</h3><div class="value" id="health-ws">Verificando...</div></div>
+        <div class="card loading"><h3>Telemetría</h3><div class="value" id="health-telemetry">Verificando...</div></div>
+      </div>
+      <div class="card" style="margin-top:16px">
+        <h3 style="margin-bottom:12px">Co-edición colaborativa</h3>
+        <div class="alert success">
+          ✅ <strong>La co-edición funciona 100% con tu base de datos propia.</strong>
+          El servidor usa YJS (CRDT) sobre WebSocket, sincronizando directamente con PostgreSQL.
+          No hay dependencia de servidores externos de GD docs para la colaboración.
+        </div>
+        <table>
+          <tbody>
+            <tr><td>Protocolo</td><td>YJS CRDT sobre Socket.IO WebSocket</td></tr>
+            <tr><td>Persistencia</td><td>PostgreSQL (tablas: Snapshot, Update)</td></tr>
+            <tr><td>Versión sync</td><td>sync-026 (actual)</td></tr>
+            <tr><td>Awareness (cursores)</td><td>Tiempo real, en memoria</td></tr>
+            <tr><td>Fallback</td><td>HTTP polling automático si WS falla</td></tr>
+            <tr><td>Endpoint</td><td><span id="ws-endpoint">calculando...</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+    <!-- LOGS -->
+    <div class="section" id="logs">
+      <div class="section-header">
+        <h2>Diagnóstico</h2>
+        <p>Información de diagnóstico y comandos útiles</p>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <h3 style="margin-bottom:12px">Comandos Docker útiles</h3>
+        <pre>
+# Ver logs en tiempo real:
+docker compose -f .docker/selfhost/compose.yml logs -f affine
+
+# Reiniciar solo el servidor (sin perder datos):
+docker compose -f .docker/selfhost/compose.yml restart affine
+
+# Ver estado de todos los contenedores:
+docker compose -f .docker/selfhost/compose.yml ps
+
+# Entrar al contenedor:
+docker compose -f .docker/selfhost/compose.yml exec affine sh
+
+# Ver logs de PostgreSQL:
+docker compose -f .docker/selfhost/compose.yml logs postgres
+
+# Actualizar a nueva versión:
+bash .docker/selfhost/update.sh</pre>
+      </div>
+      <div class="card" style="margin-bottom:16px">
+        <h3 style="margin-bottom:12px">Variables de entorno configuradas</h3>
+        <table id="env-table">
+          <tbody id="env-tbody"><tr><td>Cargando...</td></tr></tbody>
+        </table>
+      </div>
+      <div class="card">
+        <h3 style="margin-bottom:12px">Servicios externos bloqueados</h3>
+        <table>
+          <thead><tr><th>Servicio</th><th>URL original</th><th>Estado</th></tr></thead>
+          <tbody>
+            <tr><td>Sentry (errores)</td><td>sentry.io</td><td><span class="badge-pill ok">✅ Bloqueado</span></td></tr>
+            <tr><td>GA4 / Analytics</td><td>[telemetría interna]</td><td><span class="badge-pill ok">✅ Redirigido a servidor local</span></td></tr>
+            <tr><td>Check de actualizaciones</td><td>[eliminado]</td><td><span class="badge-pill ok">✅ Desactivado</span></td></tr>
+            <tr><td>Sistema de licencias</td><td>[eliminado]</td><td><span class="badge-pill ok">✅ Eliminado — sin restricciones</span></td></tr>
+            <tr><td>Co-edición</td><td>—</td><td><span class="badge-pill ok">✅ 100% local (PostgreSQL propio)</span></td></tr>
+          </tbody>
+        </table>
+      </div>
+    </div>
+
+  </main>
+</div>
+
+<div id="toast"></div>
+
+<script>
+// ============================================================
+//  GD docs Root Admin Panel — Client Script
+// ============================================================
+
+const API = window.location.origin;
+
+// ---- Navigation ----
+document.querySelectorAll('nav a[data-section]').forEach(link => {
+  link.addEventListener('click', e => {
+    e.preventDefault();
+    const section = link.dataset.section;
+    document.querySelectorAll('nav a').forEach(a => a.classList.remove('active'));
+    document.querySelectorAll('.section').forEach(s => s.classList.remove('active'));
+    link.classList.add('active');
+    document.getElementById(section)?.classList.add('active');
+    if (section === 'dashboard') loadDashboard();
+    if (section === 'users') loadUsers();
+    if (section === 'workspaces') loadWorkspaces();
+    if (section === 'health') loadHealth();
+    if (section === 'config') loadConfig();
+    if (section === 'logs') loadEnvInfo();
+    if (section === 'flags') renderFlags();
+  });
+});
+
+function switchTab(group, name) {
+  const area = document.getElementById(group) || document;
+  area.querySelectorAll('.tab-bar button').forEach(b => b.classList.remove('active'));
+  area.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
+  event.target.classList.add('active');
+  document.getElementById(`${group}-${name}`)?.classList.add('active');
+}
+
+// ---- Toast ----
+function toast(msg, type = 'ok') {
+  const el = document.createElement('div');
+  el.className = `toast-item ${type}`;
+  el.textContent = msg;
+  document.getElementById('toast').appendChild(el);
+  setTimeout(() => el.remove(), 3500);
+}
+
+// ---- GraphQL helper ----
+async function gql(query, variables = {}) {
+  const res = await fetch(`${API}/graphql`, {
+    method: 'POST',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: JSON.stringify({ query, variables }),
+  });
+  const json = await res.json();
+  if (json.errors) throw new Error(json.errors[0]?.message || 'GraphQL error');
+  return json.data;
+}
+
+// ---- Init ----
+document.getElementById('server-url').textContent = window.location.origin;
+document.getElementById('ws-endpoint').textContent = window.location.origin.replace('http', 'ws') + '/';
+loadDashboard();
+
+// ---- Dashboard ----
+async function loadDashboard() {
+  try {
+    const data = await gql(`query {
+      serverConfig {
+        version
+        name
+        type
+        initialized
+        features
+      }
+    }`);
+    const cfg = data.serverConfig;
+    document.getElementById('stat-version').textContent = cfg.version || '—';
+    document.getElementById('stat-status').textContent = '✅ OK';
+    document.getElementById('stat-status').parentElement.className = 'card success';
+
+    const infoRows = [
+      ['Nombre del servidor', cfg.name],
+      ['Tipo de despliegue', cfg.type],
+      ['Inicializado', cfg.initialized ? '✅ Sí' : '⚠️ No (ir a /admin/setup)'],
+      ['Features activas', (cfg.features || []).join(', ') || 'ninguna'],
+      ['URL del servidor', window.location.origin],
+      ['GraphQL endpoint', `${window.location.origin}/graphql`],
+      ['WebSocket endpoint', `${window.location.origin.replace('http','ws')}/`],
+    ];
+    document.getElementById('server-info-table').innerHTML =
+      infoRows.map(([k,v]) => `<tr><td style="color:var(--text2);width:200px">${k}</td><td>${v}</td></tr>`).join('');
+    document.getElementById('graphql-endpoint').textContent = `${API}/graphql`;
+  } catch(e) {
+    document.getElementById('stat-status').textContent = '❌ Error';
+    document.getElementById('stat-status').parentElement.className = 'card error';
+    document.getElementById('server-info-table').innerHTML = `<tr><td style="color:var(--error)">${e.message}</td></tr>`;
+  }
+
+  // Users count
+  try {
+    const data = await gql(`query { adminUsers(take:1, skip:0) { total } }`);
+    document.getElementById('stat-users').textContent = data.adminUsers?.total ?? '?';
+    document.getElementById('stat-users').parentElement.className = 'card success';
+  } catch(e) {
+    document.getElementById('stat-users').textContent = 'N/A';
+  }
+
+  // Workspace count
+  try {
+    const data = await gql(`query { adminWorkspaces(take:1, skip:0) { total } }`);
+    document.getElementById('stat-workspaces').textContent = data.adminWorkspaces?.total ?? '?';
+    document.getElementById('stat-workspaces').parentElement.className = 'card success';
+  } catch(e) {
+    document.getElementById('stat-workspaces').textContent = 'N/A';
+  }
+}
+
+// ---- Users ----
+async function loadUsers() {
+  try {
+    const data = await gql(`query {
+      adminUsers(take: 100, skip: 0) {
+        total
+        users {
+          id
+          name
+          email
+          createdAt
+          features { feature }
+        }
+      }
+    }`);
+    const users = data.adminUsers?.users || [];
+    const search = document.getElementById('user-search')?.value?.toLowerCase() || '';
+    const filtered = users.filter(u =>
+      u.email.toLowerCase().includes(search) ||
+      (u.name || '').toLowerCase().includes(search)
+    );
+    document.getElementById('users-tbody').innerHTML = filtered.map(u => `
+      <tr>
+        <td>${u.name || '—'}</td>
+        <td>${u.email}</td>
+        <td style="color:var(--text2)">${new Date(u.createdAt).toLocaleDateString('es')}</td>
+        <td>${(u.features||[]).map(f => `<span class="badge-pill info">${f.feature}</span>`).join(' ') || '<span class="badge-pill warn">ninguna</span>'}</td>
+        <td><button class="btn btn-secondary" style="font-size:11px;padding:4px 8px" onclick="impersonate('${u.email}')">→ Gestionar</button></td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" style="color:var(--text2);text-align:center">Sin resultados</td></tr>';
+  } catch(e) {
+    document.getElementById('users-tbody').innerHTML = `<tr><td colspan="5" style="color:var(--error)">${e.message}<br><small>Asegurate de estar logueado como administrador</small></td></tr>`;
+  }
+}
+
+document.getElementById('user-search')?.addEventListener('input', () => loadUsers());
+
+async function loadWorkspaces() {
+  try {
+    const data = await gql(`query {
+      adminWorkspaces(take: 100, skip: 0) {
+        total
+        workspaces {
+          id
+          name
+          owner { email }
+          memberCount
+          createdAt
+          public
+          features { feature }
+        }
+      }
+    }`);
+    const ws = data.adminWorkspaces?.workspaces || [];
+    document.getElementById('ws-tbody').innerHTML = ws.map(w => `
+      <tr>
+        <td style="font-size:11px;color:var(--text2)">${w.id.substring(0,16)}...</td>
+        <td>${w.owner?.email || '—'}</td>
+        <td><span class="badge-pill ${w.public ? 'warn' : 'info'}">${w.public ? 'público' : 'privado'}</span></td>
+        <td>${w.memberCount || 1}</td>
+        <td style="color:var(--text2)">${new Date(w.createdAt).toLocaleDateString('es')}</td>
+      </tr>
+    `).join('') || '<tr><td colspan="5" style="color:var(--text2);text-align:center">Sin workspaces</td></tr>';
+  } catch(e) {
+    document.getElementById('ws-tbody').innerHTML = `<tr><td colspan="5" style="color:var(--error)">${e.message}</td></tr>`;
+  }
+}
+
+// ---- Feature grant/revoke ----
+async function grantFeature() {
+  const email = document.getElementById('feature-user-email').value.trim();
+  const feature = document.getElementById('feature-name').value;
+  const reason = document.getElementById('feature-reason').value.trim() || 'granted via root admin';
+  if (!email) return toast('Ingresá el email del usuario', 'err');
+  try {
+    await gql(`mutation($email: String!, $feature: Feature!, $reason: String) {
+      addUserFeature(email: $email, feature: $feature, reason: $reason)
+    }`, { email, feature, reason });
+    toast(`Feature "${feature}" otorgada a ${email}`, 'ok');
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
+  }
+}
+
+async function revokeFeature() {
+  const email = document.getElementById('feature-user-email').value.trim();
+  const feature = document.getElementById('feature-name').value;
+  if (!email) return toast('Ingresá el email del usuario', 'err');
+  try {
+    await gql(`mutation($email: String!, $feature: Feature!) {
+      removeUserFeature(email: $email, feature: $feature)
+    }`, { email, feature });
+    toast(`Feature "${feature}" revocada de ${email}`, 'ok');
+  } catch(e) {
+    toast(`Error: ${e.message}`, 'err');
+  }
+}
+
+// ---- Health ----
+async function loadHealth() {
+  // API check
+  try {
+    const data = await gql(`query { serverConfig { version initialized } }`);
+    document.getElementById('health-api').textContent = '✅ Online';
+    document.getElementById('health-api').parentElement.className = 'card success';
+  } catch(e) {
+    document.getElementById('health-api').textContent = '❌ Error';
+    document.getElementById('health-api').parentElement.className = 'card error';
+  }
+  // DB check via user count
+  try {
+    await gql(`query { adminUsers(take:1,skip:0) { total } }`);
+    document.getElementById('health-db').textContent = '✅ PostgreSQL OK';
+    document.getElementById('health-db').parentElement.className = 'card success';
+  } catch(e) {
+    document.getElementById('health-db').textContent = '⚠️ No verificado';
+    document.getElementById('health-db').parentElement.className = 'card warn';
+  }
+  // WS
+  const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
+  document.getElementById('health-ws').textContent = `✅ ${wsProto}//${window.location.host}/`;
+  document.getElementById('health-ws').parentElement.className = 'card success';
+  // Telemetry
+  document.getElementById('health-telemetry').textContent = '✅ Solo servidor local';
+  document.getElementById('health-telemetry').parentElement.className = 'card success';
+}
+
+// ---- Config ----
+async function loadConfig() {
+  try {
+    const res = await fetch(`${API}/api/config/schema.json`);
+    if (res.ok) {
+      const schema = await res.json();
+      document.getElementById('schema-content').textContent = JSON.stringify(schema, null, 2);
+    } else {
+      // fallback: show static schema location
+      document.getElementById('schema-content').textContent =
+        '// Schema disponible en el contenedor en: /app/config.schema.json\n// O en: .docker/selfhost/schema.json';
+    }
+  } catch(e) {
+    document.getElementById('schema-content').textContent = `// ${e.message}\n// Schema disponible en: .docker/selfhost/schema.json`;
+  }
+  // Current config
+  const configExample = {
+    "server": { "name": "GD docs Server" },
+    "auth": {
+      "allowSignup": true,
+      "requireEmailVerification": false,
+      "passwordRequirements": { "min": 8, "max": 128 }
+    },
+    "telemetry": { "ga4.measurementId": "", "ga4.apiSecret": "" },
+    "metrics": { "enabled": false }
+  };
+  document.getElementById('current-config').textContent =
+    '// Config activa en: ~/.affine/self-host/config/gd-docs.json\n\n' +
+    JSON.stringify(configExample, null, 2);
+}
+
+function generateAuthConfig() {
+  const cfg = {
+    "auth": {
+      "allowSignup": document.getElementById('toggle-signup').checked,
+      "requireEmailVerification": document.getElementById('toggle-email-verify').checked,
+      "allowSignupForOauth": document.getElementById('toggle-oauth-signup').checked
+    }
+  };
+  document.getElementById('config-preview').textContent = JSON.stringify(cfg, null, 2);
+  toast('Config de auth generada ↓', 'ok');
+}
+
+function generateOAuthConfig() {
+  const cfg = {
+    "oauth": {
+      "providers.google": {
+        "clientId": document.getElementById('google-client-id').value,
+        "clientSecret": document.getElementById('google-client-secret').value
+      },
+      "providers.github": {
+        "clientId": document.getElementById('github-client-id').value,
+        "clientSecret": document.getElementById('github-client-secret').value
+      },
+      "providers.oidc": {
+        "issuer": document.getElementById('oidc-issuer').value,
+        "clientId": "", "clientSecret": "", "args": {}
+      }
+    }
+  };
+  document.getElementById('oauth-config-output').textContent = JSON.stringify(cfg, null, 2);
+  toast('Config OAuth generada', 'ok');
+}
+
+function generateFsConfig() {
+  const path = document.getElementById('fs-path').value;
+  const cfg = {
+    "storages": {
+      "avatar.storage": { "provider": "fs", "bucket": "avatars", "config": { "path": path } },
+      "blob.storage": { "provider": "fs", "bucket": "blobs", "config": { "path": path } }
+    }
+  };
+  document.getElementById('fs-config-output').textContent = JSON.stringify(cfg, null, 2);
+  toast('Config FS generada', 'ok');
+}
+
+function generateS3Config() {
+  const endpoint = document.getElementById('s3-endpoint').value;
+  const forcePathStyle = document.getElementById('s3-path-style').value === 'true';
+  const base = {
+    region: document.getElementById('s3-region').value,
+    accessKeyId: document.getElementById('s3-key-id').value,
+    secretAccessKey: document.getElementById('s3-secret').value,
+    ...(endpoint ? { endpoint, forcePathStyle } : {})
+  };
+  const cfg = {
+    "storages": {
+      "avatar.storage": { "provider": "s3", "bucket": document.getElementById('s3-avatar-bucket').value, "config": base },
+      "blob.storage": { "provider": "s3", "bucket": document.getElementById('s3-blob-bucket').value, "config": base }
+    }
+  };
+  document.getElementById('s3-config-output').textContent = JSON.stringify(cfg, null, 2);
+  toast('Config S3 generada', 'ok');
+}
+
+function downloadConfig() {
+  const content = document.getElementById('config-preview').textContent ||
+    document.getElementById('current-config').textContent;
+  const blob = new Blob([content], { type: 'application/json' });
+  const a = document.createElement('a');
+  a.href = URL.createObjectURL(blob);
+  a.download = 'gd-docs.json';
+  a.click();
+}
+
+function copyConfig() {
+  const content = document.getElementById('config-preview').textContent;
+  navigator.clipboard.writeText(content).then(() => toast('Copiado al portapapeles', 'ok'));
+}
+
+// ---- Feature Flags (persistidos en BD del servidor via /api/setup/admin-flags) ----
+const KNOWN_FLAGS = [
+  { key: 'enableAiPlayground', name: 'AI Playground', desc: 'Cambio de modelos de IA', dangerous: false },
+  { key: 'enableThemeEditor', name: 'Editor de temas', desc: 'Personalización visual avanzada', dangerous: false },
+  { key: 'enableTurboRenderer', name: 'Turbo Renderer', desc: 'Renderer experimental en edgeless', dangerous: false },
+  { key: 'enableBlockMeta', name: 'Block Meta', desc: 'Metadata de bloques (experimental)', dangerous: false },
+  { key: 'enableEdgelessScribbledStyle', name: 'Scribbled Style', desc: 'Estilo manuscrito en edgeless', dangerous: false },
+  { key: 'enableTableVirtualScroll', name: 'Virtual Scroll en tablas', desc: 'Mejor rendimiento en tablas grandes', dangerous: false },
+  { key: 'enableAdapterPanel', name: 'Adapter Panel', desc: 'Panel de adaptadores de formato', dangerous: false },
+  { key: 'enableEditorRtl', name: 'RTL Editor', desc: 'Soporte árabe/hebreo (RTL)', dangerous: false },
+  { key: 'enableAi', name: 'AI (GD docs Copilot)', desc: 'Asistente de IA integrado (requiere API key en servidor)', dangerous: false },
+  { key: 'enablePdfEmbedPreview', name: 'Vista previa PDF', desc: 'Previsualización de PDFs embebidos', dangerous: false },
+  { key: 'enableDomRenderer', name: 'DOM Renderer', desc: 'Renderer DOM para elementos gráficos', dangerous: false },
+  { key: 'enablePdfmakeExport', name: 'Export PDF', desc: 'Exportar documentos como PDF', dangerous: false },
+  { key: 'enableAdvancedBlockVisibility', name: 'Visibilidad avanzada de bloques', desc: 'Control fino de visibilidad por bloque', dangerous: false },
+];
+
+// Estado de flags cargado desde la BD (no localStorage)
+let _serverFlags = {};
+
+async function loadServerFlags() {
+  try {
+    const res = await fetch('/api/setup/admin-flags');
+    if (res.ok) {
+      const data = await res.json();
+      _serverFlags = data.flags || {};
+    }
+  } catch(e) {
+    console.error('No se pudo cargar los flags del servidor:', e);
+  }
+}
+
+async function renderFlags() {
+  await loadServerFlags();
+  document.getElementById('flags-list').innerHTML = KNOWN_FLAGS.map(f => {
+    // Default: true si el flag no tiene override en BD
+    const isOn = _serverFlags[f.key] !== undefined ? _serverFlags[f.key] : true;
+    return `
+    <div class="toggle-row">
+      <div class="info">
+        <div class="name">${f.name} <code style="font-size:10px;color:var(--text2)">${f.key}</code></div>
+        <div class="desc">${f.desc}</div>
+      </div>
+      <label class="toggle">
+        <input type="checkbox" ${isOn ? 'checked' : ''} onchange="toggleFlag('${f.key}', this.checked)">
+        <span class="toggle-slider"></span>
+      </label>
+    </div>`;
+  }).join('');
+}
+
+async function toggleFlag(key, value) {
+  _serverFlags[key] = value;
+
+  try {
+    const res = await fetch('/api/setup/admin-flags', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json' },
+      body: JSON.stringify({ flags: { [key]: value } }),
+    });
+
+    if (res.ok) {
+      toast(`✅ Flag ${key} → ${value ? 'ON' : 'OFF'} — guardado en servidor`, 'ok');
+    } else {
+      toast(`⚠️ Error guardando flag: ${res.status}`, 'warn');
+    }
+  } catch(e) {
+    toast(`⚠️ Error de red: ${e.message}`, 'warn');
+  }
+}
+
+// ---- Env info ----
+function loadEnvInfo() {
+  const envVars = [
+    ['NODE_ENV', 'production (self-hosted)'],
+    ['Telemetría externa', 'DESACTIVADA'],
+    ['Sentry', 'DESACTIVADO'],
+    ['Check de actualizaciones', 'DESACTIVADO'],
+    ['Sistema de licencias', 'ELIMINADO — sin restricciones de miembros'],
+    ['Co-edición', 'PostgreSQL local'],
+  ];
+  document.getElementById('env-tbody').innerHTML = envVars.map(([k,v]) =>
+    `<tr><td style="color:var(--text2);width:220px">${k}</td><td>${v}</td></tr>`
+  ).join('');
+}
+
+renderFlags();
+</script>
+</body>
+</html>
