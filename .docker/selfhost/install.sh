@@ -46,11 +46,18 @@ install_docker() {
     apt-get update -qq
     apt-get install -y ca-certificates curl gnupg lsb-release
     install -m 0755 -d /etc/apt/keyrings
-    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+    # Detectar distro: Ubuntu o Debian
+    DISTRO_ID="$(. /etc/os-release && echo "$ID")"
+    if [[ "$DISTRO_ID" == "debian" ]]; then
+      DOCKER_REPO="https://download.docker.com/linux/debian"
+    else
+      DOCKER_REPO="https://download.docker.com/linux/ubuntu"
+    fi
+    curl -fsSL "${DOCKER_REPO}/gpg" | \
       gpg --dearmor -o /etc/apt/keyrings/docker.gpg
     chmod a+r /etc/apt/keyrings/docker.gpg
     echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
-https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+${DOCKER_REPO} $(lsb_release -cs) stable" \
       > /etc/apt/sources.list.d/docker.list
     apt-get update -qq
     apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
