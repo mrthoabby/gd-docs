@@ -18,6 +18,7 @@ WORKDIR /repo
 
 # Copiar archivos de configuración de yarn primero (mejor cache)
 COPY .yarn/releases/ .yarn/releases/
+COPY .yarn/patches/ .yarn/patches/
 COPY .yarnrc.yml package.json yarn.lock ./
 
 # Copiar todos los package.json del monorepo para que yarn resuelva el workspace
