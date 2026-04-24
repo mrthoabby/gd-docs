@@ -41,6 +41,35 @@ Al terminar, abre `http://localhost:3010` en el browser. El **primer usuario que
 
 ---
 
+## Reparación inteligente — cuando algo falla sin perder datos
+
+Cuando un servicio falla o el servidor entra en crash loop, **no hace falta un nuke**. Usá el script de reparación que inspecciona cada componente y solo arregla lo que está roto:
+
+```bash
+bash .docker/selfhost/repair.sh
+```
+
+Opciones:
+
+```bash
+bash .docker/selfhost/repair.sh --status    # solo mostrar estado de cada servicio (no toca nada)
+bash .docker/selfhost/repair.sh --rebuild   # forzar rebuild de imagen sin borrar datos
+```
+
+Lo que hace automáticamente según lo que encuentre:
+
+| Problema detectado | Acción |
+|---|---|
+| Imagen Docker no existe | Construye la imagen |
+| postgres o redis caído | Levanta solo ese servicio y espera que esté healthy |
+| Migración falló (exit ≠ 0) | Re-ejecuta solo la migración |
+| Servidor en crash loop | Rebuilda la imagen y reinicia solo el servidor |
+| Todo está OK | No hace nada, reporta que todo funciona |
+
+**Regla general:** primero intentá `repair.sh`. Solo usá `nuke.sh` si `repair.sh` falla repetidamente y necesitás empezar desde cero.
+
+---
+
 ## Actualización — Bajar cambios del repositorio
 
 Cuando hagas cambios en el código y los subas a GitHub, en el servidor ejecuta:
@@ -187,7 +216,8 @@ gunzip < backup_20250101.sql.gz | docker exec -i gddocs_postgres psql -U gddocs 
 | `.docker/selfhost/Dockerfile.selfhost` | Imagen Docker personalizada (sin Rust, sin Sentry) |
 | `.docker/selfhost/install.sh` | Instalación inicial |
 | `.docker/selfhost/update.sh` | Actualización con git pull |
-| `.docker/selfhost/nuke.sh` | Borrado total y reinstalación |
+| `.docker/selfhost/repair.sh` | Reparación inteligente (sin borrar datos) |
+| `.docker/selfhost/nuke.sh` | Borrado total y reinstalación (último recurso) |
 
 ---
 
