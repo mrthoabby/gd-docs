@@ -49,9 +49,9 @@ RUN yarn affine @affine/server build
 # ── Build frontends ───────────────────────────────────────────
 # Los frontends tienen "build": "affine bundle" en su package.json
 # → yarn workspace ejecuta ESE script (bundle, no build)
-RUN yarn workspace @affine/web build
-RUN yarn workspace @affine/admin build
-RUN yarn workspace @affine/mobile build
+RUN yarn affine bundle -p @affine/web
+RUN yarn affine bundle -p @affine/admin
+RUN yarn affine bundle -p @affine/mobile
 
 # ── Preparar node_modules de producción (replica CI build-images) ──
 # 1. Instalar solo deps de producción (sin devDeps)
