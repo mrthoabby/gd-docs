@@ -37,12 +37,53 @@ echo "║              GD docs — Instalador                       ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
-# ---------- Verificar dependencias ----------
+# ---------- Verificar e instalar dependencias ----------
 info "Verificando dependencias..."
-command -v docker &>/dev/null   || error "Docker no está instalado. Instálalo en: https://docs.docker.com/get-docker/"
-docker compose version &>/dev/null 2>&1 || \
-  docker-compose version &>/dev/null 2>&1 || \
-  error "Docker Compose no está disponible."
+
+install_docker() {
+  info "Docker no encontrado — instalando automáticamente..."
+  if command -v apt-get &>/dev/null; then
+    apt-get update -qq
+    apt-get install -y ca-certificates curl gnupg lsb-release
+    install -m 0755 -d /etc/apt/keyrings
+    curl -fsSL https://download.docker.com/linux/ubuntu/gpg | \
+      gpg --dearmor -o /etc/apt/keyrings/docker.gpg
+    chmod a+r /etc/apt/keyrings/docker.gpg
+    echo "deb [arch=$(dpkg --print-architecture) signed-by=/etc/apt/keyrings/docker.gpg] \
+https://download.docker.com/linux/ubuntu $(lsb_release -cs) stable" \
+      > /etc/apt/sources.list.d/docker.list
+    apt-get update -qq
+    apt-get install -y docker-ce docker-ce-cli containerd.io docker-compose-plugin
+    systemctl enable docker
+    systemctl start docker
+    # Agregar usuario actual al grupo docker (evita sudo en el futuro)
+    if [[ -n "${SUDO_USER:-}" ]]; then
+      usermod -aG docker "$SUDO_USER"
+      warn "Usuario '$SUDO_USER' agregado al grupo docker. Cerrá y volvé a abrir sesión para no necesitar sudo."
+    fi
+    success "Docker instalado correctamente."
+  else
+    error "No se puede instalar Docker automáticamente en este sistema. Instalalo manualmente: https://docs.docker.com/get-docker/"
+  fi
+}
+
+if ! command -v docker &>/dev/null; then
+  if [[ "$EUID" -ne 0 ]]; then
+    error "Docker no está instalado. Ejecutá el instalador con sudo para que lo instale automáticamente:\n  sudo bash install.sh"
+  fi
+  install_docker
+fi
+
+if ! docker compose version &>/dev/null 2>&1 && ! docker-compose version &>/dev/null 2>&1; then
+  if [[ "$EUID" -ne 0 ]]; then
+    error "Docker Compose no está disponible. Ejecutá con sudo para instalarlo automáticamente."
+  fi
+  info "Docker Compose no encontrado — instalando plugin..."
+  apt-get install -y docker-compose-plugin 2>/dev/null || \
+    error "No se pudo instalar Docker Compose. Instalalo manualmente: https://docs.docker.com/compose/install/"
+  success "Docker Compose instalado."
+fi
+
 success "Docker y Docker Compose encontrados."
 
 # ---------- Generar contraseña ----------
