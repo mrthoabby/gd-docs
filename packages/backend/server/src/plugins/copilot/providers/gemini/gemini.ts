@@ -47,7 +47,8 @@ import { promptAttachmentMimeType, promptAttachmentToUrl } from '../utils';
 export const DEFAULT_DIMENSIONS = 256;
 const GEMINI_REMOTE_ATTACHMENT_MAX_BYTES = 64 * OneMB;
 // [SELFHOST PATCH] cdn.affine.pro eliminado — solo se permiten adjuntos del propio servidor.
-const TRUSTED_ATTACHMENT_HOST_SUFFIXES = [window?.location?.host ?? ''];
+// window no existe en Node.js; usamos la variable de entorno del servidor o cadena vacía.
+const TRUSTED_ATTACHMENT_HOST_SUFFIXES = [process.env.AFFINE_SERVER_HOST ?? ''];
 const GEMINI_RETRY_INITIAL_DELAY_MS = 2_000;
 
 function normalizeMimeType(mediaType?: string) {
