@@ -16,25 +16,33 @@
 FROM node:22-bookworm-slim AS builder
 WORKDIR /repo
 
-# Copiar archivos de configuración de yarn primero (mejor cache)
-COPY .yarn/releases/ .yarn/releases/
-COPY .yarn/patches/ .yarn/patches/
-COPY .yarnrc.yml package.json yarn.lock ./
-
-# Copiar todos los package.json del monorepo para que yarn resuelva el workspace
-# (se hace antes del COPY . . para aprovechar el cache de capas de Docker)
-COPY packages/ packages/
-COPY blocksuite/ blocksuite/
-COPY tools/ tools/
-
 # Variables de build para selfhosted (sin Sentry, sin telemetría externa)
-ENV BUILD_TYPE=selfhosted \
+# HUSKY=0 evita que husky falle al no haber .git dentro del contexto Docker
+ENV HUSKY=0 \
+    BUILD_TYPE=selfhosted \
     NODE_OPTIONS="--max-old-space-size=8192" \
     NPM_TOKEN=NONE \
     SENTRY_AUTH_TOKEN="" \
     PERFSEE_TOKEN=""
 
-# Instalar dependencias
+# ── Estrategia de capas para máxima reutilización de cache ─────────────────
+# Capa 1: Yarn runtime (cambia raramente)
+COPY .yarn/releases/ .yarn/releases/
+COPY .yarn/patches/ .yarn/patches/
+COPY .yarnrc.yml yarn.lock ./
+
+# Capa 2: Manifiestos del workspace (cambia al agregar/quitar paquetes)
+COPY package.json ./
+COPY packages/ packages/
+COPY blocksuite/ blocksuite/
+COPY tools/ tools/
+
+# Capa 3: Archivos de config raíz requeridos por `yarn affine init` en postinstall
+# (tsconfig referencias, prettier, oxlint)
+COPY tsconfig.json tsconfig.node.json tsconfig.web.json tsconfig.eslint.json ./
+COPY .prettierrc .prettierignore .oxlintrc.json ./
+
+# Instalar dependencias (postinstall: yarn affine init + yarn husky — HUSKY=0 protege el segundo)
 RUN corepack enable && yarn install
 
 # Compilar backend
