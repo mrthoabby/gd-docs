@@ -42,22 +42,36 @@ info "Verificando dependencias..."
 
 install_docker() {
   info "Docker no encontrado — instalando automáticamente..."
-  if command -v curl &>/dev/null || command -v apt-get &>/dev/null; then
-    # Instalar curl si hace falta
-    command -v curl &>/dev/null || apt-get install -y curl
-    info "Descargando instalador oficial de Docker (soporta Ubuntu, Debian, etc.)..."
-    curl -fsSL https://get.docker.com | sh
-    systemctl enable docker
-    systemctl start docker
-    # Agregar usuario actual al grupo docker (evita sudo en el futuro)
-    if [[ -n "${SUDO_USER:-}" ]]; then
-      usermod -aG docker "$SUDO_USER"
-      warn "Usuario '$SUDO_USER' agregado al grupo docker. Cerrá y volvé a abrir sesión para no necesitar sudo."
-    fi
-    success "Docker instalado correctamente."
-  else
-    error "No se puede instalar Docker automáticamente. Instalalo manualmente: https://docs.docker.com/get-docker/"
+
+  # Limpiar restos de intentos anteriores que puedan romper apt
+  info "Limpiando configuración previa de Docker..."
+  rm -f /etc/apt/sources.list.d/docker.list \
+        /etc/apt/sources.list.d/docker-ce.list \
+        /etc/apt/keyrings/docker.gpg \
+        /etc/apt/keyrings/docker.asc 2>/dev/null || true
+
+  if command -v apt-get &>/dev/null; then
+    apt-get update -qq 2>/dev/null || true
+    apt-get install -y --quiet curl 2>/dev/null || true
   fi
+
+  if ! command -v curl &>/dev/null; then
+    error "No se pudo instalar curl. Instalá Docker manualmente: https://docs.docker.com/get-docker/"
+  fi
+
+  info "Descargando instalador oficial de Docker..."
+  curl -fsSL https://get.docker.com | sh || \
+    error "Falló la instalación de Docker. Intentalo manualmente: https://docs.docker.com/get-docker/"
+
+  systemctl enable docker
+  systemctl start docker
+
+  if [[ -n "${SUDO_USER:-}" ]]; then
+    usermod -aG docker "$SUDO_USER"
+    warn "Usuario '$SUDO_USER' agregado al grupo docker. Cerrá y volvé a abrir sesión para no necesitar sudo."
+  fi
+
+  success "Docker instalado correctamente."
 }
 
 if ! command -v docker &>/dev/null; then
