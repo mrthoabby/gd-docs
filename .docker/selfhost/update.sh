@@ -29,10 +29,13 @@ success() { echo -e "${GREEN}[OK]${NC}    $*"; }
 warn()    { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 error()   { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
 
+GIT_REMOTE_URL=""
+
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --skip-backup) SKIP_BACKUP=true; shift ;;
-    --skip-pull)   SKIP_PULL=true;   shift ;;
+    --skip-backup) SKIP_BACKUP=true;       shift ;;
+    --skip-pull)   SKIP_PULL=true;         shift ;;
+    --remote)      GIT_REMOTE_URL="$2";    shift 2 ;;
     *) shift ;;
   esac
 done
@@ -52,8 +55,18 @@ echo ""
 if [[ "$SKIP_PULL" == false ]]; then
   info "Actualizando código desde el repositorio..."
   cd "$REPO_ROOT"
+
+  if [[ -n "$GIT_REMOTE_URL" ]]; then
+    git remote set-url origin "$GIT_REMOTE_URL"
+    info "Remote actualizado a: $GIT_REMOTE_URL"
+  fi
+
+  CURRENT_REMOTE=$(git remote get-url origin 2>/dev/null || echo "(sin remote)")
+  info "Jalando desde: ${CURRENT_REMOTE}"
+
   git pull || warn "git pull falló — continuando con el código actual."
   success "Código actualizado."
+  echo "  Último commit: $(git log -1 --oneline)"
   echo ""
 fi
 
