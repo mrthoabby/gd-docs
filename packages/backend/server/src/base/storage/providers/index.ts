@@ -57,6 +57,22 @@ const S3ConfigSchema: JSONSchema = {
       type: 'number',
       description: 'Minimum multipart part size in bytes.',
     },
+    publicEndpoint: {
+      type: 'string',
+      description:
+        'Public URL of the storage service reachable by browsers. ' +
+        'When set, presigned URLs for uploads use this hostname instead of ' +
+        'the internal endpoint, so browsers can upload directly to storage ' +
+        'without passing through the GD docs server. ' +
+        'Leave empty to proxy all uploads through the server (default for self-hosted).',
+    },
+    disablePresign: {
+      type: 'boolean',
+      description:
+        'When true, the server proxies all uploads instead of returning ' +
+        'presigned URLs to the client. Automatically disabled when ' +
+        'publicEndpoint is set.',
+    },
     presign: {
       type: 'object',
       description: 'Presigned URL behavior configuration.',

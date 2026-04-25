@@ -11,6 +11,7 @@ import {
   OnEvent,
   PutObjectMetadata,
   type StorageProvider,
+  StorageProviderConfig,
   StorageProviderFactory,
   URLHelper,
 } from '../../../base';
@@ -62,14 +63,37 @@ export class WorkspaceBlobStorage {
 
   @OnEvent('config.init')
   async onConfigInit() {
-    this.provider = this.storageFactory.create(this.config.storage);
+    this.provider = this.storageFactory.create(
+      this.withPublicEndpoint(this.config.storage)
+    );
   }
 
   @OnEvent('config.changed')
   async onConfigChanged(event: Events['config.changed']) {
-    if (event.updates.storages?.blob?.storage) {
-      this.provider = this.storageFactory.create(this.config.storage);
+    if (
+      event.updates.storages?.blob?.storage ||
+      event.updates.storages?.blob?.publicEndpoint !== undefined
+    ) {
+      this.provider = this.storageFactory.create(
+        this.withPublicEndpoint(this.config.storage)
+      );
     }
+  }
+
+  /**
+   * Injects the runtime-configurable publicEndpoint into the provider config.
+   * This allows the admin UI to set the public URL without touching the main
+   * storage config (which contains credentials).
+   * If publicEndpoint is already set inside storage.config (via affine.config.json),
+   * it stays in place — this only adds the top-level override when present.
+   */
+  private withPublicEndpoint(storage: StorageProviderConfig): StorageProviderConfig {
+    const publicEndpoint = this.config.publicEndpoint;
+    if (!publicEndpoint) return storage;
+    return {
+      ...storage,
+      config: { ...(storage.config as Record<string, unknown>), publicEndpoint },
+    } as StorageProviderConfig;
   }
 
   async put(workspaceId: string, key: string, blob: Buffer) {

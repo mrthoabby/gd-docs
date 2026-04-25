@@ -7,6 +7,7 @@ import {
   metrics,
   OnEvent,
   type StorageProvider,
+  StorageProviderConfig,
   StorageProviderFactory,
   URLHelper,
 } from '../../../base';
@@ -41,14 +42,30 @@ export class CommentAttachmentStorage {
 
   @OnEvent('config.init')
   async onConfigInit() {
-    this.provider = this.storageFactory.create(this.config.storage);
+    this.provider = this.storageFactory.create(
+      this.withPublicEndpoint(this.config.storage)
+    );
   }
 
   @OnEvent('config.changed')
   async onConfigChanged(event: Events['config.changed']) {
-    if (event.updates.storages?.blob?.storage) {
-      this.provider = this.storageFactory.create(this.config.storage);
+    if (
+      event.updates.storages?.blob?.storage ||
+      event.updates.storages?.blob?.publicEndpoint !== undefined
+    ) {
+      this.provider = this.storageFactory.create(
+        this.withPublicEndpoint(this.config.storage)
+      );
     }
+  }
+
+  private withPublicEndpoint(storage: StorageProviderConfig): StorageProviderConfig {
+    const publicEndpoint = this.config.publicEndpoint;
+    if (!publicEndpoint) return storage;
+    return {
+      ...storage,
+      config: { ...(storage.config as Record<string, unknown>), publicEndpoint },
+    } as StorageProviderConfig;
   }
 
   private storageKey(workspaceId: string, docId: string, key: string) {

@@ -61,7 +61,14 @@ function resolveEndpoint(config: S3StorageConfig) {
 
 export class S3StorageProvider implements StorageProvider {
   protected logger: Logger;
+  /** Client used for all server-side operations (uses internal endpoint). */
   protected client: S3CompatClient;
+  /**
+   * Separate client used exclusively for generating presigned URLs.
+   * When publicEndpoint is configured it uses that URL so the signed URLs
+   * are reachable by browsers.  Falls back to `client` when not set.
+   */
+  private readonly presignClient: S3CompatClient;
   private readonly usePresignedURL: boolean;
   private readonly disablePresign: boolean;
 
@@ -69,9 +76,16 @@ export class S3StorageProvider implements StorageProvider {
     config: S3StorageConfig,
     public readonly bucket: string
   ) {
-    const { usePresignedURL, presign, credentials, disablePresign, ...clientConfig } = config;
+    const {
+      usePresignedURL,
+      presign,
+      credentials,
+      disablePresign,
+      publicEndpoint,
+      ...clientConfig
+    } = config;
 
-    const compatConfig: S3CompatConfig = {
+    const presignConfig: S3CompatConfig = {
       ...clientConfig,
       endpoint: resolveEndpoint(config),
       bucket,
@@ -82,9 +96,24 @@ export class S3StorageProvider implements StorageProvider {
       },
     };
 
-    this.client = createS3CompatClient(compatConfig, credentials);
+    // Internal client — always uses the configured endpoint (e.g. http://minio:9000)
+    this.client = createS3CompatClient(presignConfig, credentials);
+
+    // Presign client — uses publicEndpoint when set so the signed URLs carry
+    // a hostname the browser can resolve.  Otherwise reuses the same client.
+    if (publicEndpoint) {
+      this.presignClient = createS3CompatClient(
+        { ...presignConfig, endpoint: publicEndpoint },
+        credentials
+      );
+    } else {
+      this.presignClient = this.client;
+    }
+
     this.usePresignedURL = usePresignedURL?.enabled ?? false;
-    this.disablePresign = disablePresign ?? false;
+    // publicEndpoint being set means the operator explicitly wants direct
+    // browser→storage uploads; it overrides any disablePresign flag.
+    this.disablePresign = publicEndpoint ? false : (disablePresign ?? false);
     this.logger = new Logger(`${S3StorageProvider.name}:${bucket}`);
   }
 
@@ -125,7 +154,7 @@ export class S3StorageProvider implements StorageProvider {
     if (this.disablePresign) return undefined;
     try {
       const contentType = metadata.contentType ?? 'application/octet-stream';
-      const result = await this.client.presignPutObject(key, { contentType });
+      const result = await this.presignClient.presignPutObject(key, { contentType });
 
       return {
         url: result.url,
@@ -182,7 +211,7 @@ export class S3StorageProvider implements StorageProvider {
   ): Promise<PresignedUpload | undefined> {
     if (this.disablePresign) return undefined;
     try {
-      const result = await this.client.presignUploadPart(
+      const result = await this.presignClient.presignUploadPart(
         key,
         uploadId,
         partNumber
@@ -270,7 +299,7 @@ export class S3StorageProvider implements StorageProvider {
       if (this.usePresignedURL && signedUrl) {
         const metadata = await this.head(key);
         if (metadata) {
-          const result = await this.client.presignGetObject(key);
+          const result = await this.presignClient.presignGetObject(key);
 
           return {
             redirectUrl: result.url,
