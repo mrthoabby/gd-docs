@@ -90,10 +90,32 @@ if ! docker compose version &>/dev/null 2>&1 && ! docker-compose version &>/dev/
   if [[ "$EUID" -ne 0 ]]; then
     error "Docker Compose no está disponible. Ejecutá con sudo para instalarlo automáticamente."
   fi
-  info "Docker Compose no encontrado — instalando plugin..."
-  apt-get install -y docker-compose-plugin 2>/dev/null || \
-    error "No se pudo instalar Docker Compose. Instalalo manualmente: https://docs.docker.com/compose/install/"
-  success "Docker Compose instalado."
+  info "Docker Compose no encontrado — instalando plugin desde GitHub..."
+
+  # Detectar arquitectura del sistema
+  case "$(uname -m)" in
+    x86_64)          COMPOSE_ARCH="x86_64" ;;
+    aarch64|arm64)   COMPOSE_ARCH="aarch64" ;;
+    armv7l)          COMPOSE_ARCH="armv7" ;;
+    *)               COMPOSE_ARCH="$(uname -m)" ;;
+  esac
+
+  # Obtener la última versión disponible (con fallback fijo si falla la API)
+  COMPOSE_VERSION=$(curl -fsSL \
+    https://api.github.com/repos/docker/compose/releases/latest \
+    2>/dev/null | grep '"tag_name"' | cut -d'"' -f4) || true
+  COMPOSE_VERSION="${COMPOSE_VERSION:-v2.27.0}"
+
+  COMPOSE_PLUGIN_DIR="/usr/local/lib/docker/cli-plugins"
+  mkdir -p "$COMPOSE_PLUGIN_DIR"
+
+  curl -fsSL \
+    "https://github.com/docker/compose/releases/download/${COMPOSE_VERSION}/docker-compose-linux-${COMPOSE_ARCH}" \
+    -o "${COMPOSE_PLUGIN_DIR}/docker-compose" || \
+    error "No se pudo descargar Docker Compose. Instalalo manualmente: https://docs.docker.com/compose/install/"
+
+  chmod +x "${COMPOSE_PLUGIN_DIR}/docker-compose"
+  success "Docker Compose ${COMPOSE_VERSION} instalado (${COMPOSE_ARCH})."
 fi
 
 success "Docker y Docker Compose encontrados."
