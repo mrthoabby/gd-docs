@@ -95,16 +95,17 @@ services:
     command:
       - |
         RETRIES=0
-        MAX=15
+        MAX=3
         until mc alias set local http://gddocs_minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" 2>/dev/null; do
-          RETRIES=$((RETRIES + 1))
-          if [ "$RETRIES" -ge "$MAX" ]; then
-            echo "[ERROR] No se pudo conectar a MinIO tras $MAX intentos."
+          RETRIES=$$((RETRIES + 1))
+          echo "[RETRY $$RETRIES/$$MAX] MinIO no responde — reintentando en 5s..."
+          if [ "$$RETRIES" -ge "$$MAX" ]; then
+            echo "[ERROR] MinIO no disponible tras $$MAX intentos. Abortando."
             exit 1
           fi
-          echo "[WAIT]  MinIO aún no acepta conexiones... intento $RETRIES/$MAX"
-          sleep 3
+          sleep 5
         done
+        echo "[OK] Conexión a MinIO establecida."
         mc mb --ignore-existing local/gddocs-blobs   && echo "[OK] bucket gddocs-blobs"
         mc mb --ignore-existing local/gddocs-avatars && echo "[OK] bucket gddocs-avatars"
         mc mb --ignore-existing local/gddocs-copilot && echo "[OK] bucket gddocs-copilot"
