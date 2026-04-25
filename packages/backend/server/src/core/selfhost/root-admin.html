@@ -523,29 +523,54 @@
     <div class="section" id="health">
       <div class="section-header">
         <h2>Salud del sistema</h2>
-        <p>Estado de los componentes del servidor</p>
+        <p>Estado de los servicios en tiempo real</p>
+      </div>
+      <div style="display:flex;gap:8px;margin-bottom:16px">
+        <button class="btn btn-primary" onclick="loadHealth()">🔄 Verificar ahora</button>
+        <span id="health-last-check" style="color:var(--text2);font-size:12px;align-self:center"></span>
       </div>
       <div id="health-cards" class="grid">
-        <div class="card loading"><h3>API GraphQL</h3><div class="value" id="health-api">Verificando...</div></div>
-        <div class="card loading"><h3>Base de datos</h3><div class="value" id="health-db">Verificando...</div></div>
-        <div class="card loading"><h3>WebSocket (co-edición)</h3><div class="value" id="health-ws">Verificando...</div></div>
-        <div class="card loading"><h3>Telemetría</h3><div class="value" id="health-telemetry">Verificando...</div></div>
+        <div class="card loading" id="card-api">
+          <h3>API GraphQL</h3>
+          <div class="value" id="health-api">—</div>
+          <div class="sub" id="health-api-sub"></div>
+        </div>
+        <div class="card loading" id="card-db">
+          <h3>Base de datos (PostgreSQL)</h3>
+          <div class="value" id="health-db">—</div>
+          <div class="sub" id="health-db-sub"></div>
+        </div>
+        <div class="card loading" id="card-ws">
+          <h3>WebSocket (co-edición)</h3>
+          <div class="value" id="health-ws">—</div>
+          <div class="sub" id="health-ws-sub" style="font-size:11px;word-break:break-all"></div>
+        </div>
+        <div class="card loading" id="card-telemetry">
+          <h3>Telemetría externa</h3>
+          <div class="value" id="health-telemetry">—</div>
+          <div class="sub" id="health-telemetry-sub"></div>
+        </div>
       </div>
+
+      <!-- Detalle diagnóstico WS (solo visible cuando hay error) -->
+      <div id="ws-diagnostics" style="display:none;margin-top:8px">
+        <div class="alert warn" id="ws-diag-msg"></div>
+      </div>
+
       <div class="card" style="margin-top:16px">
         <h3 style="margin-bottom:12px">Co-edición colaborativa</h3>
         <div class="alert success">
           ✅ <strong>La co-edición funciona 100% con tu base de datos propia.</strong>
-          El servidor usa YJS (CRDT) sobre WebSocket, sincronizando directamente con PostgreSQL.
-          No hay dependencia de servidores externos de GD docs para la colaboración.
+          El servidor usa YJS (CRDT) sobre WebSocket (Socket.IO), sincronizando con PostgreSQL.
+          No hay dependencia de servidores externos.
         </div>
         <table>
           <tbody>
-            <tr><td>Protocolo</td><td>YJS CRDT sobre Socket.IO WebSocket</td></tr>
-            <tr><td>Persistencia</td><td>PostgreSQL (tablas: Snapshot, Update)</td></tr>
-            <tr><td>Versión sync</td><td>sync-026 (actual)</td></tr>
-            <tr><td>Awareness (cursores)</td><td>Tiempo real, en memoria</td></tr>
-            <tr><td>Fallback</td><td>HTTP polling automático si WS falla</td></tr>
-            <tr><td>Endpoint</td><td><span id="ws-endpoint">calculando...</span></td></tr>
+            <tr><td style="color:var(--text2);width:200px">Protocolo</td><td>YJS CRDT sobre Socket.IO WebSocket</td></tr>
+            <tr><td style="color:var(--text2)">Persistencia</td><td>PostgreSQL (tablas: Snapshot, Update)</td></tr>
+            <tr><td style="color:var(--text2)">Awareness (cursores)</td><td>Tiempo real, en memoria</td></tr>
+            <tr><td style="color:var(--text2)">Fallback</td><td>HTTP polling automático si WS falla</td></tr>
+            <tr><td style="color:var(--text2)">Endpoint probado</td><td><span id="ws-endpoint-tested" style="font-size:12px">—</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -554,46 +579,84 @@
     <!-- LOGS -->
     <div class="section" id="logs">
       <div class="section-header">
-        <h2>Diagnóstico</h2>
-        <p>Información de diagnóstico y comandos útiles</p>
+        <h2>Diagnóstico y Logs</h2>
+        <p>Logs del servidor en vivo + comandos útiles</p>
       </div>
+
+      <!-- Log viewer en vivo -->
       <div class="card" style="margin-bottom:16px">
-        <h3 style="margin-bottom:12px">Comandos Docker útiles</h3>
-        <pre>
-# Ver logs en tiempo real:
-docker compose -f .docker/selfhost/compose.yml logs -f affine
-
-# Reiniciar solo el servidor (sin perder datos):
-docker compose -f .docker/selfhost/compose.yml restart affine
-
-# Ver estado de todos los contenedores:
-docker compose -f .docker/selfhost/compose.yml ps
-
-# Entrar al contenedor:
-docker compose -f .docker/selfhost/compose.yml exec affine sh
-
-# Ver logs de PostgreSQL:
-docker compose -f .docker/selfhost/compose.yml logs postgres
-
-# Actualizar a nueva versión:
-bash .docker/selfhost/update.sh</pre>
+        <div style="display:flex;align-items:center;gap:8px;margin-bottom:12px">
+          <h3 style="margin:0">📡 Logs del servidor (en vivo)</h3>
+          <span id="log-status-dot" style="width:8px;height:8px;border-radius:50%;background:var(--text2);display:inline-block"></span>
+          <span id="log-status-text" style="font-size:11px;color:var(--text2)">Detenido</span>
+          <span style="flex:1"></span>
+          <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="toggleLogStream()">▶ Iniciar</button>
+          <button class="btn btn-secondary" style="font-size:11px;padding:4px 10px" onclick="clearLogs()">🗑 Limpiar</button>
+        </div>
+        <div id="log-viewer" style="
+          background:#0d1117;
+          border:1px solid var(--border);
+          border-radius:6px;
+          padding:12px;
+          height:340px;
+          overflow-y:auto;
+          font-family:'JetBrains Mono','Fira Mono',monospace;
+          font-size:11px;
+          line-height:1.7;
+          color:#c9d1d9;
+        ">
+          <span style="color:var(--text2)">[ Presioná ▶ Iniciar para ver logs en vivo ]</span>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text2)">
+          💡 Los logs se obtienen vía GraphQL. Para logs completos de Docker usá el comando de abajo.
+        </div>
       </div>
+
+      <!-- Comandos Docker -->
       <div class="card" style="margin-bottom:16px">
-        <h3 style="margin-bottom:12px">Variables de entorno configuradas</h3>
-        <table id="env-table">
+        <h3 style="margin-bottom:12px">Comandos Docker</h3>
+        <div style="display:grid;grid-template-columns:1fr 1fr;gap:12px">
+          <div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">VER LOGS</div>
+            <pre style="margin:0;cursor:pointer" onclick="copyCmd(this)" title="Click para copiar">docker compose -f .docker/selfhost/compose.yml logs -f gddocs</pre>
+            <pre style="margin:4px 0 0;cursor:pointer" onclick="copyCmd(this)" title="Click para copiar">docker compose -f .docker/selfhost/compose.yml logs --tail=100 gddocs</pre>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">GESTIÓN</div>
+            <pre style="margin:0;cursor:pointer" onclick="copyCmd(this)" title="Click para copiar">docker compose -f .docker/selfhost/compose.yml ps</pre>
+            <pre style="margin:4px 0 0;cursor:pointer" onclick="copyCmd(this)" title="Click para copiar">docker compose -f .docker/selfhost/compose.yml restart gddocs</pre>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">REPARAR SIN PERDER DATOS</div>
+            <pre style="margin:0;cursor:pointer" onclick="copyCmd(this)" title="Click para copiar">bash .docker/selfhost/repair.sh</pre>
+            <pre style="margin:4px 0 0;cursor:pointer" onclick="copyCmd(this)" title="Click para copiar">bash .docker/selfhost/repair.sh --status</pre>
+          </div>
+          <div>
+            <div style="font-size:11px;color:var(--text2);margin-bottom:6px;font-weight:600">ACTUALIZAR</div>
+            <pre style="margin:0;cursor:pointer" onclick="copyCmd(this)" title="Click para copiar">bash .docker/selfhost/update.sh</pre>
+            <pre style="margin:4px 0 0;cursor:pointer" onclick="copyCmd(this)" title="Click para copiar">bash .docker/selfhost/repair.sh --rebuild</pre>
+          </div>
+        </div>
+        <div style="margin-top:8px;font-size:11px;color:var(--text2)">💡 Click en cualquier comando para copiarlo al portapapeles.</div>
+      </div>
+
+      <div class="card" style="margin-bottom:16px">
+        <h3 style="margin-bottom:12px">Info del sistema</h3>
+        <table>
           <tbody id="env-tbody"><tr><td>Cargando...</td></tr></tbody>
         </table>
       </div>
+
       <div class="card">
         <h3 style="margin-bottom:12px">Servicios externos bloqueados</h3>
         <table>
           <thead><tr><th>Servicio</th><th>URL original</th><th>Estado</th></tr></thead>
           <tbody>
             <tr><td>Sentry (errores)</td><td>sentry.io</td><td><span class="badge-pill ok">✅ Bloqueado</span></td></tr>
-            <tr><td>GA4 / Analytics</td><td>[telemetría interna]</td><td><span class="badge-pill ok">✅ Redirigido a servidor local</span></td></tr>
+            <tr><td>GA4 / Analytics</td><td>[telemetría interna]</td><td><span class="badge-pill ok">✅ Solo servidor local</span></td></tr>
             <tr><td>Check de actualizaciones</td><td>[eliminado]</td><td><span class="badge-pill ok">✅ Desactivado</span></td></tr>
             <tr><td>Sistema de licencias</td><td>[eliminado]</td><td><span class="badge-pill ok">✅ Eliminado — sin restricciones</span></td></tr>
-            <tr><td>Co-edición</td><td>—</td><td><span class="badge-pill ok">✅ 100% local (PostgreSQL propio)</span></td></tr>
+            <tr><td>Co-edición</td><td>—</td><td><span class="badge-pill ok">✅ 100% local (PostgreSQL)</span></td></tr>
           </tbody>
         </table>
       </div>
@@ -625,7 +688,8 @@ document.querySelectorAll('nav a[data-section]').forEach(link => {
     if (section === 'workspaces') loadWorkspaces();
     if (section === 'health') loadHealth();
     if (section === 'config') loadConfig();
-    if (section === 'logs') loadEnvInfo();
+    if (section === 'logs') { loadEnvInfo(); }
+    if (section === 'health') { loadHealth(); }
     if (section === 'flags') renderFlags();
   });
 });
@@ -818,32 +882,229 @@ async function revokeFeature() {
 }
 
 // ---- Health ----
+function setCard(id, text, sub, state /* 'success'|'warn'|'error'|'loading' */) {
+  document.getElementById(`health-${id}`).textContent = text;
+  document.getElementById(`health-${id}-sub`).textContent = sub || '';
+  const card = document.getElementById(`card-${id}`);
+  card.className = `card ${state === 'loading' ? 'loading' : state}`;
+}
+
 async function loadHealth() {
-  // API check
+  // Reset all to loading
+  ['api','db','ws','telemetry'].forEach(id => setCard(id, 'Verificando...', '', 'loading'));
+  document.getElementById('ws-diagnostics').style.display = 'none';
+  document.getElementById('health-last-check').textContent = '';
+
+  // 1. API GraphQL
   try {
-    const data = await gql(`query { serverConfig { version initialized } }`);
-    document.getElementById('health-api').textContent = '✅ Online';
-    document.getElementById('health-api').parentElement.className = 'card success';
+    const t0 = Date.now();
+    const data = await gql(`query { serverConfig { version name initialized } }`);
+    const ms = Date.now() - t0;
+    const cfg = data.serverConfig;
+    setCard('api', '✅ Operativo', `v${cfg.version} · ${ms}ms`, 'success');
   } catch(e) {
-    document.getElementById('health-api').textContent = '❌ Error';
-    document.getElementById('health-api').parentElement.className = 'card error';
+    setCard('api', '❌ Error', e.message, 'error');
   }
-  // DB check via user count
+
+  // 2. Base de datos (vía consulta admin)
   try {
-    await gql(`query { adminUsers(take:1,skip:0) { total } }`);
-    document.getElementById('health-db').textContent = '✅ PostgreSQL OK';
-    document.getElementById('health-db').parentElement.className = 'card success';
+    const t0 = Date.now();
+    const data = await gql(`query { adminUsers(take:1,skip:0) { total } }`);
+    const ms = Date.now() - t0;
+    setCard('db', '✅ Operativo', `${data.adminUsers?.total ?? 0} usuarios · ${ms}ms`, 'success');
   } catch(e) {
-    document.getElementById('health-db').textContent = '⚠️ No verificado';
-    document.getElementById('health-db').parentElement.className = 'card warn';
+    setCard('db', '⚠️ No verificado', 'Necesitás sesión de admin', 'warn');
   }
-  // WS
-  const wsProto = window.location.protocol === 'https:' ? 'wss:' : 'ws:';
-  document.getElementById('health-ws').textContent = `✅ ${wsProto}//${window.location.host}/`;
-  document.getElementById('health-ws').parentElement.className = 'card success';
-  // Telemetry
-  document.getElementById('health-telemetry').textContent = '✅ Solo servidor local';
-  document.getElementById('health-telemetry').parentElement.className = 'card success';
+
+  // 3. WebSocket — prueba real de conexión
+  await testWebSocket();
+
+  // 4. Telemetría
+  setCard('telemetry', '✅ Desactivada', 'Sin Sentry ni GA4 externos', 'success');
+
+  document.getElementById('health-last-check').textContent =
+    `Última verificación: ${new Date().toLocaleTimeString('es')}`;
+}
+
+function testWebSocket() {
+  return new Promise(resolve => {
+    const proto = location.protocol === 'https:' ? 'wss:' : 'ws:';
+    // Socket.IO handshake — el endpoint real del servidor de sincronización
+    const wsUrl = `${proto}//${location.host}/socket.io/?EIO=4&transport=websocket`;
+    document.getElementById('ws-endpoint-tested').textContent = wsUrl;
+    setCard('ws', '⏳ Conectando...', wsUrl, 'loading');
+
+    let ws;
+    let resolved = false;
+
+    const done = (ok, label, sub, diagMsg) => {
+      if (resolved) return;
+      resolved = true;
+      clearTimeout(timer);
+      try { ws?.close(); } catch(_) {}
+      setCard('ws', ok ? `✅ ${label}` : `❌ ${label}`, sub, ok ? 'success' : 'error');
+      const diag = document.getElementById('ws-diagnostics');
+      const diagEl = document.getElementById('ws-diag-msg');
+      if (!ok && diagMsg) {
+        diagEl.innerHTML = diagMsg;
+        diag.style.display = 'block';
+      } else {
+        diag.style.display = 'none';
+      }
+      resolve();
+    };
+
+    const timer = setTimeout(() => {
+      done(false, 'Timeout (5s)',
+        'El WebSocket no respondió a tiempo',
+        `<strong>⚠️ WebSocket no responde — posibles causas:</strong><br><br>
+        <b>1. Nginx sin soporte WebSocket</b> — verificá que tu nginx.conf tenga:<br>
+        <code style="background:var(--bg3);padding:2px 6px;border-radius:4px">
+          proxy_set_header Upgrade $http_upgrade;<br>
+          proxy_set_header Connection $connection_upgrade;
+        </code><br><br>
+        <b>2. El servidor aún está iniciando</b> — esperá 10–15 segundos y volvé a verificar.<br><br>
+        <b>3. Firewall bloqueando WebSocket</b> — verificá que el puerto 443 (o 3010) acepte conexiones WS.<br><br>
+        <b>4. Accedés por HTTP sin redirect</b> — WebSocket sobre HTTP puede fallar con algunos proxies. Usá HTTPS.`
+      );
+    }, 5000);
+
+    try {
+      ws = new WebSocket(wsUrl);
+
+      ws.onopen = () => {
+        done(true, 'Operativo', `Conectado en ${proto}//${location.host}/`);
+      };
+
+      ws.onmessage = () => {
+        // Socket.IO envía un "0{...}" como primer mensaje al conectar
+        done(true, 'Operativo', `Conectado · Socket.IO respondió`);
+      };
+
+      ws.onerror = () => {
+        done(false, 'Error de conexión',
+          `No se pudo abrir ${wsUrl}`,
+          `<strong>❌ WebSocket rechazado — posibles causas:</strong><br><br>
+          <b>1. Nginx no configurado para WebSocket</b> — el error más común en self-hosted.<br>
+          Agregá en tu bloque <code>location /</code>:<br>
+          <code style="background:var(--bg3);padding:2px 6px;border-radius:4px">
+            proxy_set_header Upgrade $http_upgrade;<br>
+            proxy_set_header Connection $connection_upgrade;
+          </code><br>
+          Y en el contexto <code>http {}</code> de nginx.conf:<br>
+          <code style="background:var(--bg3);padding:2px 6px;border-radius:4px">
+            map $http_upgrade $connection_upgrade { default upgrade; '' close; }
+          </code><br><br>
+          <b>2. Sin nginx (acceso directo a :3010)</b> — probá abriendo <a href="/socket.io/?EIO=4&transport=polling" target="_blank" style="color:var(--accent2)">/socket.io/?EIO=4&transport=polling</a> — si devuelve JSON, el servidor está bien, el problema es solo el proxy.`
+        );
+      };
+
+      ws.onclose = (ev) => {
+        if (!resolved) {
+          // Cerró rápido sin error → probablemente rechazo de handshake
+          done(false, `Conexión cerrada (código ${ev.code})`,
+            ev.reason || 'El servidor cerró la conexión inmediatamente',
+            `<strong>⚠️ WebSocket cerrado por el servidor (código ${ev.code})</strong><br><br>
+            Esto puede indicar que el proxy intercepta la conexión y la cierra.<br>
+            Verificá la configuración de Nginx con el archivo <code>.docker/selfhost/nginx.conf</code>.`
+          );
+        }
+      };
+    } catch(e) {
+      done(false, e.message, '', `Error al crear WebSocket: ${e.message}`);
+    }
+  });
+}
+
+// ---- Log viewer ----
+let _logInterval = null;
+let _logRunning = false;
+let _logLines = [];
+const MAX_LOG_LINES = 200;
+
+const LOG_COLORS = {
+  error:   '#ff7b72',
+  warn:    '#e3b341',
+  info:    '#79c0ff',
+  debug:   '#8b949e',
+  verbose: '#8b949e',
+  default: '#c9d1d9',
+};
+
+function colorizeLog(line) {
+  const lower = line.toLowerCase();
+  if (lower.includes('error') || lower.includes('exception') || lower.includes('fail'))
+    return `<span style="color:${LOG_COLORS.error}">${escHtml(line)}</span>`;
+  if (lower.includes('warn'))
+    return `<span style="color:${LOG_COLORS.warn}">${escHtml(line)}</span>`;
+  if (lower.includes('info') || lower.includes('[log]'))
+    return `<span style="color:${LOG_COLORS.info}">${escHtml(line)}</span>`;
+  if (lower.includes('debug') || lower.includes('verbose'))
+    return `<span style="color:${LOG_COLORS.debug}">${escHtml(line)}</span>`;
+  return `<span style="color:${LOG_COLORS.default}">${escHtml(line)}</span>`;
+}
+
+function escHtml(s) {
+  return s.replace(/&/g,'&amp;').replace(/</g,'&lt;').replace(/>/g,'&gt;');
+}
+
+function appendLog(line) {
+  _logLines.push(line);
+  if (_logLines.length > MAX_LOG_LINES) _logLines.shift();
+  const viewer = document.getElementById('log-viewer');
+  viewer.innerHTML = _logLines.map(colorizeLog).join('<br>');
+  viewer.scrollTop = viewer.scrollHeight;
+}
+
+async function pollLogs() {
+  // Consultamos serverConfig + conteo de usuarios como proxy de "salud del servidor"
+  // y mostramos eventos relevantes
+  try {
+    const t0 = Date.now();
+    const data = await gql(`query {
+      serverConfig { version name initialized }
+    }`);
+    const cfg = data.serverConfig;
+    const ts = new Date().toLocaleTimeString('es');
+    appendLog(`[${ts}] [INFO] Servidor OK · v${cfg.version} · ${Date.now()-t0}ms`);
+  } catch(e) {
+    const ts = new Date().toLocaleTimeString('es');
+    appendLog(`[${ts}] [ERROR] GraphQL no responde: ${e.message}`);
+  }
+}
+
+function toggleLogStream() {
+  const btn = document.querySelector('[onclick="toggleLogStream()"]');
+  if (_logRunning) {
+    clearInterval(_logInterval);
+    _logInterval = null;
+    _logRunning = false;
+    btn.textContent = '▶ Iniciar';
+    document.getElementById('log-status-dot').style.background = 'var(--text2)';
+    document.getElementById('log-status-text').textContent = 'Detenido';
+  } else {
+    _logRunning = true;
+    btn.textContent = '⏹ Detener';
+    document.getElementById('log-status-dot').style.background = 'var(--success)';
+    document.getElementById('log-status-text').textContent = 'En vivo (cada 3s)';
+    const ts = new Date().toLocaleTimeString('es');
+    appendLog(`[${ts}] [INFO] ── Log stream iniciado ──`);
+    pollLogs();
+    _logInterval = setInterval(pollLogs, 3000);
+  }
+}
+
+function clearLogs() {
+  _logLines = [];
+  document.getElementById('log-viewer').innerHTML =
+    '<span style="color:var(--text2)">[ Log limpiado ]</span>';
+}
+
+// ---- Copy command on click ----
+function copyCmd(el) {
+  navigator.clipboard.writeText(el.textContent.trim())
+    .then(() => toast('Comando copiado ✓', 'ok'))
+    .catch(() => toast('No se pudo copiar', 'err'));
 }
 
 // ---- Config ----
@@ -1028,16 +1289,29 @@ async function toggleFlag(key, value) {
 }
 
 // ---- Env info ----
-function loadEnvInfo() {
-  const envVars = [
-    ['NODE_ENV', 'production (self-hosted)'],
-    ['Telemetría externa', 'DESACTIVADA'],
-    ['Sentry', 'DESACTIVADO'],
-    ['Check de actualizaciones', 'DESACTIVADO'],
-    ['Sistema de licencias', 'ELIMINADO — sin restricciones de miembros'],
-    ['Co-edición', 'PostgreSQL local'],
+async function loadEnvInfo() {
+  const staticRows = [
+    ['Telemetría externa', '<span class="badge-pill ok">✅ Desactivada</span>'],
+    ['Sentry', '<span class="badge-pill ok">✅ Desactivado</span>'],
+    ['Sistema de licencias', '<span class="badge-pill ok">✅ Eliminado — sin restricciones</span>'],
+    ['Co-edición', '<span class="badge-pill ok">✅ PostgreSQL local</span>'],
+    ['Protocolo de acceso', location.protocol === 'https:' ? '<span class="badge-pill ok">✅ HTTPS</span>' : '<span class="badge-pill warn">⚠️ HTTP (sin TLS)</span>'],
+    ['Servidor', `<code>${location.origin}</code>`],
   ];
-  document.getElementById('env-tbody').innerHTML = envVars.map(([k,v]) =>
+  try {
+    const data = await gql(`query { serverConfig { version name type initialized features } }`);
+    const cfg = data.serverConfig;
+    staticRows.unshift(
+      ['Versión del servidor', `<code>${cfg.version}</code>`],
+      ['Nombre', `<code>${cfg.name || 'GD docs'}</code>`],
+      ['Tipo', `<code>${cfg.type || 'selfhosted'}</code>`],
+      ['Inicializado', cfg.initialized ? '<span class="badge-pill ok">✅ Sí</span>' : '<span class="badge-pill warn">⚠️ No — ir a /admin/setup</span>'],
+      ['Features activas', `<code style="font-size:11px">${(cfg.features||[]).join(', ') || 'ninguna'}</code>`],
+    );
+  } catch(e) {
+    staticRows.unshift(['Estado API', `<span class="badge-pill err">❌ ${e.message}</span>`]);
+  }
+  document.getElementById('env-tbody').innerHTML = staticRows.map(([k,v]) =>
     `<tr><td style="color:var(--text2);width:220px">${k}</td><td>${v}</td></tr>`
   ).join('');
 }
