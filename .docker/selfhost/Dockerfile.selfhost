@@ -31,7 +31,6 @@ ENV HUSKY=0 \
     BUILD_TYPE=stable \
     NODE_OPTIONS="--max-old-space-size=8192" \
     NPM_TOKEN=NONE \
-    SENTRY_AUTH_TOKEN="" \
     PERFSEE_TOKEN="" \
     GITHUB_SHA=selfhosted
 

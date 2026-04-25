@@ -7,7 +7,6 @@ import { Package } from '@affine-tools/utils/workspace';
 import rspack, {
   type Configuration as RspackConfiguration,
 } from '@rspack/core';
-import type { sentryWebpackPlugin as SentryWebpackPluginFactory } from '@sentry/webpack-plugin';
 import { VanillaExtractPlugin } from '@vanilla-extract/webpack-plugin';
 import cssnano from 'cssnano';
 import { compact, merge } from 'lodash-es';
@@ -22,36 +21,6 @@ import {
 const require = createRequire(import.meta.url);
 
 const IN_CI = !!process.env.CI;
-const hasSentryBuildEnvs = () =>
-  !!(
-    process.env.SENTRY_AUTH_TOKEN &&
-    process.env.SENTRY_ORG &&
-    process.env.SENTRY_PROJECT
-  );
-
-function createSentryPlugin() {
-  if (!hasSentryBuildEnvs()) {
-    return null;
-  }
-
-  try {
-    const { sentryWebpackPlugin } = require('@sentry/webpack-plugin') as {
-      sentryWebpackPlugin: typeof SentryWebpackPluginFactory;
-    };
-
-    return sentryWebpackPlugin({
-      org: process.env.SENTRY_ORG!,
-      project: process.env.SENTRY_PROJECT!,
-      authToken: process.env.SENTRY_AUTH_TOKEN!,
-    });
-  } catch (error) {
-    const reason =
-      error instanceof Error ? error.message : 'unknown load error';
-    throw new Error(
-      `Failed to load @sentry/webpack-plugin while SENTRY_* envs are set: ${reason}`
-    );
-  }
-}
 
 const availableChannels = ['canary', 'beta', 'stable', 'internal'];
 function getBuildConfigFromEnv(pkg: Package) {
@@ -328,7 +297,6 @@ export function createHTMLTargetConfig(
             },
           ],
         }),
-      createSentryPlugin(),
       // sourcemap url like # sourceMappingURL=76-6370cd185962bc89.js.map wont load in electron
       // this is because the default file:// protocol will be ignored by Chromium
       // so we need to replace the sourceMappingURL to assets:// protocol
@@ -511,7 +479,6 @@ export function createWorkerTargetConfig(
         )
       ),
       new rspack.optimize.LimitChunkCountPlugin({ maxChunks: 1 }),
-      createSentryPlugin(),
     ]),
     stats: { errorDetails: true },
     optimization: {
