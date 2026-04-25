@@ -227,7 +227,7 @@ echo "║  Esto tarda 5-15 minutos (usa cache de capas).         ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
-docker build \
+DOCKER_BUILDKIT=1 docker build \
   -f "$SCRIPT_DIR/Dockerfile.selfhost" \
   -t "$IMAGE_NAME" \
   "$REPO_ROOT"

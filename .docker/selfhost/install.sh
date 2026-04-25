@@ -248,7 +248,7 @@ echo "╚═══════════════════════�
 echo ""
 info "Ejecutando: docker build -t ${IMAGE_NAME} ..."
 
-docker build \
+DOCKER_BUILDKIT=1 docker build \
   -f "$SCRIPT_DIR/Dockerfile.selfhost" \
   -t "$IMAGE_NAME" \
   "$REPO_ROOT"
