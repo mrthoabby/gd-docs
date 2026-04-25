@@ -35,6 +35,18 @@ export interface S3StorageConfig {
   usePresignedURL?: {
     enabled: boolean;
   };
+  /**
+   * When true, the server proxies all uploads through itself instead of
+   * returning presigned S3/MinIO URLs to the client.
+   *
+   * Set this to true for self-hosted deployments where MinIO (or S3) is
+   * NOT directly reachable by browsers (i.e. only accessible on the
+   * internal Docker network).  Uploads use the standard GraphQL mutation
+   * and the server streams the data to MinIO on behalf of the client.
+   *
+   * Reads are always proxied server-side regardless of this flag.
+   */
+  disablePresign?: boolean;
 }
 
 function resolveEndpoint(config: S3StorageConfig) {
@@ -51,12 +63,13 @@ export class S3StorageProvider implements StorageProvider {
   protected logger: Logger;
   protected client: S3CompatClient;
   private readonly usePresignedURL: boolean;
+  private readonly disablePresign: boolean;
 
   constructor(
     config: S3StorageConfig,
     public readonly bucket: string
   ) {
-    const { usePresignedURL, presign, credentials, ...clientConfig } = config;
+    const { usePresignedURL, presign, credentials, disablePresign, ...clientConfig } = config;
 
     const compatConfig: S3CompatConfig = {
       ...clientConfig,
@@ -71,6 +84,7 @@ export class S3StorageProvider implements StorageProvider {
 
     this.client = createS3CompatClient(compatConfig, credentials);
     this.usePresignedURL = usePresignedURL?.enabled ?? false;
+    this.disablePresign = disablePresign ?? false;
     this.logger = new Logger(`${S3StorageProvider.name}:${bucket}`);
   }
 
@@ -106,6 +120,9 @@ export class S3StorageProvider implements StorageProvider {
     key: string,
     metadata: PutObjectMetadata = {}
   ): Promise<PresignedUpload | undefined> {
+    // disablePresign=true → uploads go through the GD docs server (GRAPHQL method)
+    // instead of directing the browser to MinIO directly (internal URL unreachable)
+    if (this.disablePresign) return undefined;
     try {
       const contentType = metadata.contentType ?? 'application/octet-stream';
       const result = await this.client.presignPutObject(key, { contentType });
@@ -131,6 +148,7 @@ export class S3StorageProvider implements StorageProvider {
     key: string,
     metadata: PutObjectMetadata = {}
   ): Promise<MultipartUploadInit | undefined> {
+    if (this.disablePresign) return undefined;
     try {
       const contentType = metadata.contentType ?? 'application/octet-stream';
       const response = await this.client.createMultipartUpload(key, {
@@ -162,6 +180,7 @@ export class S3StorageProvider implements StorageProvider {
     uploadId: string,
     partNumber: number
   ): Promise<PresignedUpload | undefined> {
+    if (this.disablePresign) return undefined;
     try {
       const result = await this.client.presignUploadPart(
         key,
