@@ -240,17 +240,11 @@ echo ""
 
 # ---------- 6. Migraciones + reinicio ----------
 info "Corriendo migraciones y reiniciando servicios..."
-docker compose -f "$SCRIPT_DIR/compose.yml" --env-file "$ENV_FILE" up -d --force-recreate
-
-# Esperar que la migración termine antes de reportar éxito
-info "Verificando migraciones..."
-sleep 5
-MIGRATION_EXIT=$(docker inspect gddocs_migration --format='{{.State.ExitCode}}' 2>/dev/null || echo "0")
-if [[ "$MIGRATION_EXIT" == "0" ]]; then
-  success "Migraciones completadas correctamente."
-else
-  error "La migración falló (exit code: $MIGRATION_EXIT). Revisá los logs:\n  docker logs gddocs_migration"
-fi
+# --wait bloquea hasta que todos los healthchecks pasen (postgres, redis,
+# minio, gddocs) y las migraciones terminen (gddocs_migration exit 0).
+# Si algún servicio falla, el comando devuelve error y el script se detiene.
+docker compose -f "$SCRIPT_DIR/compose.yml" --env-file "$ENV_FILE" up -d --force-recreate --wait
+success "Servicios activos y migraciones completadas."
 
 # ---------- Limpieza de imágenes antiguas del storage fs ----------
 # Antes de MinIO, GD docs guardaba blobs/avatares en disco en

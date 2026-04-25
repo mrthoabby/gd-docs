@@ -10,6 +10,10 @@
 # ============================================================
 set -euo pipefail
 
+# ── Tiempo de inicio ─────────────────────────────────────────
+START_TS=$(date +%s)
+START_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ENV_FILE="$SCRIPT_DIR/.env"
@@ -35,6 +39,7 @@ echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
 echo "║              GD docs — Instalador                       ║"
 echo "╚══════════════════════════════════════════════════════════╝"
+echo "  ⏱️  Inicio: ${START_TIME}"
 echo ""
 
 # ---------- Verificar e instalar dependencias ----------
@@ -233,8 +238,18 @@ docker image prune -f 2>/dev/null || true
 
 # ---------- Levantar servicios ----------
 echo ""
-info "Iniciando GD docs..."
-docker compose -f "$SCRIPT_DIR/compose.yml" --env-file "$ENV_FILE" up -d
+info "Iniciando GD docs (esperando que todos los servicios sean saludables)..."
+# --wait bloquea hasta que todos los healthchecks pasen y las
+# migraciones terminen. Si algo falla, el comando devuelve error
+# y el script se detiene con set -euo pipefail.
+docker compose -f "$SCRIPT_DIR/compose.yml" --env-file "$ENV_FILE" up -d --wait
+
+# ── Resumen final con tiempos ────────────────────────────────
+END_TS=$(date +%s)
+END_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+ELAPSED=$((END_TS - START_TS))
+ELAPSED_MIN=$((ELAPSED / 60))
+ELAPSED_SEC=$((ELAPSED % 60))
 
 echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
@@ -246,6 +261,10 @@ echo "  🪣  Consola MinIO:       http://localhost:9001"
 echo "       Usuario: ${MINIO_ROOT_USER:-gddocs}"
 echo ""
 echo "  El primer usuario que se registre queda como administrador."
+echo ""
+echo "  ⏱️  Inicio:      ${START_TIME}"
+echo "  ⏱️  Fin:         ${END_TIME}"
+printf "  ⏱️  Duración:    %dm %ds\n" "$ELAPSED_MIN" "$ELAPSED_SEC"
 echo ""
 echo "  ─────────────────────────────────────────────────────────"
 echo "  📋  Ver logs:      docker compose -f $SCRIPT_DIR/compose.yml logs -f"
