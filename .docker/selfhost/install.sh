@@ -102,12 +102,37 @@ generate_password() {
   fi
 }
 
+# ---------- Generar config JSON con credenciales sustituidas ----------
+generate_config() {
+  local config_dir="${1}"
+  local minio_user="${2}"
+  local minio_pass="${3}"
+  local src="$SCRIPT_DIR/config.selfhost.json"
+  local dst="${config_dir}/affine.config.json"
+
+  mkdir -p "${config_dir}"
+
+  if command -v envsubst &>/dev/null; then
+    MINIO_ROOT_USER="${minio_user}" MINIO_ROOT_PASSWORD="${minio_pass}" \
+      envsubst < "${src}" > "${dst}"
+  else
+    # Fallback: sed (siempre disponible en Linux)
+    sed \
+      -e "s|\${MINIO_ROOT_USER}|${minio_user}|g" \
+      -e "s|\${MINIO_ROOT_PASSWORD}|${minio_pass}|g" \
+      "${src}" > "${dst}"
+  fi
+}
+
 # ---------- Crear .env ----------
 if [[ -f "$ENV_FILE" ]]; then
   warn ".env ya existe — se conserva. Bórralo si quieres regenerarlo."
+  # Cargar variables para generar el config aunque el .env ya exista
+  set -a; source "$ENV_FILE"; set +a
 else
   info "Generando configuración..."
   DB_PASSWORD=$(generate_password)
+  MINIO_ROOT_PASSWORD=$(generate_password)
   cat > "$ENV_FILE" << EOF
 # GD docs — Configuración generada el $(date -u '+%Y-%m-%d %H:%M UTC')
 
@@ -115,7 +140,6 @@ PORT=${PORT}
 
 # Rutas de datos (cambiá si querés otra ubicación)
 DB_DATA_LOCATION=${DATA_ROOT}/postgres/pgdata
-UPLOAD_LOCATION=${DATA_ROOT}/storage
 CONFIG_LOCATION=${DATA_ROOT}/config
 ASSETS_LOCATION=${DATA_ROOT}/static
 
@@ -124,19 +148,37 @@ DB_USERNAME=gddocs
 DB_PASSWORD=${DB_PASSWORD}
 DB_DATABASE=gddocs
 
+# MinIO — almacenamiento de objetos (blobs, avatares, copilot)
+MINIO_ROOT_USER=gddocs
+MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+MINIO_DATA_LOCATION=${DATA_ROOT}/minio
+
 # Rendimiento
 NODE_OPTIONS=--max-old-space-size=4096
 EOF
   success ".env creado."
   echo ""
-  echo "  ⚠️  Guardá esta contraseña de BD: ${DB_PASSWORD}"
+  echo "  ⚠️  Guardá estas contraseñas en un lugar seguro:"
+  echo "       BD:     ${DB_PASSWORD}"
+  echo "       MinIO:  ${MINIO_ROOT_PASSWORD}"
   echo ""
+
+  # Cargar el .env recién creado
+  set -a; source "$ENV_FILE"; set +a
 fi
 
 # ---------- Crear directorios ----------
 info "Creando directorios de datos..."
-mkdir -p "${DATA_ROOT}"/{postgres/pgdata,storage,config,static/fonts,static/ppt-images/background}
+mkdir -p "${DATA_ROOT}"/{postgres/pgdata,config,static/fonts,static/ppt-images/background,minio}
 success "Directorios listos."
+
+# ---------- Generar affine.config.json con credenciales MinIO ----------
+info "Generando configuración con credenciales MinIO..."
+generate_config \
+  "${CONFIG_LOCATION:-${DATA_ROOT}/config}" \
+  "${MINIO_ROOT_USER:-gddocs}" \
+  "${MINIO_ROOT_PASSWORD}"
+success "Archivo de configuración generado: ${CONFIG_LOCATION:-${DATA_ROOT}/config}/affine.config.json"
 
 # ---------- Descargar assets estáticos ----------
 echo ""
@@ -178,6 +220,8 @@ echo "║              ✅  GD docs está corriendo                  ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 echo "  🌐  Abre en el browser:  http://localhost:${PORT}"
+echo "  🪣  Consola MinIO:       http://localhost:9001"
+echo "       Usuario: ${MINIO_ROOT_USER:-gddocs}"
 echo ""
 echo "  El primer usuario que se registre queda como administrador."
 echo ""

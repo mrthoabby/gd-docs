@@ -1,3 +1,8 @@
+// [SELFHOST PATCH] Modal de creación de workspace simplificado.
+// Se eliminó el selector de tipo (Local storage / AFFiNE SelfHosted Cloud)
+// porque en GD docs TODO se guarda en el servidor propio.
+// El workspace siempre se crea en el servidor self-hosted ('affine-cloud' id).
+
 import { Button, ConfirmModal, notify, RowInput } from '@affine/component';
 import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
 import {
@@ -18,7 +23,6 @@ import { FrameworkScope, useLiveData, useService } from '@toeverything/infra';
 import { useCallback, useState } from 'react';
 
 import * as styles from './index.css';
-import { ServerSelector } from './server-selector';
 
 const FormSection = ({
   label,
@@ -36,21 +40,16 @@ const FormSection = ({
 };
 
 export const CreateWorkspaceDialog = ({
-  serverId,
   close,
   ...props
 }: DialogComponentProps<GLOBAL_DIALOG_SCHEMA['create-workspace']>) => {
   const t = useI18n();
-
   const [workspaceName, setWorkspaceName] = useState('');
-  const [inputServerId, setInputServerId] = useState(
-    serverId ?? 'affine-cloud'
-  );
 
   const serversService = useService(ServersService);
-  const server = useLiveData(
-    inputServerId ? serversService.server$(inputServerId) : null
-  );
+  // Siempre usar el servidor self-hosted. En la arquitectura de AFFiNE,
+  // el servidor self-hosted se registra bajo el id 'affine-cloud'.
+  const server = useLiveData(serversService.server$('affine-cloud'));
 
   const onOpenChange = useCallback(
     (open: boolean) => {
@@ -100,17 +99,7 @@ export const CreateWorkspaceDialog = ({
           />
         }
       />
-
-      <FormSection
-        label={t['com.affine.nameWorkspace.subtitle.workspace-type']()}
-        input={
-          <ServerSelector
-            className={styles.select}
-            selectedId={inputServerId}
-            onChange={setInputServerId}
-          />
-        }
-      />
+      {/* Selector de tipo eliminado: siempre se usa el servidor GD docs */}
     </ConfirmModal>
   );
 };
@@ -139,16 +128,12 @@ const CustomConfirmButton = ({
   const handleConfirm = useAsyncCallback(async () => {
     if (loading) return;
     setLoading(true);
-    track.$.$.$.createWorkspace({
-      flavour: !server ? 'local' : 'affine-cloud',
-    });
+    track.$.$.$.createWorkspace({ flavour: 'affine-cloud' });
 
-    // this will be the last step for web for now
-    // fix me later
     try {
       const res = await buildShowcaseWorkspace(
         workspacesService,
-        server?.id ?? 'local',
+        server?.id ?? 'affine-cloud',
         workspaceName
       );
       onCreated(res);

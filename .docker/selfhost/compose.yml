@@ -12,9 +12,10 @@ services:
         condition: service_healthy
       gddocs_migration:
         condition: service_completed_successfully
+      minio-init:
+        condition: service_completed_successfully
     volumes:
-      # custom configurations
-      - ${UPLOAD_LOCATION}:/root/.affine/storage
+      # Configuración personalizada del servidor
       - ${CONFIG_LOCATION}:/root/.affine/config
       # [SELFHOST PATCH] Assets estáticos descargados localmente (sin CDN en runtime)
       # Fuentes del editor (Edgeless canvas, PDF export, Typst renderer)
@@ -33,8 +34,7 @@ services:
     image: gddocs:latest
     container_name: gddocs_migration
     volumes:
-      # custom configurations
-      - ${UPLOAD_LOCATION}:/root/.affine/storage
+      # Configuración personalizada del servidor
       - ${CONFIG_LOCATION}:/root/.affine/config
     command: ['sh', '-c', 'node ./scripts/self-host-predeploy.js']
     env_file:
@@ -48,6 +48,56 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
+      minio:
+        condition: service_healthy
+
+  # ── MinIO: almacenamiento de objetos compatible con S3 ─────────
+  # Reemplaza el almacenamiento en disco (fs) para blobs, avatares
+  # e imágenes del copilot. Mucho más eficiente en espacio y permite
+  # escalar horizontalmente sin tocar el filesystem del host.
+  minio:
+    image: minio/minio:latest
+    container_name: gddocs_minio
+    command: server /data --console-address ":9001"
+    environment:
+      MINIO_ROOT_USER: ${MINIO_ROOT_USER}
+      MINIO_ROOT_PASSWORD: ${MINIO_ROOT_PASSWORD}
+    volumes:
+      - ${MINIO_DATA_LOCATION:-~/.gddocs/minio}:/data
+    ports:
+      # Consola web de administración MinIO (opcional, útil para inspeccionar buckets)
+      - '9001:9001'
+      # Puerto S3 (no se expone al exterior — solo red interna Docker)
+    expose:
+      - '9000'
+    healthcheck:
+      test: ['CMD-SHELL', 'wget -q --spider http://localhost:9000/minio/health/live || exit 1']
+      interval: 10s
+      timeout: 5s
+      retries: 5
+      start_period: 30s
+    restart: unless-stopped
+
+  # ── minio-init: crea los buckets una sola vez al arrancar ──────
+  # Este contenedor termina (exit 0) cuando los buckets ya existen.
+  # gddocs y gddocs_migration esperan a que este servicio termine OK.
+  minio-init:
+    image: minio/mc:latest
+    container_name: gddocs_minio_init
+    depends_on:
+      minio:
+        condition: service_healthy
+    env_file:
+      - .env
+    entrypoint: ["/bin/sh", "-c"]
+    command:
+      - |
+        mc alias set local http://gddocs_minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" &&
+        mc mb --ignore-existing local/gddocs-blobs &&
+        mc mb --ignore-existing local/gddocs-avatars &&
+        mc mb --ignore-existing local/gddocs-copilot &&
+        echo "Buckets de MinIO listos."
+    restart: on-failure
 
   redis:
     image: redis

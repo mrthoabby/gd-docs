@@ -6,6 +6,9 @@
 #  para funcionar sin depender de cdn.affine.pro en runtime.
 #  Se monta como volumen en Docker: los archivos quedan en tu servidor.
 #
+#  También limpia archivos huérfanos: los que están en disco pero
+#  ya no pertenecen a la versión actual (de versiones anteriores).
+#
 #  Uso:
 #    bash download-assets.sh              # descarga en ruta por defecto
 #    bash download-assets.sh /ruta/propia # descarga en ruta personalizada
@@ -22,6 +25,9 @@ warn()    { echo -e "${YELLOW}[SKIP]${NC}  $*"; }
 fail()    { echo -e "${RED}[FAIL]${NC}  $*"; }
 
 # ---------- Fuentes del editor (canvas Edgeless, PDF, Typst) ----------
+# IMPORTANTE: esta lista es la fuente de verdad.
+# Cualquier archivo en fonts/ que NO esté aquí se considera huérfano
+# y será eliminado automáticamente.
 FONTS=(
   # Inter — fuente principal del editor
   "Inter-Regular.woff2"
@@ -64,6 +70,8 @@ FONTS=(
 )
 
 # ---------- Imágenes de fondo para presentaciones AI ----------
+# Igual que FONTS: cualquier .png en ppt-images/background/ que
+# no esté en esta lista se elimina.
 PPT_IMAGES=(
   "ppt-images/background/basic_2_selection_background.png"
   "ppt-images/background/basic_3_selection_background.png"
@@ -93,6 +101,47 @@ download_file() {
   fi
 }
 
+# ---------- Limpieza de archivos huérfanos ----------
+# Compara los archivos que hay en disco contra la lista esperada
+# y elimina los que ya no pertenecen a la versión actual.
+cleanup_orphans() {
+  local dir="$1"        # directorio a escanear (absoluto)
+  local -n expected="$2" # nameref al array con los nombres esperados (solo basename)
+  local ext_glob="$3"   # glob para escanear, ej: "*.woff2 *.woff *.ttf"
+
+  [[ -d "$dir" ]] || return 0
+
+  # Construir un set de nombres esperados para lookup O(1)
+  declare -A expected_set
+  for name in "${expected[@]}"; do
+    expected_set["$(basename "$name")"]=1
+  done
+
+  local orphans=()
+  while IFS= read -r -d '' file; do
+    local basename_file
+    basename_file="$(basename "$file")"
+    if [[ -z "${expected_set[$basename_file]+_}" ]]; then
+      orphans+=("$file")
+    fi
+  done < <(find "$dir" -maxdepth 1 -type f -print0 2>/dev/null)
+
+  if [[ "${#orphans[@]}" -eq 0 ]]; then
+    return 0
+  fi
+
+  echo ""
+  warn "Se encontraron ${#orphans[@]} archivo(s) huérfano(s) en $(basename "$dir")/ (de versiones anteriores):"
+  for f in "${orphans[@]}"; do
+    echo "    $(basename "$f")"
+  done
+  info "Eliminando archivos huérfanos..."
+  for f in "${orphans[@]}"; do
+    rm -f "$f"
+    success "Eliminado: $(basename "$f")"
+  done
+}
+
 # ---------- Main ----------
 echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
@@ -110,6 +159,9 @@ for font in "${FONTS[@]}"; do
   download_file "${CDN}/fonts/${font}" "${ASSETS_DIR}/fonts/${font}" || ((FAILED++))
 done
 
+# Limpiar fuentes huérfanas
+cleanup_orphans "${ASSETS_DIR}/fonts" FONTS "*.woff2 *.woff *.ttf"
+
 echo ""
 
 # Imágenes PPT
@@ -118,18 +170,17 @@ for img in "${PPT_IMAGES[@]}"; do
   download_file "${CDN}/${img}" "${ASSETS_DIR}/${img}" || ((FAILED++))
 done
 
+# Limpiar imágenes PPT huérfanas
+cleanup_orphans "${ASSETS_DIR}/ppt-images/background" PPT_IMAGES "*.png"
+
 echo ""
 if [[ "$FAILED" -eq 0 ]]; then
   echo "╔══════════════════════════════════════════════════════════╗"
-  echo "║      ✅  Assets descargados correctamente                ║"
+  echo "║      ✅  Assets sincronizados correctamente              ║"
   echo "╚══════════════════════════════════════════════════════════╝"
   echo ""
   echo "  📁  Fuentes en:    ${ASSETS_DIR}/fonts/"
   echo "  📁  Imágenes en:   ${ASSETS_DIR}/ppt-images/"
-  echo ""
-  echo "  Asegurate de que compose.yml tenga los volúmenes:"
-  echo "    - \${ASSETS_LOCATION}/fonts:/app/static/fonts:ro"
-  echo "    - \${ASSETS_LOCATION}/ppt-images:/app/static/ppt-images:ro"
   echo ""
 else
   warn "Completado con ${FAILED} error(es). Revisá tu conexión y volvé a ejecutar."

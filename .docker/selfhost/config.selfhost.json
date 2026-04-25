@@ -33,15 +33,47 @@
   },
 
   "storages": {
-    "avatar.storage": {
-      "provider": "fs",
-      "bucket": "avatars",
-      "config": { "path": "~/.affine/storage" }
-    },
     "blob.storage": {
-      "provider": "fs",
-      "bucket": "blobs",
-      "config": { "path": "~/.affine/storage" }
+      "provider": "aws-s3",
+      "bucket": "gddocs-blobs",
+      "config": {
+        "endpoint": "http://gddocs_minio:9000",
+        "region": "us-east-1",
+        "forcePathStyle": true,
+        "credentials": {
+          "accessKeyId": "${MINIO_ROOT_USER}",
+          "secretAccessKey": "${MINIO_ROOT_PASSWORD}"
+        }
+      }
+    },
+    "avatar.storage": {
+      "provider": "aws-s3",
+      "bucket": "gddocs-avatars",
+      "config": {
+        "endpoint": "http://gddocs_minio:9000",
+        "region": "us-east-1",
+        "forcePathStyle": true,
+        "credentials": {
+          "accessKeyId": "${MINIO_ROOT_USER}",
+          "secretAccessKey": "${MINIO_ROOT_PASSWORD}"
+        }
+      }
+    }
+  },
+
+  "copilot": {
+    "storage": {
+      "provider": "aws-s3",
+      "bucket": "gddocs-copilot",
+      "config": {
+        "endpoint": "http://gddocs_minio:9000",
+        "region": "us-east-1",
+        "forcePathStyle": true,
+        "credentials": {
+          "accessKeyId": "${MINIO_ROOT_USER}",
+          "secretAccessKey": "${MINIO_ROOT_PASSWORD}"
+        }
+      }
     }
   }
 }
