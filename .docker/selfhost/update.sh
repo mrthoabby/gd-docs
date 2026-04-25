@@ -3,13 +3,14 @@
 #  GD docs — Script de actualización
 #
 #  Qué hace:
-#    1. git pull (actualiza el código)
-#    2. Backup automático de la BD (por seguridad)
-#    3. Sincroniza assets estáticos (descarga nuevos, elimina huérfanos)
-#    4. Regenera affine.config.json con las credenciales del .env
-#    5. Reconstruye la imagen Docker desde el nuevo código
-#    6. Corre las migraciones de BD (automático via compose)
-#    7. Reinicia todos los servicios
+#    1. Verifica variables requeridas en .env (las pide si faltan)
+#    2. git pull (actualiza el código)
+#    3. Backup automático de la BD (borra el anterior, crea uno nuevo)
+#    4. Sincroniza assets estáticos (descarga nuevos, elimina huérfanos)
+#    5. Regenera affine.config.json con las credenciales del .env
+#    6. Reconstruye la imagen Docker desde el nuevo código
+#    7. Corre las migraciones de BD (automático via compose)
+#    8. Reinicia todos los servicios
 #
 #  Uso:
 #    bash update.sh
@@ -17,6 +18,10 @@
 #    bash update.sh --skip-pull     (no hacer git pull)
 # ============================================================
 set -euo pipefail
+
+# ── Tiempo de inicio ────────────────────────────────────────
+START_TS=$(date +%s)
+START_TIME=$(date '+%Y-%m-%d %H:%M:%S')
 
 SCRIPT_DIR="$(cd "$(dirname "${BASH_SOURCE[0]}")" && pwd)"
 REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
@@ -35,9 +40,9 @@ GIT_REMOTE_URL=""
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
-    --skip-backup) SKIP_BACKUP=true;       shift ;;
-    --skip-pull)   SKIP_PULL=true;         shift ;;
-    --remote)      GIT_REMOTE_URL="$2";    shift 2 ;;
+    --skip-backup) SKIP_BACKUP=true;    shift ;;
+    --skip-pull)   SKIP_PULL=true;      shift ;;
+    --remote)      GIT_REMOTE_URL="$2"; shift 2 ;;
     *) shift ;;
   esac
 done
@@ -51,6 +56,77 @@ echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
 echo "║              GD docs — Actualizador                     ║"
 echo "╚══════════════════════════════════════════════════════════╝"
+echo "  ⏱️  Inicio: ${START_TIME}"
+echo ""
+
+# ── Generador de contraseñas aleatorias ─────────────────────
+generate_password() {
+  if command -v openssl &>/dev/null; then
+    openssl rand -base64 32 | tr -d '=+/' | head -c 32
+  else
+    tr -dc 'a-zA-Z0-9' < /dev/urandom | fold -w 32 | head -n 1
+  fi
+}
+
+# ── Función: pedir variable si no está en .env ───────────────
+# Uso: require_env_var NOMBRE_VAR "Descripción" ["default_fijo"] [--generate]
+#   Si la variable ya existe en .env, no hace nada.
+#   Si falta:
+#     - Con --generate: propone una contraseña aleatoria y deja al usuario
+#       aceptarla (Enter) o escribir la suya.
+#     - Con default_fijo: propone ese valor como default.
+#     - Sin nada: pide el valor y no acepta vacío.
+require_env_var() {
+  local var_name="$1"
+  local prompt_msg="$2"
+  local default_val=""
+  local do_generate=false
+
+  # Parsear argumentos opcionales
+  shift 2
+  while [[ $# -gt 0 ]]; do
+    case "$1" in
+      --generate) do_generate=true; shift ;;
+      *) default_val="$1"; shift ;;
+    esac
+  done
+
+  # Evaluar el valor actual de la variable
+  local current_val="${!var_name:-}"
+  [[ -n "$current_val" ]] && return 0   # ya definida → OK
+
+  echo ""
+  warn "'${var_name}' no está definida en .env"
+
+  # Si pedimos generar, construimos el default aleatorio
+  if [[ "$do_generate" == true ]]; then
+    default_val="$(generate_password)"
+    echo "  🔑  Valor generado automáticamente: ${default_val}"
+  fi
+
+  local user_input=""
+  while [[ -z "$user_input" ]]; do
+    if [[ -n "$default_val" ]]; then
+      read -rp "  ${prompt_msg} [Enter para usar el valor generado]: " user_input </dev/tty
+      user_input="${user_input:-$default_val}"
+    else
+      read -rp "  ${prompt_msg}: " user_input </dev/tty
+    fi
+    [[ -z "$user_input" ]] && echo "  ⚠️  El valor no puede estar vacío. Intentá de nuevo."
+  done
+
+  # Guardar en .env y exportar
+  echo "${var_name}=${user_input}" >> "$ENV_FILE"
+  export "${var_name}=${user_input}"
+  success "'${var_name}' guardada en .env"
+}
+
+# ---------- Verificar variables requeridas ----------
+info "Verificando configuración..."
+require_env_var "MINIO_ROOT_USER"     "Usuario de MinIO (Enter para 'gddocs')"  "gddocs"
+require_env_var "MINIO_ROOT_PASSWORD" "Contraseña de MinIO"                     --generate
+require_env_var "MINIO_DATA_LOCATION" "Ruta de datos de MinIO"                  "${HOME}/.gddocs/minio"
+success "Configuración verificada."
 echo ""
 
 # ---------- 1. git pull ----------
@@ -73,10 +149,23 @@ if [[ "$SKIP_PULL" == false ]]; then
 fi
 
 # ---------- 2. Backup de BD ----------
+# Primero eliminamos todos los backups anteriores, luego creamos uno
+# fresco. Así siempre hay exactamente un backup: el recién hecho.
 BACKUP_DIR="${HOME}/.gddocs/backups"
+BACKUP_FILE=""
+
 if [[ "$SKIP_BACKUP" == false ]]; then
-  info "Haciendo backup de la base de datos antes de actualizar..."
   mkdir -p "$BACKUP_DIR"
+
+  # Borrar backups anteriores antes de crear el nuevo
+  OLD_BACKUPS=$(ls "$BACKUP_DIR"/*.sql.gz 2>/dev/null | wc -l)
+  if [[ "$OLD_BACKUPS" -gt 0 ]]; then
+    info "Eliminando ${OLD_BACKUPS} backup(s) anterior(es)..."
+    rm -f "$BACKUP_DIR"/*.sql.gz
+    success "Backups anteriores eliminados."
+  fi
+
+  info "Creando backup de la base de datos..."
   BACKUP_FILE="$BACKUP_DIR/gddocs_backup_$(date +%Y%m%d_%H%M%S).sql.gz"
 
   if docker ps --format '{{.Names}}' | grep -q "gddocs_postgres"; then
@@ -84,13 +173,11 @@ if [[ "$SKIP_BACKUP" == false ]]; then
       -U "${DB_USERNAME:-gddocs}" \
       "${DB_DATABASE:-gddocs}" \
       | gzip > "$BACKUP_FILE" \
-      && success "Backup guardado: $BACKUP_FILE" \
+      && success "Backup creado: $BACKUP_FILE" \
       || warn "Backup falló — continuando igual. Revisá manualmente."
-
-    # Mantener solo los últimos 5 backups
-    ls -t "$BACKUP_DIR"/*.sql.gz 2>/dev/null | tail -n +6 | xargs rm -f 2>/dev/null || true
   else
     warn "PostgreSQL no está corriendo — se omite el backup."
+    BACKUP_FILE=""
   fi
   echo ""
 fi
@@ -111,20 +198,15 @@ echo ""
 # ---------- 4. Regenerar affine.config.json ----------
 # El template puede haber cambiado con el git pull, y también
 # aseguramos que las credenciales MinIO del .env estén al día.
-info "Regenerando archivo de configuración con credenciales MinIO..."
+info "Regenerando configuración con credenciales MinIO..."
 
 CONFIG_DIR="${CONFIG_LOCATION:-${HOME}/.gddocs/config}"
 CONFIG_SRC="$SCRIPT_DIR/config.selfhost.json"
 CONFIG_DST="${CONFIG_DIR}/affine.config.json"
 mkdir -p "${CONFIG_DIR}"
 
-MINIO_USER="${MINIO_ROOT_USER:-gddocs}"
-MINIO_PASS="${MINIO_ROOT_PASSWORD:-}"
-
-if [[ -z "$MINIO_PASS" ]]; then
-  warn "MINIO_ROOT_PASSWORD no encontrada en .env — el config se generará con contraseña vacía."
-  warn "Verificá que tu .env tenga MINIO_ROOT_PASSWORD definida."
-fi
+MINIO_USER="${MINIO_ROOT_USER}"
+MINIO_PASS="${MINIO_ROOT_PASSWORD}"
 
 if command -v envsubst &>/dev/null; then
   MINIO_ROOT_USER="${MINIO_USER}" MINIO_ROOT_PASSWORD="${MINIO_PASS}" \
@@ -157,10 +239,6 @@ docker image prune -f 2>/dev/null || true
 echo ""
 
 # ---------- 6. Migraciones + reinicio ----------
-# El servicio gddocs_migration corre automáticamente antes que gddocs
-# gracias a la condición 'service_completed_successfully' en compose.yml.
-# docker compose up -d recrea los contenedores con la nueva imagen
-# y ejecuta las migraciones en el orden correcto.
 info "Corriendo migraciones y reiniciando servicios..."
 docker compose -f "$SCRIPT_DIR/compose.yml" --env-file "$ENV_FILE" up -d --force-recreate
 
@@ -174,48 +252,6 @@ else
   error "La migración falló (exit code: $MIGRATION_EXIT). Revisá los logs:\n  docker logs gddocs_migration"
 fi
 
-echo ""
-echo "╔══════════════════════════════════════════════════════════╗"
-echo "║              ✅  GD docs actualizado                     ║"
-echo "╚══════════════════════════════════════════════════════════╝"
-echo ""
-echo "  🌐  App:         http://localhost:${PORT:-3010}"
-echo "  🪣  MinIO:       http://localhost:9001"
-echo "  💾  Backups BD:  ${BACKUP_DIR}/"
-echo ""
-echo "  📋  Ver logs:    docker compose -f $SCRIPT_DIR/compose.yml logs -f"
-echo "  🛑  Detener:     docker compose -f $SCRIPT_DIR/compose.yml down"
-echo ""
-
-# ---------- Limpieza de backups de BD antiguos ----------
-BACKUP_COUNT=$(ls "$BACKUP_DIR"/*.sql.gz 2>/dev/null | wc -l)
-if [[ "$BACKUP_COUNT" -gt 0 ]]; then
-  BACKUP_SIZE=$(du -sh "$BACKUP_DIR" 2>/dev/null | cut -f1)
-  echo "┌──────────────────────────────────────────────────────────┐"
-  echo "│  🗑️  Limpieza de backups de base de datos               │"
-  echo "├──────────────────────────────────────────────────────────┤"
-  printf "│  Tenés %2d backup(s) de BD ocupando %s en disco.         \n" "$BACKUP_COUNT" "$BACKUP_SIZE"
-  echo "│                                                           │"
-  echo "│  ¿Querés borrar TODOS los backups anteriores para        │"
-  echo "│  liberar espacio? (el servidor ya está actualizado,      │"
-  echo "│  los backups viejos ya no son necesarios)                │"
-  echo "└──────────────────────────────────────────────────────────┘"
-  echo ""
-  read -rp "  Borrar todos los backups de BD? [s/N]: " CLEAN_ANSWER </dev/tty
-  echo ""
-  case "${CLEAN_ANSWER,,}" in
-    s|si|sí|y|yes)
-      info "Borrando todos los backups en ${BACKUP_DIR}/ ..."
-      rm -f "$BACKUP_DIR"/*.sql.gz
-      success "Backups de BD eliminados. Espacio liberado."
-      ;;
-    *)
-      info "Backups de BD conservados en: ${BACKUP_DIR}/"
-      ;;
-  esac
-  echo ""
-fi
-
 # ---------- Limpieza de imágenes antiguas del storage fs ----------
 # Antes de MinIO, GD docs guardaba blobs/avatares en disco en
 # ~/.gddocs/storage/. Ahora todo va a MinIO. Si existe esa carpeta
@@ -227,11 +263,12 @@ if [[ -d "$OLD_STORAGE_DIR" ]]; then
 
   if [[ "$OLD_FILE_COUNT" -gt 0 ]]; then
     OLD_SIZE=$(du -sh "$OLD_STORAGE_DIR" 2>/dev/null | cut -f1)
+    echo ""
     echo "┌──────────────────────────────────────────────────────────┐"
     echo "│  🖼️  Imágenes antiguas (storage anterior a MinIO)       │"
     echo "├──────────────────────────────────────────────────────────┤"
-    printf "│  Se encontraron %d archivo(s) en:                       \n" "$OLD_FILE_COUNT"
-    printf "│  %s (%s)                  \n" "$OLD_STORAGE_DIR" "$OLD_SIZE"
+    printf "│  Se encontraron %d archivo(s) en:                         \n" "$OLD_FILE_COUNT"
+    printf "│  %s (%s)                      \n" "$OLD_STORAGE_DIR" "$OLD_SIZE"
     echo "│                                                           │"
     echo "│  Estos son archivos del storage anterior basado en disco. │"
     echo "│  Ahora GD docs usa MinIO para almacenar blobs y avatares. │"
@@ -254,6 +291,29 @@ if [[ -d "$OLD_STORAGE_DIR" ]]; then
         info "Podés borrarlo manualmente cuando confirmes que ya no lo necesitás."
         ;;
     esac
-    echo ""
   fi
 fi
+
+# ── Resumen final con tiempos ────────────────────────────────
+END_TS=$(date +%s)
+END_TIME=$(date '+%Y-%m-%d %H:%M:%S')
+ELAPSED=$((END_TS - START_TS))
+ELAPSED_MIN=$((ELAPSED / 60))
+ELAPSED_SEC=$((ELAPSED % 60))
+
+echo ""
+echo "╔══════════════════════════════════════════════════════════╗"
+echo "║              ✅  GD docs actualizado                     ║"
+echo "╚══════════════════════════════════════════════════════════╝"
+echo ""
+echo "  🌐  App:         http://localhost:${PORT:-3010}"
+echo "  🪣  MinIO:       http://localhost:9001"
+[[ -n "$BACKUP_FILE" ]] && echo "  💾  Backup BD:   ${BACKUP_FILE}"
+echo ""
+echo "  ⏱️  Inicio:      ${START_TIME}"
+echo "  ⏱️  Fin:         ${END_TIME}"
+printf "  ⏱️  Duración:    %dm %ds\n" "$ELAPSED_MIN" "$ELAPSED_SEC"
+echo ""
+echo "  📋  Ver logs:    docker compose -f $SCRIPT_DIR/compose.yml logs -f"
+echo "  🛑  Detener:     docker compose -f $SCRIPT_DIR/compose.yml down"
+echo ""

@@ -129,6 +129,28 @@ if [[ -f "$ENV_FILE" ]]; then
   warn ".env ya existe — se conserva. Bórralo si quieres regenerarlo."
   # Cargar variables para generar el config aunque el .env ya exista
   set -a; source "$ENV_FILE"; set +a
+
+  # Si el .env existente no tiene MINIO_ROOT_PASSWORD (instalación previa a MinIO),
+  # generarla y agregarla automáticamente.
+  if [[ -z "${MINIO_ROOT_PASSWORD:-}" ]]; then
+    MINIO_ROOT_PASSWORD=$(generate_password)
+    MINIO_ROOT_USER="${MINIO_ROOT_USER:-gddocs}"
+    MINIO_DATA_LOCATION="${MINIO_DATA_LOCATION:-${DATA_ROOT}/minio}"
+    cat >> "$ENV_FILE" << EOF
+
+# MinIO — agregado automáticamente (migración desde versión sin MinIO)
+MINIO_ROOT_USER=${MINIO_ROOT_USER}
+MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
+MINIO_DATA_LOCATION=${MINIO_DATA_LOCATION}
+EOF
+    export MINIO_ROOT_PASSWORD MINIO_ROOT_USER MINIO_DATA_LOCATION
+    echo ""
+    success "Credenciales MinIO generadas y guardadas en .env"
+    echo "  🔑  MinIO usuario:     ${MINIO_ROOT_USER}"
+    echo "  🔑  MinIO contraseña:  ${MINIO_ROOT_PASSWORD}"
+    echo "  ⚠️   Guardá esta contraseña en un lugar seguro."
+    echo ""
+  fi
 else
   info "Generando configuración..."
   DB_PASSWORD=$(generate_password)
