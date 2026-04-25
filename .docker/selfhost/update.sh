@@ -36,6 +36,73 @@ success() { echo -e "${GREEN}[OK]${NC}    $*"; }
 warn()    { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 error()   { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
 
+# ── Trap: siempre muestra timing + diagnóstico al salir ──────
+on_exit() {
+  local exit_code=$?
+  set +e
+
+  [[ $exit_code -eq 0 ]] && return  # Éxito: el banner final ya mostró el timing
+
+  local end_ts end_time elapsed min sec
+  end_ts=$(date +%s)
+  end_time=$(date '+%Y-%m-%d %H:%M:%S')
+  elapsed=$((end_ts - START_TS))
+  min=$((elapsed / 60))
+  sec=$((elapsed % 60))
+
+  echo ""
+  echo -e "${RED}╔══════════════════════════════════════════════════════════╗${NC}"
+  echo -e "${RED}║              ❌  Proceso interrumpido                    ║${NC}"
+  echo -e "${RED}╚══════════════════════════════════════════════════════════╝${NC}"
+  echo ""
+  echo "  ⏱️  Inicio:      ${START_TIME}"
+  echo "  ⏱️  Falló en:    ${end_time}"
+  printf "  ⏱️  Tiempo:      %dm %ds\n" "$min" "$sec"
+  echo ""
+
+  if command -v docker &>/dev/null; then
+    local failed
+    failed=$(docker ps -a --format "{{.Names}}\t{{.Status}}" 2>/dev/null \
+      | grep -iE "gddocs|minio|postgres|redis" \
+      | grep -iE "unhealthy|Exited \([1-9]" \
+      || true)
+
+    if [[ -n "$failed" ]]; then
+      echo -e "${YELLOW}[DIAGNÓSTICO]${NC}  Últimas líneas de contenedores con errores:"
+      while IFS=$'\t' read -r cname cstatus; do
+        [[ -z "$cname" ]] && continue
+        echo ""
+        echo -e "  ${RED}▶ ${cname}${NC}  (${cstatus})"
+        echo "  ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"
+        docker logs --tail 10 "$cname" 2>&1 \
+          | while IFS= read -r line; do echo "  │  $line"; done
+      done <<< "$failed"
+      echo ""
+    else
+      echo -e "${YELLOW}[DIAGNÓSTICO]${NC}  No se detectaron contenedores con falla evidente."
+      echo ""
+      echo "  Para inspeccionar manualmente:"
+      echo "    docker compose -f $SCRIPT_DIR/compose.yml logs --tail=30"
+    fi
+  fi
+}
+trap on_exit EXIT
+
+# ── Verificación de espacio en disco ─────────────────────────
+check_disk_space() {
+  local available_kb
+  available_kb=$(df -k "$REPO_ROOT" 2>/dev/null | tail -1 | awk '{print $4}' || echo 0)
+  local warn_kb=$((5 * 1024 * 1024))
+  local min_kb=$((2 * 1024 * 1024))
+  if [[ "$available_kb" -lt "$min_kb" ]]; then
+    local gb; gb=$(awk "BEGIN{printf \"%.1f\", $available_kb/1048576}")
+    error "Espacio insuficiente: ${gb}GB disponibles. Necesitás al menos 2GB libres."
+  elif [[ "$available_kb" -lt "$warn_kb" ]]; then
+    local gb; gb=$(awk "BEGIN{printf \"%.1f\", $available_kb/1048576}")
+    warn "Espacio en disco bajo: ${gb}GB disponibles. Se recomiendan 5GB+ para el build."
+  fi
+}
+
 GIT_REMOTE_URL=""
 
 while [[ $# -gt 0 ]]; do
@@ -227,6 +294,7 @@ echo "║  Esto tarda 5-15 minutos (usa cache de capas).         ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
 
+check_disk_space
 DOCKER_BUILDKIT=1 docker build \
   -f "$SCRIPT_DIR/Dockerfile.selfhost" \
   -t "$IMAGE_NAME" \
@@ -240,10 +308,12 @@ echo ""
 
 # ---------- 6. Migraciones + reinicio ----------
 info "Corriendo migraciones y reiniciando servicios..."
-# --wait bloquea hasta que todos los healthchecks pasen (postgres, redis,
-# minio, gddocs) y las migraciones terminen (gddocs_migration exit 0).
-# Si algún servicio falla, el comando devuelve error y el script se detiene.
-docker compose -f "$SCRIPT_DIR/compose.yml" --env-file "$ENV_FILE" up -d --force-recreate --wait
+# Solo se recrean gddocs y gddocs_migration porque son los únicos que usan
+# la imagen reconstruida. MinIO, Redis y Postgres siguen corriendo sin
+# interrupción — no tiene sentido reiniciarlos en cada update.
+# --wait bloquea hasta que gddocs pase su healthcheck y las migraciones terminen.
+docker compose -f "$SCRIPT_DIR/compose.yml" --env-file "$ENV_FILE" \
+  up -d --wait --force-recreate gddocs gddocs_migration
 success "Servicios activos y migraciones completadas."
 
 # ---------- Limpieza de imágenes antiguas del storage fs ----------

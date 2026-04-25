@@ -26,6 +26,79 @@ success() { echo -e "${GREEN}[OK]${NC}    $*"; }
 warn()    { echo -e "${YELLOW}[WARN]${NC}  $*"; }
 error()   { echo -e "${RED}[ERROR]${NC} $*"; exit 1; }
 
+# ── Trap: siempre muestra timing + diagnóstico al salir ──────
+# Se activa en cualquier salida: error, set -e, Ctrl+C, o exit normal.
+# Para salidas exitosas (exit 0) solo muestra timing si el banner
+# de éxito ya no se imprimió (el script llegó al final normalmente
+# y ya lo muestra — la condición [[ $exit_code -ne 0 ]] lo omite).
+on_exit() {
+  local exit_code=$?
+  set +e  # No fallar dentro del handler de limpieza
+
+  [[ $exit_code -eq 0 ]] && return  # Éxito: el banner final ya mostró el timing
+
+  local end_ts end_time elapsed min sec
+  end_ts=$(date +%s)
+  end_time=$(date '+%Y-%m-%d %H:%M:%S')
+  elapsed=$((end_ts - START_TS))
+  min=$((elapsed / 60))
+  sec=$((elapsed % 60))
+
+  echo ""
+  echo -e "${RED}╔══════════════════════════════════════════════════════════╗${NC}"
+  echo -e "${RED}║              ❌  Proceso interrumpido                    ║${NC}"
+  echo -e "${RED}╚══════════════════════════════════════════════════════════╝${NC}"
+  echo ""
+  echo "  ⏱️  Inicio:      ${START_TIME}"
+  echo "  ⏱️  Falló en:    ${end_time}"
+  printf "  ⏱️  Tiempo:      %dm %ds\n" "$min" "$sec"
+  echo ""
+
+  # Mostrar logs de contenedores con problemas
+  if command -v docker &>/dev/null; then
+    local failed
+    failed=$(docker ps -a --format "{{.Names}}\t{{.Status}}" 2>/dev/null \
+      | grep -iE "gddocs|minio|postgres|redis" \
+      | grep -iE "unhealthy|Exited \([1-9]" \
+      || true)
+
+    if [[ -n "$failed" ]]; then
+      echo -e "${YELLOW}[DIAGNÓSTICO]${NC}  Últimas líneas de contenedores con errores:"
+      while IFS=$'\t' read -r cname cstatus; do
+        [[ -z "$cname" ]] && continue
+        echo ""
+        echo -e "  ${RED}▶ ${cname}${NC}  (${cstatus})"
+        echo "  ┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄┄"
+        docker logs --tail 10 "$cname" 2>&1 \
+          | while IFS= read -r line; do echo "  │  $line"; done
+      done <<< "$failed"
+      echo ""
+    else
+      echo -e "${YELLOW}[DIAGNÓSTICO]${NC}  No se detectaron contenedores con falla evidente."
+      echo ""
+      echo "  Para inspeccionar manualmente:"
+      echo "    docker compose -f $SCRIPT_DIR/compose.yml logs --tail=30"
+    fi
+  fi
+}
+trap on_exit EXIT
+
+# ── Verificación de espacio en disco ─────────────────────────
+# Un build completo necesita al menos 5-8 GB libres.
+check_disk_space() {
+  local available_kb
+  available_kb=$(df -k "$REPO_ROOT" 2>/dev/null | tail -1 | awk '{print $4}' || echo 0)
+  local warn_kb=$((5 * 1024 * 1024))   # 5 GB
+  local min_kb=$((2 * 1024 * 1024))    # 2 GB
+  if [[ "$available_kb" -lt "$min_kb" ]]; then
+    local gb; gb=$(awk "BEGIN{printf \"%.1f\", $available_kb/1048576}")
+    error "Espacio insuficiente: ${gb}GB disponibles. Necesitás al menos 2GB libres."
+  elif [[ "$available_kb" -lt "$warn_kb" ]]; then
+    local gb; gb=$(awk "BEGIN{printf \"%.1f\", $available_kb/1048576}")
+    warn "Espacio en disco bajo: ${gb}GB disponibles. Se recomiendan 5GB+ para el build."
+  fi
+}
+
 PORT=3010
 
 while [[ $# -gt 0 ]]; do
@@ -246,6 +319,7 @@ echo "║  Construyendo imagen Docker desde código fuente...      ║"
 echo "║  Esto tarda 15-25 minutos la primera vez. Normal.       ║"
 echo "╚══════════════════════════════════════════════════════════╝"
 echo ""
+check_disk_space
 info "Ejecutando: docker build -t ${IMAGE_NAME} ..."
 
 DOCKER_BUILDKIT=1 docker build \

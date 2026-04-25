@@ -79,8 +79,10 @@ services:
     restart: unless-stopped
 
   # ── minio-init: crea los buckets una sola vez al arrancar ──────
-  # Este contenedor termina (exit 0) cuando los buckets ya existen.
+  # Este contenedor termina exit 0 cuando los buckets existen.
   # gddocs y gddocs_migration esperan a que este servicio termine OK.
+  # restart: "no" es obligatorio — combinarlo con restart: on-failure
+  # y --wait genera un bucle infinito donde Compose nunca detecta el fallo.
   minio-init:
     image: minio/mc:latest
     container_name: gddocs_minio_init
@@ -92,12 +94,22 @@ services:
     entrypoint: ["/bin/sh", "-c"]
     command:
       - |
-        mc alias set local http://gddocs_minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" &&
-        mc mb --ignore-existing local/gddocs-blobs &&
-        mc mb --ignore-existing local/gddocs-avatars &&
-        mc mb --ignore-existing local/gddocs-copilot &&
-        echo "Buckets de MinIO listos."
-    restart: on-failure
+        RETRIES=0
+        MAX=15
+        until mc alias set local http://gddocs_minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" 2>/dev/null; do
+          RETRIES=$((RETRIES + 1))
+          if [ "$RETRIES" -ge "$MAX" ]; then
+            echo "[ERROR] No se pudo conectar a MinIO tras $MAX intentos."
+            exit 1
+          fi
+          echo "[WAIT]  MinIO aún no acepta conexiones... intento $RETRIES/$MAX"
+          sleep 3
+        done
+        mc mb --ignore-existing local/gddocs-blobs   && echo "[OK] bucket gddocs-blobs"
+        mc mb --ignore-existing local/gddocs-avatars && echo "[OK] bucket gddocs-avatars"
+        mc mb --ignore-existing local/gddocs-copilot && echo "[OK] bucket gddocs-copilot"
+        echo "[OK] Buckets de MinIO listos."
+    restart: "no"
 
   redis:
     image: redis
