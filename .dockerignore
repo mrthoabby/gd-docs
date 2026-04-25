@@ -6,6 +6,16 @@
 /node_modules
 /target
 
+# Artefactos de workspaces anidados — si alguien corrió yarn install o un
+# build local, estos directorios pueden sumar cientos de MB al build context.
+# El build los regenera desde cero dentro del contenedor.
+packages/**/node_modules
+packages/**/dist
+blocksuite/**/node_modules
+blocksuite/**/dist
+tools/**/node_modules
+tools/**/dist
+
 # Yarn v4 artifacts (not needed for image packaging)
 /.yarn/cache
 /.yarn/unplugged
@@ -20,6 +30,11 @@
 
 # OS noise
 .DS_Store
+**/.DS_Store
+
+# Archivos de deployment selfhost — no son parte del código fuente
+.docker/selfhost/.env
+.docker/selfhost/backups/
 
 # Sourcemaps (keep server sourcemap for backend stacktraces)
 **/*.map
