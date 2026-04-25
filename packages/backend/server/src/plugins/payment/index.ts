@@ -1,5 +1,11 @@
 import './config';
 
+// [SELFHOST PATCH] PaymentModule simplificado.
+// Se mantiene StripeFactory/StripeProvider porque SubscriptionService y los managers
+// lo usan internamente. Lo que se eliminó de los providers son los servicios que
+// solo tenían sentido para la nube (RevenueCat, StripeWebhook de cloud).
+// Los cron jobs de Stripe/RevenueCat fueron eliminados de cron.ts.
+
 import { Module } from '@nestjs/common';
 
 import { ServerConfigModule } from '../../core';
@@ -9,7 +15,6 @@ import { PermissionModule } from '../../core/permission';
 import { QuotaModule } from '../../core/quota';
 import { UserModule } from '../../core/user';
 import { WorkspaceModule } from '../../core/workspaces';
-import { StripeWebhookController } from './controller';
 import { SubscriptionCronJobs } from './cron';
 import { PaymentEventHandlers } from './event';
 import { LicenseController } from './license/controller';
@@ -25,12 +30,10 @@ import {
 } from './resolver';
 import {
   RevenueCatService,
-  RevenueCatWebhookController,
   RevenueCatWebhookHandler,
 } from './revenuecat';
 import { SubscriptionService } from './service';
 import { StripeFactory, StripeProvider } from './stripe';
-import { StripeWebhook } from './webhook';
 
 @Module({
   imports: [
@@ -45,12 +48,13 @@ import { StripeWebhook } from './webhook';
   providers: [
     StripeFactory,
     StripeProvider,
+    // RevenueCatService/Handler se mantienen porque UserSubscriptionResolver los inyecta.
+    // Sin API key configurada sus métodos fallan silenciosamente (try-catch interno).
     RevenueCatService,
+    RevenueCatWebhookHandler,
     SubscriptionService,
     SubscriptionResolver,
     UserSubscriptionResolver,
-    StripeWebhook,
-    RevenueCatWebhookHandler,
     UserSubscriptionManager,
     WorkspaceSubscriptionManager,
     SelfhostTeamSubscriptionManager,
@@ -59,9 +63,7 @@ import { StripeWebhook } from './webhook';
     PaymentEventHandlers,
   ],
   controllers: [
-    StripeWebhookController,
     LicenseController,
-    RevenueCatWebhookController,
   ],
 })
 export class PaymentModule {}

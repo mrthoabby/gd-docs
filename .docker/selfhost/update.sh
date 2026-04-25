@@ -140,3 +140,32 @@ echo ""
 echo "  📋  Ver logs:    docker compose -f $SCRIPT_DIR/compose.yml logs -f"
 echo "  🛑  Detener:     docker compose -f $SCRIPT_DIR/compose.yml down"
 echo ""
+
+# ---------- Limpieza de backups antiguos ----------
+BACKUP_COUNT=$(ls "$BACKUP_DIR"/*.sql.gz 2>/dev/null | wc -l)
+if [[ "$BACKUP_COUNT" -gt 0 ]]; then
+  BACKUP_SIZE=$(du -sh "$BACKUP_DIR" 2>/dev/null | cut -f1)
+  echo "┌──────────────────────────────────────────────────────────┐"
+  echo "│  🗑️  Limpieza de backups                                 │"
+  echo "├──────────────────────────────────────────────────────────┤"
+  printf "│  Tienes %2d backup(s) ocupando %s en disco.              \n" "$BACKUP_COUNT" "$BACKUP_SIZE"
+  echo "│                                                           │"
+  echo "│  ¿Querés borrar TODOS los backups anteriores para        │"
+  echo "│  liberar espacio? (el servidor ya está actualizado,      │"
+  echo "│  los backups viejos ya no son necesarios)                │"
+  echo "└──────────────────────────────────────────────────────────┘"
+  echo ""
+  read -rp "  Borrar todos los backups? [s/N]: " CLEAN_ANSWER
+  echo ""
+  case "${CLEAN_ANSWER,,}" in
+    s|si|sí|y|yes)
+      info "Borrando todos los backups en ${BACKUP_DIR}/ ..."
+      rm -f "$BACKUP_DIR"/*.sql.gz
+      success "Backups eliminados. Espacio liberado."
+      ;;
+    *)
+      info "Backups conservados en: ${BACKUP_DIR}/"
+      ;;
+  esac
+  echo ""
+fi

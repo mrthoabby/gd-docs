@@ -90,22 +90,35 @@ export class CustomSetupController {
 
   /**
    * GET /api/setup/admin-flags
-   * Devuelve los feature flags actuales del servidor (módulo 'flags' de appConfig).
-   * Requiere sesión de usuario admin (verificada en static.ts al servir /admin/root).
+   * Devuelve los feature flags actuales del servidor.
+   * Lee directamente de la BD para garantizar que refleje los valores guardados
+   * (el config en memoria solo se actualiza en arranque; leer de BD evita que
+   * los cambios recientes se pierdan al refrescar la página).
    */
   @Get('/admin-flags')
   async getAdminFlags(@Req() req: Request, @Res() res: Response) {
     await this.requireAdminSession(req, res);
 
-    const fullConfig = this.server.getConfig();
-    const flags = (fullConfig as any)?.flags ?? {};
+    // Leer TODOS los registros de app_config y filtrar los que pertenecen
+    // al módulo 'flags.*' — así siempre devolvemos los valores persistidos.
+    const allConfigs = await this.models.appConfig.load();
+    const PREFIX = 'flags.';
+    const flags: Record<string, boolean> = {};
+    for (const cfg of allConfigs) {
+      if (cfg.id.startsWith(PREFIX)) {
+        const key = cfg.id.slice(PREFIX.length);
+        flags[key] = Boolean(cfg.value);
+      }
+    }
 
     return res.json({ flags });
   }
 
   /**
    * POST /api/setup/admin-flags
-   * Guarda overrides de feature flags en la BD del servidor.
+   * Guarda overrides de feature flags en la BD del servidor y actualiza
+   * la configuración en memoria para que otros procesos vean el cambio
+   * inmediatamente (sin necesidad de reiniciar el servidor).
    * Body: { flags: { [key: string]: boolean } }
    */
   @Post('/admin-flags')
@@ -127,7 +140,13 @@ export class CustomSetupController {
       value,
     }));
 
+    // 1. Persistir en BD
     await this.models.appConfig.save(userId, updates);
+
+    // 2. Sincronizar la config en memoria recargando todos los overrides de BD.
+    //    Esto garantiza que el GET inmediato (y cualquier lógica interna como
+    //    onFlagsChanged) vea los valores recién guardados sin reiniciar.
+    await this.server.revalidateConfig();
 
     return res.json({ ok: true, saved: Object.keys(flags).length });
   }

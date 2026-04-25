@@ -178,6 +178,11 @@ export class AuthController {
         throw new SignUpForbidden();
       }
 
+      // [SELFHOST] Verificar whitelist de dominios/emails permitidos
+      if (!this.auth.isEmailAllowedToRegister(email)) {
+        throw new SignUpForbidden();
+      }
+
       if (this.config.auth.requireEmailDomainVerification) {
         // verify domain has MX, SPF, DMARC records
         const [name, domain, ...rest] = email.split('@');

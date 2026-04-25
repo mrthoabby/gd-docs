@@ -11,6 +11,21 @@ export interface AuthConfig {
   allowSignupForOauth: boolean;
   requireEmailDomainVerification: boolean;
   requireEmailVerification: boolean;
+  /**
+   * Lista de dominios permitidos para nuevos registros.
+   * Ej: ["miempresa.com", "otraempresa.com"]
+   * Si está vacía, cualquier dominio puede registrarse (comportamiento por defecto).
+   * Se aplica tanto a registro por email/password como por OAuth.
+   */
+  allowedEmailDomains: string[];
+  /**
+   * Lista de emails específicos permitidos para nuevos registros (sin importar el dominio).
+   * Ej: ["externo@gmail.com", "proveedor@hotmail.com"]
+   * Si está vacía, no hay restricción por email individual.
+   * Funciona en combinación con allowedEmailDomains: el acceso se otorga si
+   * el email está en CUALQUIERA de las dos listas.
+   */
+  allowedEmails: string[];
   passwordRequirements: ConfigItem<{
     min: number;
     max: number;
@@ -31,6 +46,24 @@ defineModuleConfig('auth', {
   allowSignupForOauth: {
     desc: 'Whether allow new registrations via configured oauth.',
     default: true,
+  },
+  allowedEmailDomains: {
+    desc: 'Whitelist of email domains allowed to register. Empty = all domains allowed. Example: ["miempresa.com","otraempresa.com"]. Can also be set via AUTH_ALLOWED_EMAIL_DOMAINS env var (comma-separated).',
+    default: [] as string[],
+    env: ['AUTH_ALLOWED_EMAIL_DOMAINS', 'array'],
+    schema: {
+      type: 'array',
+      items: { type: 'string' },
+    },
+  },
+  allowedEmails: {
+    desc: 'Whitelist of specific email addresses allowed to register, regardless of domain. Empty = no individual restriction. Example: ["externo@gmail.com"]. Can also be set via AUTH_ALLOWED_EMAILS env var (comma-separated).',
+    default: [] as string[],
+    env: ['AUTH_ALLOWED_EMAILS', 'array'],
+    schema: {
+      type: 'array',
+      items: { type: 'string' },
+    },
   },
   requireEmailDomainVerification: {
     desc: 'Whether require email domain record verification before accessing restricted resources.',

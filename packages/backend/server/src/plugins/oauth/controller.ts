@@ -268,6 +268,11 @@ export class OAuthController {
       throw new SignUpForbidden();
     }
 
+    // [SELFHOST] Verificar whitelist de dominios/emails permitidos (aplica también a OAuth)
+    if (!this.auth.isEmailAllowedToRegister(externalAccount.email)) {
+      throw new SignUpForbidden();
+    }
+
     const user = await this.models.user.fulfill(externalAccount.email, {
       name: externalAccount.name,
       avatarUrl: externalAccount.avatarUrl,

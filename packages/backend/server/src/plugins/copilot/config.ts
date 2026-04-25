@@ -232,7 +232,7 @@ declare global {
 
 defineModuleConfig('copilot', {
   enabled: {
-    desc: 'Whether to enable the copilot plugin. <br> Document: <a href="https://docs.affine.pro/self-host-affine/administer/ai" target="_blank">https://docs.affine.pro/self-host-affine/administer/ai</a>',
+    desc: 'Activa el asistente de IA (Copilot). Requiere configurar al menos un proveedor de IA (OpenAI, Gemini, Anthropic, etc.) con su API key.',
     default: false,
   },
   scenarios: {
@@ -335,7 +335,7 @@ defineModuleConfig('copilot', {
       provider: 'fs',
       bucket: 'copilot',
       config: {
-        path: '~/.affine/storage',
+        path: '~/.gddocs/storage',
       },
     },
     schema: StorageJSONSchema,

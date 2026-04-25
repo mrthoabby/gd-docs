@@ -24,14 +24,12 @@ declare global {
 
 defineModuleConfig('server', {
   name: {
-    desc: 'A recognizable name for the server. Will be shown when connected with AFFiNE Desktop.',
+    desc: 'Nombre del servidor que aparece en la app de escritorio al conectar. Ej: "GD docs – Mi Empresa".',
     default: undefined,
     shape: z.string().optional(),
   },
   externalUrl: {
-    desc: `Base url of AFFiNE server, used for generating external urls.
-Default to be \`[server.protocol]://[server.host][:server.port]\` if not specified.
-    `,
+    desc: `URL base pública del servidor, usada para generar enlaces externos (magic links, invitaciones, OAuth callbacks). Si se deja vacío, se construye automáticamente desde host y puerto.`,
     default: '',
     env: 'AFFINE_SERVER_EXTERNAL_URL',
     validate: val => {
@@ -70,7 +68,7 @@ Default to be \`[server.protocol]://[server.host][:server.port]\` if not specifi
     env: ['AFFINE_SERVER_PORT', 'integer'],
   },
   path: {
-    desc: 'Subpath where the server get deployed if there is one.(e.g. /affine)',
+    desc: 'Subruta donde está desplegado el servidor, si aplica. Ej: /docs',
     default: '',
     env: 'AFFINE_SERVER_SUB_PATH',
   },

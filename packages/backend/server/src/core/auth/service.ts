@@ -67,6 +67,43 @@ export class AuthService implements OnApplicationBootstrap {
   }
 
   /**
+   * Verifica si un email tiene permitido REGISTRARSE (no solo iniciar sesión).
+   *
+   * Lógica:
+   *   1. Si allowedEmailDomains y allowedEmails están ambas vacías → todos permitidos.
+   *   2. Si el email (en minúsculas) está en allowedEmails → permitido.
+   *   3. Si el dominio del email está en allowedEmailDomains → permitido.
+   *   4. Cualquier otro caso → rechazado.
+   *
+   * Se aplica a registro por email/magic-link Y por OAuth.
+   * NO bloquea a usuarios que ya tienen cuenta (solo nuevos registros).
+   */
+  isEmailAllowedToRegister(email: string): boolean {
+    const domains = this.config.auth.allowedEmailDomains ?? [];
+    const emails = this.config.auth.allowedEmails ?? [];
+
+    // Listas vacías = sin restricción (comportamiento original)
+    if (domains.length === 0 && emails.length === 0) {
+      return true;
+    }
+
+    const normalizedEmail = email.toLowerCase().trim();
+    const domain = normalizedEmail.split('@')[1] ?? '';
+
+    // Email específico en la whitelist
+    if (emails.length > 0 && emails.map(e => e.toLowerCase().trim()).includes(normalizedEmail)) {
+      return true;
+    }
+
+    // Dominio permitido
+    if (domains.length > 0 && domains.map(d => d.toLowerCase().trim()).includes(domain)) {
+      return true;
+    }
+
+    return false;
+  }
+
+  /**
    * @deprecated
    *
    * This is a test only helper to quickly signup a user, do not use in production

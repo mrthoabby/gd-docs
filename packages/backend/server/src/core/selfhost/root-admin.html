@@ -447,6 +447,32 @@
           <button class="btn btn-primary" onclick="generateAuthConfig()">⬇️ Generar config</button>
         </div>
       </div>
+
+      <!-- Whitelist de dominios / emails -->
+      <div class="card" style="margin-bottom:16px">
+        <h3 style="margin-bottom:4px">🔒 Restricción de registro por dominio / email</h3>
+        <p style="color:var(--text2);font-size:12px;margin-bottom:16px">
+          Si dejás ambos campos vacíos, cualquier email puede registrarse (comportamiento por defecto).<br>
+          Si configurás al menos uno, solo los emails que coincidan con la lista podrán crear cuenta nueva.<br>
+          <strong>No afecta a usuarios que ya tienen cuenta.</strong> Aplica a email/password y a OAuth por igual.
+        </p>
+
+        <div class="form-group">
+          <label>Dominios permitidos <span style="color:var(--text2);font-weight:400">(uno por línea, sin @)</span></label>
+          <textarea id="allowed-domains" rows="4" placeholder="miempresa.com&#10;otraempresa.com&#10;mercadolibre.com.co" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:8px 12px;font-size:13px;font-family:monospace;resize:vertical"></textarea>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px">Ej: <code>mercadolibre.com.co</code> → solo emails @mercadolibre.com.co podrán registrarse</div>
+        </div>
+
+        <div class="form-group">
+          <label>Emails específicos permitidos <span style="color:var(--text2);font-weight:400">(uno por línea)</span></label>
+          <textarea id="allowed-emails" rows="4" placeholder="externo@gmail.com&#10;proveedor@hotmail.com" style="width:100%;background:var(--bg3);border:1px solid var(--border);border-radius:var(--radius);color:var(--text);padding:8px 12px;font-size:13px;font-family:monospace;resize:vertical"></textarea>
+          <div style="font-size:11px;color:var(--text2);margin-top:4px">Emails fuera de los dominios permitidos que igual pueden registrarse (p.ej. proveedores externos)</div>
+        </div>
+
+        <button class="btn btn-primary" onclick="generateEmailRestrictionConfig()">⬇️ Generar config de restricción</button>
+        <pre id="email-restriction-output" style="margin-top:12px"></pre>
+      </div>
+
       <div class="card">
         <h3 style="margin-bottom:16px">OAuth Providers</h3>
         <div class="form-group">
@@ -1148,6 +1174,61 @@ function generateAuthConfig() {
   };
   document.getElementById('config-preview').textContent = JSON.stringify(cfg, null, 2);
   toast('Config de auth generada ↓', 'ok');
+}
+
+function generateEmailRestrictionConfig() {
+  const domainsRaw = document.getElementById('allowed-domains').value.trim();
+  const emailsRaw  = document.getElementById('allowed-emails').value.trim();
+
+  const domains = domainsRaw
+    .split('\n')
+    .map(d => d.trim().toLowerCase().replace(/^@/, ''))
+    .filter(Boolean);
+
+  const emails = emailsRaw
+    .split('\n')
+    .map(e => e.trim().toLowerCase())
+    .filter(Boolean);
+
+  if (domains.length === 0 && emails.length === 0) {
+    document.getElementById('email-restriction-output').textContent =
+      '// Sin restricción configurada — todos los emails pueden registrarse';
+    return;
+  }
+
+  const cfg = { auth: {} };
+  if (domains.length > 0) cfg.auth.allowedEmailDomains = domains;
+  if (emails.length > 0)  cfg.auth.allowedEmails = emails;
+
+  const output = JSON.stringify(cfg, null, 2);
+  document.getElementById('email-restriction-output').textContent = output;
+
+  // Intentar guardar directamente via API de configuración del servidor
+  fetch('/api/config', {
+    method: 'PATCH',
+    headers: { 'Content-Type': 'application/json' },
+    credentials: 'include',
+    body: output,
+  }).then(async res => {
+    if (res.ok) {
+      toast('✅ Restricción guardada en el servidor', 'ok');
+    } else {
+      // La API de config puede no soportar PATCH directo — mostrar instrucciones
+      toast('Config generada — copiala al gd-docs.json (ver abajo)', 'ok');
+    }
+  }).catch(() => {
+    toast('Config generada — copiala al gd-docs.json (ver abajo)', 'ok');
+  });
+
+  // Agregar instrucción de instalación
+  document.getElementById('email-restriction-output').textContent =
+    output + '\n\n' +
+    '// Para aplicar: guardá este JSON en ~/.affine/self-host/config/gd-docs.json\n' +
+    '// y reiniciá el servidor:\n' +
+    '// docker compose -f .docker/selfhost/compose.yml restart gddocs\n\n' +
+    '// O agregá estas variables de entorno en .docker/selfhost/.env:\n' +
+    (domains.length > 0 ? `// AUTH_ALLOWED_EMAIL_DOMAINS=${domains.join(',')}\n` : '') +
+    (emails.length > 0  ? `// AUTH_ALLOWED_EMAILS=${emails.join(',')}\n` : '');
 }
 
 function generateOAuthConfig() {

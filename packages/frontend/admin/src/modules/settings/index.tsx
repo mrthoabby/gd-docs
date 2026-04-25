@@ -184,6 +184,8 @@ const AdminPanel = ({
                           options: [],
                           defaultValue: get(sourceConfig, field),
                           onChange: onUpdate,
+                          // @ts-expect-error placeholder is optional extra field in config.json
+                          placeholder: descriptor.placeholder,
                         };
                       } else {
                         const descriptor =
@@ -199,6 +201,8 @@ const AdminPanel = ({
                             field.key + (field.sub ? '.' + field.sub : '')
                           ),
                           onChange: onUpdate,
+                          // @ts-expect-error placeholder is optional extra field in config.json
+                          placeholder: descriptor.placeholder,
                         };
                       }
 

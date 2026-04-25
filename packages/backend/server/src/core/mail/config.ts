@@ -56,8 +56,8 @@ defineModuleConfig('mailer', {
     env: 'MAILER_PASSWORD',
   },
   'SMTP.sender': {
-    desc: 'Sender of all the emails (e.g. "AFFiNE Self Hosted &lt;noreply@example.com&gt;")',
-    default: 'AFFiNE Self Hosted <noreply@example.com>',
+    desc: 'Remitente visible en todos los correos. Formato: Nombre &lt;email&gt;. Ej: "GD docs &lt;noreply@miempresa.com&gt;"',
+    default: 'GD docs <noreply@example.com>',
     env: 'MAILER_SENDER',
   },
   'SMTP.ignoreTLS': {
@@ -92,7 +92,7 @@ defineModuleConfig('mailer', {
     default: '',
   },
   'fallbackSMTP.sender': {
-    desc: 'Sender of all the emails (e.g. "AFFiNE Self Hosted &lt;noreply@example.com&gt;")',
+    desc: 'Remitente visible en correos enviados por el servidor SMTP de respaldo. Formato: Nombre &lt;email&gt;. Ej: "GD docs &lt;noreply@miempresa.com&gt;"',
     default: '',
   },
   'fallbackSMTP.ignoreTLS': {

@@ -19,6 +19,8 @@ export type ConfigInputProps = {
   onChange: (field: string, value: any) => void;
   error?: string;
   onErrorChange?: (field: string, error?: string) => void;
+  /** Texto de ayuda visible dentro del input cuando está vacío */
+  placeholder?: string;
 } & (
   | {
       type: 'String' | 'Number' | 'Boolean' | 'JSON';
@@ -51,7 +53,7 @@ const Inputs: Record<
       />
     );
   },
-  String: function StringInput({ defaultValue, onChange }) {
+  String: function StringInput({ defaultValue, onChange, placeholder }) {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       onChange(e.target.value);
     };
@@ -62,10 +64,11 @@ const Inputs: Record<
         minLength={1}
         value={defaultValue ?? ''}
         onChange={handleInputChange}
+        placeholder={placeholder}
       />
     );
   },
-  Number: function NumberInput({ defaultValue, onChange }) {
+  Number: function NumberInput({ defaultValue, onChange, placeholder }) {
     const handleInputChange = (e: React.ChangeEvent<HTMLInputElement>) => {
       const next = e.target.value;
       onChange(next === '' ? undefined : parseInt(next, 10));
@@ -76,6 +79,7 @@ const Inputs: Record<
         type="number"
         value={defaultValue ?? ''}
         onChange={handleInputChange}
+        placeholder={placeholder}
       />
     );
   },
@@ -155,6 +159,7 @@ export const ConfigRow = ({
   onChange,
   error,
   onErrorChange,
+  placeholder,
   ...props
 }: ConfigInputProps) => {
   const Input = Inputs[type] ?? Inputs.JSON;
@@ -202,6 +207,7 @@ export const ConfigRow = ({
           onChange={onValueChange}
           error={mergedError}
           onValidationChange={onValidationChange}
+          placeholder={placeholder}
           {...props}
         />
         {mergedError && (
