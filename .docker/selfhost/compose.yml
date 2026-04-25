@@ -96,7 +96,7 @@ services:
       - |
         RETRIES=0
         MAX=3
-        until mc alias set local http://gddocs_minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" 2>&1; do
+        until mc alias set local http://minio:9000 "$$MINIO_ROOT_USER" "$$MINIO_ROOT_PASSWORD" 2>&1; do
           RETRIES=$$((RETRIES + 1))
           if [ "$$RETRIES" -ge "$$MAX" ]; then
             echo "[ERROR] MinIO no disponible tras $$MAX intentos. Abortando."
