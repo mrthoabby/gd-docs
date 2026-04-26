@@ -138,6 +138,16 @@ export const KNOWN_CONFIG_GROUPS = [
         type: 'String',
         desc: 'The public path prefix for user avatars(e.g. https://my-bucket.s3.amazonaws.com/)',
       },
+      {
+        key: 'blob.publicEndpoint',
+        type: 'String',
+        desc: 'Public URL of the storage endpoint reachable by browsers for direct uploads (e.g. https://minio.yourdomain.com). Leave empty to proxy all uploads through the server.',
+      },
+      {
+        key: 'avatar.publicEndpoint',
+        type: 'String',
+        desc: 'Public URL of the avatar storage endpoint reachable by browsers for direct uploads. Leave empty to proxy all uploads through the server.',
+      },
     ],
   } as ConfigGroup<'storages'>,
   {
