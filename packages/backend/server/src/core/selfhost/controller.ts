@@ -88,16 +88,27 @@ export class CustomSetupController {
   // -------------------------------------------------------------------------
 
   /**
-   * GET /api/setup/feature-flags  (público)
+   * GET /api/setup/feature-flags  (requiere sesión autenticada)
    * Devuelve los overrides de feature flags guardados por el admin.
-   * Accesible por CUALQUIER usuario (incluso no autenticados) porque los flags
-   * son solo configuración de UI, no datos sensibles.
-   * El cliente web los lee al arrancar para inicializar el sistema de flags.
+   * Requiere sesión válida: evita exposición pública del estado de configuración.
+   * Si el usuario no está autenticado, devuelve flags vacíos (el cliente usa defaults).
+   * El cliente web lo lee tras el login para inicializar el sistema de flags.
    */
   @Public()
-  @Public()
   @Get('/feature-flags')
-  async getFeatureFlags(@Res() res: Response) {
+  async getFeatureFlags(@Req() req: Request, @Res() res: Response) {
+    try {
+      const { sessionId, userId } = this.auth.getSessionOptionsFromRequest(req);
+      if (!sessionId) {
+        return res.json({ flags: {} });
+      }
+      const userSession = await this.auth.getUserSession(sessionId, userId);
+      if (!userSession) {
+        return res.json({ flags: {} });
+      }
+    } catch {
+      return res.json({ flags: {} });
+    }
     const flags = await this._readFlagOverrides();
     return res.json({ flags });
   }

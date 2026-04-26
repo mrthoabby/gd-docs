@@ -19,13 +19,15 @@ services:
       - ${CONFIG_LOCATION}:/root/.affine/config
       # [SELFHOST PATCH] Assets estáticos descargados localmente (sin CDN en runtime)
       # Fuentes del editor (Edgeless canvas, PDF export, Typst renderer)
-      - ${ASSETS_LOCATION:-~/.gddocs/static}/fonts:/app/static/fonts:ro
+      # Nota: usar /root en el default (no ~) — Docker no expande ~ en defaults de compose.
+      - ${ASSETS_LOCATION:-/root/.gddocs/static}/fonts:/app/static/fonts:ro
       # Imágenes de fondo para presentaciones AI
-      - ${ASSETS_LOCATION:-~/.gddocs/static}/ppt-images:/app/static/ppt-images:ro
+      - ${ASSETS_LOCATION:-/root/.gddocs/static}/ppt-images:/app/static/ppt-images:ro
     env_file:
       - .env
     environment:
       - REDIS_SERVER_HOST=redis
+      - REDIS_SERVER_PASSWORD=${REDIS_PASSWORD}
       - DATABASE_URL=postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_DATABASE:-gddocs}
       - AFFINE_INDEXER_ENABLED=false
     restart: unless-stopped
@@ -34,13 +36,14 @@ services:
     image: gddocs:latest
     container_name: gddocs_migration
     volumes:
-      # Configuración personalizada del servidor
-      - ${CONFIG_LOCATION}:/root/.affine/config
+      # Configuración personalizada del servidor (read-only en migración — no debe modificarla)
+      - ${CONFIG_LOCATION}:/root/.affine/config:ro
     command: ['sh', '-c', 'node ./scripts/self-host-predeploy.js']
     env_file:
       - .env
     environment:
       - REDIS_SERVER_HOST=redis
+      - REDIS_SERVER_PASSWORD=${REDIS_PASSWORD}
       - DATABASE_URL=postgresql://${DB_USERNAME}:${DB_PASSWORD}@postgres:5432/${DB_DATABASE:-gddocs}
       - AFFINE_INDEXER_ENABLED=false
     depends_on:
@@ -48,8 +51,9 @@ services:
         condition: service_healthy
       redis:
         condition: service_healthy
-      minio:
-        condition: service_healthy
+      minio-init:
+        # Los buckets deben existir antes de que la migración inicialice el servidor
+        condition: service_completed_successfully
 
   # ── MinIO: almacenamiento de objetos compatible con S3 ─────────
   # Reemplaza el almacenamiento en disco (fs) para blobs, avatares
@@ -115,8 +119,15 @@ services:
   redis:
     image: redis
     container_name: gddocs_redis
+    # Persistencia AOF: garantiza que las sesiones y datos de caché sobrevivan reinicios.
+    # Sin esto, todos los usuarios quedan deslogueados cada vez que el contenedor se reinicia.
+    # --requirepass: autenticación obligatoria para cualquier cliente en la red Docker.
+    command: redis-server --appendonly yes --requirepass ${REDIS_PASSWORD}
+    volumes:
+      - ${REDIS_DATA_LOCATION:-~/.gddocs/redis}:/data
     healthcheck:
-      test: ['CMD', 'redis-cli', '--raw', 'incr', 'ping']
+      # -a pasa la contraseña al redis-cli del healthcheck
+      test: ['CMD', 'redis-cli', '-a', '${REDIS_PASSWORD}', '--raw', 'incr', 'ping']
       interval: 10s
       timeout: 5s
       retries: 5
@@ -132,7 +143,8 @@ services:
       POSTGRES_PASSWORD: ${DB_PASSWORD}
       POSTGRES_DB: ${DB_DATABASE:-gddocs}
       POSTGRES_INITDB_ARGS: '--data-checksums'
-      POSTGRES_HOST_AUTH_METHOD: trust
+      # md5: requiere contraseña en todas las conexiones TCP (más seguro que 'trust')
+      POSTGRES_HOST_AUTH_METHOD: md5
     healthcheck:
       test:
         ['CMD', 'pg_isready', '-U', "${DB_USERNAME}", '-d', "${DB_DATABASE:-gddocs}"]

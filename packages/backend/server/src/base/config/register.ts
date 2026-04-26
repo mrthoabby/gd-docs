@@ -240,11 +240,20 @@ function readConfigJSONOverrides(path: string) {
   return overrides;
 }
 
-export function override(config: AppConfig, update: DeepPartial<AppConfig>) {
+export function override(
+  config: AppConfig,
+  update: DeepPartial<AppConfig>,
+  sourceLabel?: string
+) {
   Object.keys(update).forEach(module => {
     const moduleDescriptors = APP_CONFIG_DESCRIPTORS[module];
-    // ignore unknown config module
+    // ignore unknown config module — log so admins know the key is being ignored
     if (!moduleDescriptors) {
+      // eslint-disable-next-line no-console
+      console.warn(
+        `[config] Módulo desconocido en ${sourceLabel ?? 'config override'}: "${module}" — ignorado. ` +
+          `Verificá que el nombre del módulo en config.json sea correcto.`
+      );
       return;
     }
 
@@ -319,7 +328,7 @@ Error: ${issue.message}`;
 
   CONFIG_JSON_PATHS.forEach(path => {
     const overrides = readConfigJSONOverrides(path);
-    override(config, overrides);
+    override(config, overrides, path);
   });
 
   return config as AppConfigSchema;

@@ -108,6 +108,11 @@ while [[ $# -gt 0 ]]; do
   esac
 done
 
+# Bug #13: Validar que PORT sea un número entre 1 y 65535
+if ! [[ "$PORT" =~ ^[0-9]+$ ]] || [[ "$PORT" -lt 1 ]] || [[ "$PORT" -gt 65535 ]]; then
+  error "Puerto inválido: '${PORT}'. Debe ser un número entre 1 y 65535."
+fi
+
 echo ""
 echo "╔══════════════════════════════════════════════════════════╗"
 echo "║              GD docs — Instalador                       ║"
@@ -208,7 +213,7 @@ generate_config() {
   local minio_user="${2}"
   local minio_pass="${3}"
   local src="$SCRIPT_DIR/config.selfhost.json"
-  local dst="${config_dir}/affine.config.json"
+  local dst="${config_dir}/config.json"
 
   mkdir -p "${config_dir}"
 
@@ -227,7 +232,6 @@ generate_config() {
 # ---------- Crear .env ----------
 if [[ -f "$ENV_FILE" ]]; then
   warn ".env ya existe — se conserva. Bórralo si quieres regenerarlo."
-  # Cargar variables para generar el config aunque el .env ya exista
   set -a; source "$ENV_FILE"; set +a
 
   # Si el .env existente no tiene MINIO_ROOT_PASSWORD (instalación previa a MinIO),
@@ -251,10 +255,22 @@ EOF
     echo "  ⚠️   Guardá esta contraseña en un lugar seguro."
     echo ""
   fi
+
+  # Si el .env existente no tiene REDIS_DATA_LOCATION, agregarla (nueva persistencia Redis).
+  if ! grep -q "^REDIS_DATA_LOCATION=" "$ENV_FILE" 2>/dev/null; then
+    REDIS_DATA_LOCATION="${DATA_ROOT}/redis"
+    echo "" >> "$ENV_FILE"
+    echo "# Redis — persistencia de sesiones y caché" >> "$ENV_FILE"
+    echo "REDIS_DATA_LOCATION=${REDIS_DATA_LOCATION}" >> "$ENV_FILE"
+    export REDIS_DATA_LOCATION
+    mkdir -p "${REDIS_DATA_LOCATION}"
+    success "REDIS_DATA_LOCATION guardada en .env: ${REDIS_DATA_LOCATION}"
+  fi
 else
   info "Generando configuración..."
   DB_PASSWORD=$(generate_password)
   MINIO_ROOT_PASSWORD=$(generate_password)
+  REDIS_PASSWORD=$(generate_password)
   cat > "$ENV_FILE" << EOF
 # GD docs — Configuración generada el $(date -u '+%Y-%m-%d %H:%M UTC')
 
@@ -264,6 +280,7 @@ PORT=${PORT}
 DB_DATA_LOCATION=${DATA_ROOT}/postgres/pgdata
 CONFIG_LOCATION=${DATA_ROOT}/config
 ASSETS_LOCATION=${DATA_ROOT}/static
+REDIS_DATA_LOCATION=${DATA_ROOT}/redis
 
 # Base de datos
 DB_USERNAME=gddocs
@@ -275,6 +292,9 @@ MINIO_ROOT_USER=gddocs
 MINIO_ROOT_PASSWORD=${MINIO_ROOT_PASSWORD}
 MINIO_DATA_LOCATION=${DATA_ROOT}/minio
 
+# Redis — autenticación (evita acceso sin contraseña desde la red Docker)
+REDIS_PASSWORD=${REDIS_PASSWORD}
+
 # Rendimiento
 NODE_OPTIONS=--max-old-space-size=4096
 EOF
@@ -283,24 +303,30 @@ EOF
   echo "  ⚠️  Guardá estas contraseñas en un lugar seguro:"
   echo "       BD:     ${DB_PASSWORD}"
   echo "       MinIO:  ${MINIO_ROOT_PASSWORD}"
+  echo "       Redis:  ${REDIS_PASSWORD}"
   echo ""
 
   # Cargar el .env recién creado
   set -a; source "$ENV_FILE"; set +a
 fi
 
+# Bug #8: Validar longitud mínima de contraseña MinIO (mínimo 8 chars según S3)
+if [[ ${#MINIO_ROOT_PASSWORD} -lt 8 ]]; then
+  error "MINIO_ROOT_PASSWORD debe tener al menos 8 caracteres. Editá .env y volvé a correr install.sh."
+fi
+
 # ---------- Crear directorios ----------
 info "Creando directorios de datos..."
-mkdir -p "${DATA_ROOT}"/{postgres/pgdata,config,static/fonts,static/ppt-images/background,minio}
+mkdir -p "${DATA_ROOT}"/{postgres/pgdata,config,static/fonts,static/ppt-images/background,minio,redis}
 success "Directorios listos."
 
-# ---------- Generar affine.config.json con credenciales MinIO ----------
+# ---------- Generar config.json con credenciales MinIO ----------
 info "Generando configuración con credenciales MinIO..."
 generate_config \
   "${CONFIG_LOCATION:-${DATA_ROOT}/config}" \
   "${MINIO_ROOT_USER:-gddocs}" \
   "${MINIO_ROOT_PASSWORD}"
-success "Archivo de configuración generado: ${CONFIG_LOCATION:-${DATA_ROOT}/config}/affine.config.json"
+success "Archivo de configuración generado: ${CONFIG_LOCATION:-${DATA_ROOT}/config}/config.json"
 
 # ---------- Descargar assets estáticos ----------
 echo ""
