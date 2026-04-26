@@ -225,10 +225,11 @@ if [[ "$SKIP_BACKUP" == false ]]; then
   mkdir -p "$BACKUP_DIR"
 
   # Borrar backups anteriores antes de crear el nuevo
-  OLD_BACKUPS=$(ls "$BACKUP_DIR"/*.sql.gz 2>/dev/null | wc -l)
+  # Usar find en vez de ls para evitar falla con pipefail cuando no hay archivos
+  OLD_BACKUPS=$(find "$BACKUP_DIR" -maxdepth 1 -name "*.sql.gz" 2>/dev/null | wc -l)
   if [[ "$OLD_BACKUPS" -gt 0 ]]; then
     info "Eliminando ${OLD_BACKUPS} backup(s) anterior(es)..."
-    rm -f "$BACKUP_DIR"/*.sql.gz
+    find "$BACKUP_DIR" -maxdepth 1 -name "*.sql.gz" -delete 2>/dev/null || true
     success "Backups anteriores eliminados."
   fi
 
@@ -324,7 +325,6 @@ OLD_STORAGE_DIR="${UPLOAD_LOCATION:-${HOME}/.gddocs/storage}"
 
 if [[ -d "$OLD_STORAGE_DIR" ]]; then
   OLD_FILE_COUNT=$(find "$OLD_STORAGE_DIR" -type f 2>/dev/null | wc -l)
-
   if [[ "$OLD_FILE_COUNT" -gt 0 ]]; then
     OLD_SIZE=$(du -sh "$OLD_STORAGE_DIR" 2>/dev/null | cut -f1)
     echo ""

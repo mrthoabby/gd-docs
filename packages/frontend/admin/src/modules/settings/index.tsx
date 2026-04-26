@@ -176,7 +176,9 @@ const AdminPanel = ({
                       let props: ConfigInputProps;
                       if (typeof field === 'string') {
                         const descriptor =
-                          ALL_CONFIG_DESCRIPTORS[module][field];
+                          ALL_CONFIG_DESCRIPTORS[module]?.[field];
+                        // Campo sin descriptor en el backend → omitir silenciosamente
+                        if (!descriptor) return null;
                         props = {
                           field: `${module}/${field}`,
                           desc: descriptor.desc,
@@ -189,11 +191,13 @@ const AdminPanel = ({
                         };
                       } else {
                         const descriptor =
-                          ALL_CONFIG_DESCRIPTORS[module][field.key];
+                          ALL_CONFIG_DESCRIPTORS[module]?.[field.key];
+                        // Campo sin descriptor en el backend → omitir silenciosamente
+                        if (!descriptor && !field.desc) return null;
                         props = {
                           field: `${module}/${field.key}${field.sub ? `/${field.sub}` : ''}`,
-                          desc: field.desc ?? descriptor.desc,
-                          type: field.type ?? descriptor.type,
+                          desc: field.desc ?? descriptor?.desc ?? '',
+                          type: field.type ?? descriptor?.type ?? 'String',
                           // @ts-expect-error for enum type
                           options: field.options,
                           defaultValue: get(
@@ -202,7 +206,7 @@ const AdminPanel = ({
                           ),
                           onChange: onUpdate,
                           // @ts-expect-error placeholder is optional extra field in config.json
-                          placeholder: descriptor.placeholder,
+                          placeholder: descriptor?.placeholder,
                         };
                       }
 
