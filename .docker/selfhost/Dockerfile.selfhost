@@ -1,26 +1,33 @@
 # syntax=docker/dockerfile:1.7
 # ============================================================
-#  GD docs — Dockerfile self-hosted (optimizado para builds rápidos)
+#  GD docs — Dockerfile self-hosted
 #
-#  Optimizaciones vs versión anterior:
-#    1. Cache mount de yarn  → yarn install usa paquetes cacheados
-#       en disco entre builds (~30s en vez de ~221s)
-#    2. Stages paralelos     → los 3 frontends + prod-deps compilan
-#       al mismo tiempo (~80s en vez de ~176s secuencial)
+#  Estrategia de memoria:
+#    Los 3 builds de webpack (web, admin, mobile) corren en SERIE
+#    dentro de un único stage "build-frontend" para evitar OOM.
+#    Cada bundle de rspack/webpack consume 4-8 GB de RAM; corriendo
+#    los tres en paralelo se necesitarían 12-24 GB simultáneos.
+#    En serie: el pico máximo es ~8 GB (un build a la vez).
 #
-#  Tiempos estimados:
-#    1ra vez (sin caché):  ~330s  (era ~540s)
-#    Builds siguientes:    ~130s  (era ~540s)
+#    build-server y build-prod-deps SÍ corren en paralelo con
+#    build-frontend porque son mucho más livianos (~1-2 GB c/u).
+#
+#  Tiempos estimados en un servidor con 8 GB RAM:
+#    1ra vez (sin caché):  ~420s
+#    Builds siguientes:    ~200s  (yarn cache en disco)
+#
+#  Si tu máquina tiene ≥ 16 GB de RAM disponibles para Docker
+#  podés restaurar los stages paralelos cambiando build-frontend
+#  por los tres stages individuales (build-web / build-admin /
+#  build-mobile) que están comentados al final de este archivo.
 #
 #  Stages:
-#    base        — instala deps (todos los builds parten de aquí)
-#    build-server  ┐
-#    build-web     │ corren en PARALELO gracias a BuildKit
-#    build-admin   │
-#    build-mobile  │
-#    build-prod-deps ┘
-#    assets      — ensambla artefactos + limpia
-#    <final>     — imagen de producción mínima
+#    base           — instala TODAS las deps (compartido)
+#    build-frontend — web + admin + mobile en SERIE  ← menos RAM
+#    build-server   ┐ corren en paralelo con
+#    build-prod-deps┘ build-frontend (son livianos)
+#    assets         — ensambla artefactos + limpia
+#    <final>        — imagen de producción mínima
 # ============================================================
 
 # ── Stage base: dependencias compartidas ─────────────────────
@@ -29,7 +36,7 @@ WORKDIR /repo
 
 ENV HUSKY=0 \
     BUILD_TYPE=stable \
-    NODE_OPTIONS="--max-old-space-size=8192" \
+    NODE_OPTIONS="--max-old-space-size=4096" \
     NPM_TOKEN=NONE \
     PERFSEE_TOKEN="" \
     GITHUB_SHA=selfhosted
@@ -56,26 +63,24 @@ RUN --mount=type=cache,target=/root/.yarn/cache \
     corepack enable && yarn install
 
 
-# ── Stages paralelos (BuildKit los corre simultáneamente) ────
+# ── Frontend: web + admin + mobile en SERIE ──────────────────
+# Un solo stage evita que 3 procesos de webpack/rspack consuman
+# RAM simultáneamente. El build siguiente empieza solo cuando el
+# anterior termina, reduciendo el pico de memoria de ~18 GB a ~4 GB.
+FROM base AS build-frontend
+RUN yarn affine bundle -p @affine/web && \
+    yarn affine bundle -p @affine/admin && \
+    yarn affine bundle -p @affine/mobile
 
-# Backend NestJS → genera dist/
+
+# ── Backend NestJS (paralelo con build-frontend) ──────────────
+# El build del servidor NestJS consume ~500 MB — seguro en paralelo.
 FROM base AS build-server
 RUN yarn affine @affine/server build
 
-# Frontend web principal
-FROM base AS build-web
-RUN yarn affine bundle -p @affine/web
 
-# Panel de administración
-FROM base AS build-admin
-RUN yarn affine bundle -p @affine/admin
-
-# App móvil (PWA)
-FROM base AS build-mobile
-RUN yarn affine bundle -p @affine/mobile
-
-# Dependencias de producción del servidor + cliente Prisma
-# Corre en paralelo con los builds de frontend — no depende de ellos
+# ── Deps de producción + Prisma (paralelo con build-frontend) ─
+# yarn workspaces focus solo instala las deps del servidor (~1.5 GB).
 FROM base AS build-prod-deps
 RUN --mount=type=cache,target=/root/.yarn/cache \
     yarn workspaces focus @affine/server --production && \
@@ -87,8 +92,6 @@ RUN --mount=type=cache,target=/root/.yarn/cache \
 
 
 # ── Stage ensamblaje ─────────────────────────────────────────
-# Este stage espera a que TODOS los paralelos terminen antes
-# de armar la imagen final. BuildKit lo resuelve automáticamente.
 FROM node:22-bookworm-slim AS assets
 WORKDIR /app
 
@@ -98,16 +101,14 @@ COPY --from=build-prod-deps /repo/packages/backend/server /app
 # 2. Sobreescribir con el dist/ compilado (TypeScript → JS)
 COPY --from=build-server /repo/packages/backend/server/dist /app/dist
 
-# 3. Frontends compilados
-COPY --from=build-web    /repo/packages/frontend/apps/web/dist    /app/static
-COPY --from=build-admin  /repo/packages/frontend/admin/dist       /app/static/admin
-COPY --from=build-mobile /repo/packages/frontend/apps/mobile/dist /app/static/mobile
+# 3. Frontends compilados (todos vienen del stage build-frontend)
+COPY --from=build-frontend /repo/packages/frontend/apps/web/dist    /app/static
+COPY --from=build-frontend /repo/packages/frontend/admin/dist        /app/static/admin
+COPY --from=build-frontend /repo/packages/frontend/apps/mobile/dist  /app/static/mobile
 
 ARG TARGETARCH
 ARG TARGETVARIANT
 
-# Cache mount para apt: los .deb quedan en disco entre builds.
-# sharing=locked evita conflictos si BuildKit corre stages en paralelo.
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
