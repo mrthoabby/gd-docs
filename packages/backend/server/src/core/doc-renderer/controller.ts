@@ -277,11 +277,16 @@ export class DocRendererController {
 
       return assets;
     } catch (e) {
-      if (env.prod) {
+      // In self-hosted prod, log a warning instead of crashing.
+      // Doc shared-page rendering won't work, but all other features remain functional.
+      if (env.prod && !env.selfhosted) {
         throw e;
-      } else {
-        return defaultAssets;
       }
+      this.logger.warn(
+        `assets-manifest.json not found at ${manifestPath} — using empty defaults. ` +
+          `Shared doc rendering will be unavailable until the image is rebuilt.`
+      );
+      return defaultAssets;
     }
   }
 }

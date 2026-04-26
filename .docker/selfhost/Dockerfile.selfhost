@@ -109,6 +109,11 @@ COPY --from=build-frontend /repo/packages/frontend/apps/mobile/dist  /app/static
 ARG TARGETARCH
 ARG TARGETVARIANT
 
+# Verificación rápida: si @affine/web no generó assets-manifest.json el build falla aquí
+# en lugar de arrancar el servidor y crashear con ENOENT.
+RUN test -f /app/static/assets-manifest.json || \
+    { echo "ERROR: /app/static/assets-manifest.json no existe — el build de @affine/web falló o no se copió."; exit 1; }
+
 RUN --mount=type=cache,target=/var/cache/apt,sharing=locked \
     --mount=type=cache,target=/var/lib/apt,sharing=locked \
     apt-get update && \
