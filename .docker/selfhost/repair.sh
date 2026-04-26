@@ -34,10 +34,12 @@ header()  { echo -e "\n${BOLD}$*${NC}"; }
 
 FORCE_REBUILD=false
 STATUS_ONLY=false
+NO_CACHE=false
 
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --rebuild)     FORCE_REBUILD=true;  shift ;;
+    --no-cache)    NO_CACHE=true;       shift ;;
     --status)      STATUS_ONLY=true;    shift ;;
     *) warn "Argumento desconocido: $1"; shift ;;
   esac
@@ -184,6 +186,8 @@ fi
 if [[ "$SRV_STATUS" == "restarting" ]] || \
    [[ "$SRV_STATUS" == "running" && "$SRV_RESTARTS" -gt 3 ]]; then
   NEED_BUILD=true
+  # Crash loop → forzar --no-cache para no reutilizar un layer roto
+  NO_CACHE=true
 fi
 
 if $ALL_OK; then
@@ -206,13 +210,41 @@ if $NEED_BUILD; then
   else
     info "Imagen no encontrada — construyendo..."
   fi
-  echo ""
-  docker build \
-    -f "$SCRIPT_DIR/Dockerfile.selfhost" \
-    -t "$IMAGE_NAME" \
-    "$REPO_ROOT"
-  docker image prune -f 2>/dev/null || true
-  success "Imagen reconstruida: ${IMAGE_NAME}"
+
+  # Antes de un rebuild completo: verificar si el problema es solo
+  # el assets-manifest.json faltante (fix rápido de 5 segundos)
+  if $IMG_OK && ! $FORCE_REBUILD && ! $NO_CACHE; then
+    info "Verificando si es un problema de assets-manifest.json..."
+    MANIFEST_EXISTS=$(docker run --rm "$IMAGE_NAME" test -f /app/static/assets-manifest.json 2>/dev/null && echo "yes" || echo "no")
+    if [[ "$MANIFEST_EXISTS" == "no" ]]; then
+      warn "assets-manifest.json faltante — aplicando parche rápido..."
+      ORIG_ID=$(docker inspect "$IMAGE_NAME" --format '{{.Id}}' | cut -c8-19)
+      cat > /tmp/_gddocs_patch.dockerfile << PATCH_EOF
+FROM ${IMAGE_NAME}
+RUN mkdir -p /app/static && \
+    echo '{"css":[],"js":[],"publicPath":"/","gitHash":"","description":""}' \
+    > /app/static/assets-manifest.json
+CMD ["node", "./dist/main.js"]
+PATCH_EOF
+      docker build -t "$IMAGE_NAME" -f /tmp/_gddocs_patch.dockerfile /tmp
+      rm -f /tmp/_gddocs_patch.dockerfile
+      success "Parche de manifest aplicado. Omitiendo rebuild completo."
+      NEED_BUILD=false
+    fi
+  fi
+
+  if $NEED_BUILD; then
+    echo ""
+    BUILD_ARGS=""
+    $NO_CACHE && BUILD_ARGS="--no-cache" && warn "Usando --no-cache (descartando layers previos)"
+    # shellcheck disable=SC2086
+    docker build $BUILD_ARGS \
+      -f "$SCRIPT_DIR/Dockerfile.selfhost" \
+      -t "$IMAGE_NAME" \
+      "$REPO_ROOT"
+    docker image prune -f 2>/dev/null || true
+    success "Imagen reconstruida: ${IMAGE_NAME}"
+  fi
 else
   info "Paso 1 — Imagen OK, se omite el build"
 fi
