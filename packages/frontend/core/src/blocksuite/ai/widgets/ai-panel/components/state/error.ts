@@ -146,7 +146,7 @@ export class AIPanelError extends WithDisposable(LitElement) {
           AIErrorType.Unauthorized,
           () =>
             html` <div class="error-info">
-                You need to login to AFFiNE Cloud to continue using AFFiNE AI.
+                You need to log in to continue using GD docs AI.
               </div>
               <div class="action-button-group">
                 <div @click=${this.config.cancel} class="action-button">
@@ -161,9 +161,8 @@ export class AIPanelError extends WithDisposable(LitElement) {
           AIErrorType.PaymentRequired,
           () =>
             html` <div class="error-info">
-                You've reached the current usage cap for AFFiNE AI. You can
-                subscribe to AFFiNE AI(with free 7-day-trial) to continue the AI
-                experience!
+                You've reached the current usage cap for GD docs AI. Contact your
+                administrator to configure AI access.
               </div>
               <div class="action-button-group">
                 <div @click=${this.config.cancel} class="action-button">
