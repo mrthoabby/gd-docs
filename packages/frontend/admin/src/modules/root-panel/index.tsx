@@ -134,7 +134,8 @@ function useSystemHealth() {
     try {
       await new Promise<void>((resolve, reject) => {
         const proto = location.protocol === 'https:' ? 'wss' : 'ws';
-        const ws = new WebSocket(`${proto}://${location.host}/`);
+        // Socket.io requiere la ruta /socket.io con parámetros EIO=4
+        const ws = new WebSocket(`${proto}://${location.host}/socket.io/?EIO=4&transport=websocket`);
         const t = setTimeout(() => { ws.close(); resolve(); }, 2000);
         ws.onopen = () => { clearTimeout(t); ws.close(); resolve(); };
         ws.onerror = () => { clearTimeout(t); reject(new Error('ws error')); };
