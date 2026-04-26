@@ -1,5 +1,5 @@
 {
-  "$schema": "https://github.com/toeverything/affine/releases/latest/download/config.schema.json",
+  "$schema": "https://github.com/mrthoabby/gd-docs/releases/latest/download/config.schema.json",
 
   "server": {
     "name": "GD docs Server"
