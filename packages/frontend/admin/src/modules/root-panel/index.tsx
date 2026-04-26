@@ -31,20 +31,24 @@ interface HealthStatus {
 }
 
 // ---------- lista de feature flags ----------
+// [SELFHOST PATCH] Las claves usan snake_case para coincidir EXACTAMENTE con
+// las claves del sistema de flags del cliente (constant.ts).
+// El servidor guarda estos overrides en la BD y el cliente los lee al arrancar.
 const FEATURE_FLAGS: FeatureFlag[] = [
-  { key: 'enableAiPlayground',           name: 'AI Playground',               desc: 'Cambio de modelos de IA' },
-  { key: 'enableThemeEditor',            name: 'Editor de temas',             desc: 'Personalización visual avanzada' },
-  { key: 'enableTurboRenderer',          name: 'Turbo Renderer',              desc: 'Renderer experimental en edgeless' },
-  { key: 'enableBlockMeta',              name: 'Block Meta',                  desc: 'Metadata de bloques (experimental)' },
-  { key: 'enableEdgelessScribbledStyle', name: 'Scribbled Style',             desc: 'Estilo manuscrito en edgeless' },
-  { key: 'enableTableVirtualScroll',     name: 'Virtual Scroll en tablas',    desc: 'Mejor rendimiento en tablas grandes' },
-  { key: 'enableAdapterPanel',           name: 'Adapter Panel',               desc: 'Panel de adaptadores de formato' },
-  { key: 'enableEditorRtl',              name: 'RTL Editor',                  desc: 'Soporte árabe/hebreo (RTL)' },
-  { key: 'enableAi',                     name: 'AI (GD docs Copilot)',         desc: 'Asistente de IA (requiere API key en servidor)' },
-  { key: 'enablePdfEmbedPreview',        name: 'Vista previa PDF',            desc: 'Previsualización de PDFs embebidos' },
-  { key: 'enableDomRenderer',            name: 'DOM Renderer',                desc: 'Renderer DOM para elementos gráficos' },
-  { key: 'enablePdfmakeExport',          name: 'Export PDF',                  desc: 'Exportar documentos como PDF' },
-  { key: 'enableAdvancedBlockVisibility',name: 'Visibilidad avanzada de bloques', desc: 'Control fino de visibilidad por bloque' },
+  { key: 'enable_ai_playground',            name: 'AI Playground',               desc: 'Cambio de modelos de IA' },
+  { key: 'enable_theme_editor',             name: 'Editor de temas',             desc: 'Personalización visual avanzada' },
+  { key: 'enable_turbo_renderer',           name: 'Turbo Renderer',              desc: 'Renderer experimental en edgeless' },
+  { key: 'enable_block_meta',               name: 'Block Meta',                  desc: 'Metadata de bloques (experimental)' },
+  { key: 'enable_edgeless_scribbled_style', name: 'Scribbled Style',             desc: 'Estilo manuscrito en edgeless' },
+  { key: 'enable_table_virtual_scroll',     name: 'Virtual Scroll en tablas',    desc: 'Mejor rendimiento en tablas grandes' },
+  { key: 'enable_adapter_panel',            name: 'Adapter Panel',               desc: 'Panel de adaptadores de formato' },
+  { key: 'enable_editor_rtl',               name: 'RTL Editor',                  desc: 'Soporte árabe/hebreo (RTL)' },
+  { key: 'enable_ai',                       name: 'AI (GD docs Copilot)',         desc: 'Asistente de IA (requiere API key en servidor)' },
+  { key: 'enable_pdf_embed_preview',        name: 'Vista previa PDF',            desc: 'Previsualización de PDFs embebidos' },
+  { key: 'enable_dom_renderer',             name: 'DOM Renderer',                desc: 'Renderer DOM para elementos gráficos' },
+  { key: 'enable_advanced_block_visibility',name: 'Visibilidad avanzada de bloques', desc: 'Control fino de visibilidad por bloque' },
+  { key: 'enable_emoji_folder_icon',        name: 'Iconos emoji en carpetas',    desc: 'Permite usar emojis como icono de carpeta' },
+  { key: 'enable_emoji_doc_icon',           name: 'Iconos emoji en documentos',  desc: 'Permite usar emojis como icono de documento' },
 ];
 
 // ---------- hook: cargar / guardar flags via API ----------
@@ -197,8 +201,9 @@ function FeatureFlagsSection() {
       <CardHeader>
         <CardTitle>Feature Flags</CardTitle>
         <CardDescription>
-          Funciones experimentales. Los cambios se persisten en la base de datos del servidor
-          y aplican a todos los usuarios sin necesidad de reiniciar.
+          Overrides globales de feature flags. Al guardar aquí, el servidor persiste el valor
+          en BD y todos los usuarios lo recibirán como valor por defecto al abrir la app
+          (el usuario puede aún sobreescribir en Settings → Experimental Features).
         </CardDescription>
       </CardHeader>
       <CardContent>

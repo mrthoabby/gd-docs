@@ -85,22 +85,36 @@ export class CustomSetupController {
   // -------------------------------------------------------------------------
   // [SELFHOST PATCH] Endpoints para el Panel Root Admin
   // Permiten leer y persistir feature flag overrides en la BD del servidor.
-  // Solo accesibles cuando la sesión del usuario tiene rol 'administrator'.
   // -------------------------------------------------------------------------
 
   /**
-   * GET /api/setup/admin-flags
-   * Devuelve los feature flags actuales del servidor.
-   * Lee directamente de la BD para garantizar que refleje los valores guardados
-   * (el config en memoria solo se actualiza en arranque; leer de BD evita que
-   * los cambios recientes se pierdan al refrescar la página).
+   * GET /api/setup/feature-flags  (público)
+   * Devuelve los overrides de feature flags guardados por el admin.
+   * Accesible por CUALQUIER usuario (incluso no autenticados) porque los flags
+   * son solo configuración de UI, no datos sensibles.
+   * El cliente web los lee al arrancar para inicializar el sistema de flags.
+   */
+  @Public()
+  @Public()
+  @Get('/feature-flags')
+  async getFeatureFlags(@Res() res: Response) {
+    const flags = await this._readFlagOverrides();
+    return res.json({ flags });
+  }
+
+  /**
+   * GET /api/setup/admin-flags  (requiere admin)
+   * Igual que /feature-flags pero solo accesible por administradores.
+   * Usado por el panel root para leer el estado actual.
    */
   @Get('/admin-flags')
   async getAdminFlags(@Req() req: Request, @Res() res: Response) {
     await this.requireAdminSession(req, res);
+    const flags = await this._readFlagOverrides();
+    return res.json({ flags });
+  }
 
-    // Leer TODOS los registros de app_config y filtrar los que pertenecen
-    // al módulo 'flags.*' — así siempre devolvemos los valores persistidos.
+  private async _readFlagOverrides(): Promise<Record<string, boolean>> {
     const allConfigs = await this.models.appConfig.load();
     const PREFIX = 'flags.';
     const flags: Record<string, boolean> = {};
@@ -110,8 +124,7 @@ export class CustomSetupController {
         flags[key] = Boolean(cfg.value);
       }
     }
-
-    return res.json({ flags });
+    return flags;
   }
 
   /**
