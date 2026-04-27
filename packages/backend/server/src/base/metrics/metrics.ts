@@ -1,28 +1,28 @@
-import {
-  Gauge,
-  Histogram,
-  Meter,
-  MeterProvider,
-  MetricOptions,
-  metrics as otelMetrics,
-  UpDownCounter,
-} from '@opentelemetry/api';
-import { HostMetrics } from '@opentelemetry/host-metrics';
+export type MetricOptions = {
+  description?: string;
+  unit?: string;
+};
 
-function getMeterProvider() {
-  return otelMetrics.getMeterProvider();
-}
+type Attributes = Record<string, unknown>;
+
+type UpDownCounter = {
+  add(value: number, attributes?: Attributes): void;
+};
+
+type Gauge = {
+  record(value: number, attributes?: Attributes): void;
+};
+
+type Histogram = {
+  record(value: number, attributes?: Attributes): void;
+};
 
 export function registerCustomMetrics() {
-  const hostMetricsMonitoring = new HostMetrics({
-    name: 'instance-host-metrics',
-    meterProvider: getMeterProvider() as MeterProvider,
-  });
-  hostMetricsMonitoring.start();
+  // Metrics are disabled in the slim self-hosted build.
 }
 
-export function getMeter(name = 'business') {
-  return getMeterProvider().getMeter(name);
+export function getMeter(_name = 'business') {
+  return null;
 }
 
 type MetricType = 'counter' | 'gauge' | 'histogram';
@@ -34,18 +34,14 @@ type Metric<T extends MetricType> = T extends 'counter'
       ? Histogram
       : never;
 
+type MetricCreators = {
+  [T in MetricType]: (name: string, opts?: MetricOptions) => Metric<T>;
+};
+
 export type ScopedMetrics = {
   counter: (name: string, opts?: MetricOptions) => UpDownCounter;
   gauge: (name: string, opts?: MetricOptions) => Gauge;
   histogram: (name: string, opts?: MetricOptions) => Histogram;
-};
-
-type MetricCreators = {
-  [T in MetricType]: (
-    meter: Meter,
-    name: string,
-    opts?: MetricOptions
-  ) => Metric<T>;
 };
 
 export type KnownMetricScopes =
@@ -65,21 +61,20 @@ export type KnownMetricScopes =
   | 'workspace';
 
 const metricCreators: MetricCreators = {
-  counter(meter: Meter, name: string, opts?: MetricOptions) {
-    return meter.createCounter(name, opts);
+  counter(_name: string, _opts?: MetricOptions) {
+    return { add() {} } satisfies UpDownCounter;
   },
-  gauge(meter: Meter, name: string, opts?: MetricOptions) {
-    return meter.createGauge(name, opts);
+  gauge(_name: string, _opts?: MetricOptions) {
+    return { record() {} } satisfies Gauge;
   },
-  histogram(meter: Meter, name: string, opts?: MetricOptions) {
-    return meter.createHistogram(name, opts);
+  histogram(_name: string, _opts?: MetricOptions) {
+    return { record() {} } satisfies Histogram;
   },
 };
 
 const scopes = new Map<string, ScopedMetrics>();
 
 function make(scope: string) {
-  const meter = getMeter();
   const metrics = new Map<string, { type: MetricType; metric: any }>();
   const prefix = scope + '/';
 
@@ -99,7 +94,7 @@ function make(scope: string) {
 
       return metric.metric;
     } else {
-      const metric = metricCreators[type](meter, name, opts);
+      const metric = metricCreators[type](name, opts);
       metrics.set(name, { type, metric });
       return metric;
     }

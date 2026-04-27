@@ -14,7 +14,6 @@ import { DeletedAccountDialog } from './deleted-account';
 import { DocInfoDialog } from './doc-info';
 import { EnableCloudDialog } from './enable-cloud';
 import { ImportDialog } from './import';
-import { ImportTemplateDialog } from './import-template';
 import { ImportWorkspaceDialog } from './import-workspace';
 import { CollectionSelectorDialog } from './selectors/collection';
 import { DateSelectorDialog } from './selectors/date';
@@ -27,7 +26,6 @@ import { VerifyEmailDialog } from './verify-email';
 const GLOBAL_DIALOGS = {
   'create-workspace': CreateWorkspaceDialog,
   'import-workspace': ImportWorkspaceDialog,
-  'import-template': ImportTemplateDialog,
   'sign-in': SignInDialog,
   'change-password': ChangePasswordDialog,
   'verify-email': VerifyEmailDialog,

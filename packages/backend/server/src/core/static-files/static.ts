@@ -6,7 +6,6 @@ import type { Application, Request, Response } from 'express';
 import { static as serveStatic } from 'express';
 
 import { Config } from '../../base';
-import { isMobileRequest } from '../utils/user-agent';
 
 const staticPathRegex = /^\/(_plugin|assets|imgs|js|plugins|static)\//;
 
@@ -37,16 +36,8 @@ export class StaticFilesResolver implements OnModuleInit {
     const rootPath = basePath || '/';
     const staticPath = join(env.projectRoot, 'static');
     const adminPath = join(staticPath, 'admin');
-    const mobilePath = env.namespaces.canary
-      ? join(staticPath, 'mobile')
-      : staticPath;
 
     const staticAsset = serveStatic(staticPath, {
-      redirect: false,
-      index: false,
-      fallthrough: true,
-    });
-    const mobileAsset = serveStatic(mobilePath, {
       redirect: false,
       index: false,
       fallthrough: true,
@@ -56,33 +47,11 @@ export class StaticFilesResolver implements OnModuleInit {
       index: false,
       fallthrough: false,
     });
-    const mobileAssetStrict = serveStatic(mobilePath, {
-      redirect: false,
-      index: false,
-      fallthrough: false,
-    });
     const adminAsset = serveStatic(adminPath, {
       redirect: false,
       index: false,
       fallthrough: true,
     });
-
-    const routeByUA = (
-      req: Request,
-      res: Response,
-      next: (err?: unknown) => void,
-      strict = false
-    ) => {
-      const isMobile = isMobileRequest(req.headers);
-      if (strict) {
-        return isMobile
-          ? mobileAssetStrict(req, res, next)
-          : staticAssetStrict(req, res, next);
-      }
-      return isMobile
-        ? mobileAsset(req, res, next)
-        : staticAsset(req, res, next);
-    };
 
     // /admin
     app.use(basePath + '/admin', adminAsset);
@@ -96,18 +65,13 @@ export class StaticFilesResolver implements OnModuleInit {
         next();
         return;
       }
-      routeByUA(
-        req,
-        res,
-        error => {
-          if (isMissingStaticAssetError(error)) {
-            res.status(404).end();
-            return;
-          }
-          next(error);
-        },
-        true
-      );
+      staticAssetStrict(req, res, error => {
+        if (isMissingStaticAssetError(error)) {
+          res.status(404).end();
+          return;
+        }
+        next(error);
+      });
     });
 
     // /
@@ -121,7 +85,7 @@ export class StaticFilesResolver implements OnModuleInit {
         'Cache-Control',
         'private, no-cache, no-store, max-age=0, must-revalidate'
       );
-      routeByUA(req, res, next, false);
+      staticAsset(req, res, next);
     });
 
     app.get(
@@ -132,8 +96,7 @@ export class StaticFilesResolver implements OnModuleInit {
           return;
         }
 
-        const root = isMobileRequest(req.headers) ? mobilePath : staticPath;
-        res.sendFile(join(root, 'index.html'));
+        res.sendFile(join(staticPath, 'index.html'));
       }
     );
   }

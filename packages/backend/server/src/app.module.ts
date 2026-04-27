@@ -46,21 +46,15 @@ import { SelfhostModule } from './core/selfhost';
 import { StaticFileModule } from './core/static-files';
 import { StorageModule } from './core/storage';
 import { SyncModule } from './core/sync';
-import { TelemetryModule } from './core/telemetry';
 import { UserModule } from './core/user';
 import { VersionModule } from './core/version';
 import { WorkspaceModule } from './core/workspaces';
 import { Env } from './env';
 import { ModelsModule } from './models';
-import { CalendarModule } from './plugins/calendar';
 import { CaptchaModule } from './plugins/captcha';
 import { CopilotModule } from './plugins/copilot';
-import { CustomerIoModule } from './plugins/customerio';
-import { GCloudModule } from './plugins/gcloud';
 import { IndexerModule } from './plugins/indexer';
-import { LicenseModule } from './plugins/license';
 import { OAuthModule } from './plugins/oauth';
-import { PaymentModule } from './plugins/payment';
 import { WorkerModule } from './plugins/worker';
 
 export const FunctionalityModules = [
@@ -180,11 +174,7 @@ export function buildAppModule(env: Env) {
     // renderer server and front server
     .useIf(() => env.flavors.renderer || env.flavors.front, DocRendererModule)
     // sync server and front server
-    .useIf(
-      () => env.flavors.sync || env.flavors.front,
-      SyncModule,
-      TelemetryModule
-    )
+    .useIf(() => env.flavors.sync || env.flavors.front, SyncModule)
     // graphql server only
     .useIf(
       () => env.flavors.graphql,
@@ -193,14 +183,9 @@ export function buildAppModule(env: Env) {
       StorageModule,
       ServerConfigResolverModule,
       WorkspaceModule,
-      LicenseModule,
-      PaymentModule,
       CopilotModule,
       CaptchaModule,
       OAuthModule,
-      CalendarModule,
-      CustomerIoModule,
-      TelemetryModule,
       CommentModule,
       AccessTokenModule,
       QueueDashboardModule
@@ -210,10 +195,7 @@ export function buildAppModule(env: Env) {
     // worker for and self-hosted API only for self-host and local development only
     .useIf(() => env.dev || env.selfhosted, WorkerModule, SelfhostModule)
     // static frontend routes for front flavor
-    .useIf(() => env.flavors.front, StaticFileModule)
-
-    // gcloud
-    .useIf(() => env.gcp, GCloudModule);
+    .useIf(() => env.flavors.front, StaticFileModule);
 
   return factor.compile();
 }

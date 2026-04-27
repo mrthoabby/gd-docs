@@ -1,7 +1,7 @@
-import type { Attributes } from '@opentelemetry/api';
-
 import { makeMethodDecorator } from '../nestjs/decorator';
 import { type KnownMetricScopes, metrics } from './metrics';
+
+type Attributes = Record<string, unknown>;
 
 /**
  * Decorator for measuring the call time, record call count and if is throw of a function call

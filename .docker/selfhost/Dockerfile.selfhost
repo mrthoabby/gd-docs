@@ -3,10 +3,10 @@
 #  GD docs — Dockerfile self-hosted
 #
 #  Estrategia de memoria:
-#    Los 3 builds de webpack (web, admin, mobile) corren en SERIE
+#    Los builds de webpack (web, admin) corren en SERIE
 #    dentro de un único stage "build-frontend" para evitar OOM.
 #    Cada bundle de rspack/webpack consume 4-8 GB de RAM; corriendo
-#    los tres en paralelo se necesitarían 12-24 GB simultáneos.
+#    varios en paralelo se necesitaría mucha más RAM.
 #    En serie: el pico máximo es ~8 GB (un build a la vez).
 #
 #    build-server y build-prod-deps SÍ corren en paralelo con
@@ -18,12 +18,11 @@
 #
 #  Si tu máquina tiene ≥ 16 GB de RAM disponibles para Docker
 #  podés restaurar los stages paralelos cambiando build-frontend
-#  por los tres stages individuales (build-web / build-admin /
-#  build-mobile) que están comentados al final de este archivo.
+#  por stages individuales (build-web / build-admin).
 #
 #  Stages:
-#    base           — instala TODAS las deps (compartido)
-#    build-frontend — web + admin + mobile en SERIE  ← menos RAM
+#    base           — instala deps enfocadas a web + admin + server
+#    build-frontend — web + admin en SERIE  ← menos RAM
 #    build-server   ┐ corren en paralelo con
 #    build-prod-deps┘ build-frontend (son livianos)
 #    assets         — ensambla artefactos + limpia
@@ -39,6 +38,10 @@ ENV HUSKY=0 \
     NODE_OPTIONS="--max-old-space-size=4096" \
     NPM_TOKEN=NONE \
     PERFSEE_TOKEN="" \
+    AFFINE_ENABLE_PROD_SOURCEMAPS=false \
+    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
+    ELECTRON_SKIP_BINARY_DOWNLOAD=1 \
+    SENTRYCLI_SKIP_DOWNLOAD=1 \
     GITHUB_SHA=selfhosted
 
 # Yarn runtime (capa raramente cambia — siempre cacheada)
@@ -60,17 +63,17 @@ COPY .prettierrc .prettierignore .oxlintrc.json ./
 # del host entre builds. Si yarn.lock no cambió, la instalación es
 # casi instantánea porque no descarga nada de internet.
 RUN --mount=type=cache,target=/root/.yarn/cache \
-    corepack enable && yarn install
+    corepack enable && \
+    yarn workspaces focus @affine/web @affine/admin @affine/server @affine-tools/cli @types/affine__env
 
 
-# ── Frontend: web + admin + mobile en SERIE ──────────────────
-# Un solo stage evita que 3 procesos de webpack/rspack consuman
+# ── Frontend: web + admin en SERIE ───────────────────────────
+# Un solo stage evita que procesos de webpack/rspack consuman
 # RAM simultáneamente. El build siguiente empieza solo cuando el
 # anterior termina, reduciendo el pico de memoria de ~18 GB a ~4 GB.
 FROM base AS build-frontend
-RUN yarn affine bundle -p @affine/web && \
-    yarn affine bundle -p @affine/admin && \
-    yarn affine bundle -p @affine/mobile
+RUN yarn workspace @affine/web build && \
+    yarn workspace @affine/admin build
 
 
 # ── Backend NestJS (paralelo con build-frontend) ──────────────
@@ -104,7 +107,6 @@ COPY --from=build-server /repo/packages/backend/server/dist /app/dist
 # 3. Frontends compilados (todos vienen del stage build-frontend)
 COPY --from=build-frontend /repo/packages/frontend/apps/web/dist    /app/static
 COPY --from=build-frontend /repo/packages/frontend/admin/dist        /app/static/admin
-COPY --from=build-frontend /repo/packages/frontend/apps/mobile/dist  /app/static/mobile
 
 ARG TARGETARCH
 ARG TARGETVARIANT

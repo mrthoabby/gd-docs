@@ -35,8 +35,6 @@ import { configureGlobalContextModule } from './global-context';
 import { configureI18nModule } from './i18n';
 import { configureIconPickerModule } from './icon-picker';
 import { configureImportClipperModule } from './import-clipper';
-import { configureImportTemplateModule } from './import-template';
-import { configureIntegrationModule } from './integration';
 import { configureJournalModule } from './journal';
 import { configureLifecycleModule } from './lifecycle';
 import { configureMediaModule } from './media';
@@ -45,7 +43,6 @@ import { configureNavigationPanelModule } from './navigation-panel';
 import { configureNotificationModule } from './notification';
 import { configureOpenInApp } from './open-in-app';
 import { configureOrganizeModule } from './organize';
-import { configurePaywallModule } from './paywall';
 import { configurePDFModule } from './pdf';
 import { configurePeekViewModule } from './peek-view';
 import { configurePermissionsModule } from './permissions';
@@ -59,7 +56,6 @@ import {
 } from './storage';
 import { configureSystemFontFamilyModule } from './system-font-family';
 import { configureTagModule } from './tag';
-import { configureTelemetryModule } from './telemetry';
 import { configureTemplateDocModule } from './template-doc';
 import { configureAppThemeModule } from './theme';
 import { configureThemeEditorModule } from './theme-editor';
@@ -87,7 +83,6 @@ export function configureCommonModules(framework: Framework) {
   configurePermissionsModule(framework);
   configureShareDocsModule(framework);
   configureShareSettingModule(framework);
-  configureTelemetryModule(framework);
   configurePDFModule(framework);
   configurePeekViewModule(framework);
   configureExplorerIconModule(framework);
@@ -102,7 +97,6 @@ export function configureCommonModules(framework: Framework) {
   configureEditorModule(framework);
   configureSystemFontFamilyModule(framework);
   configureEditorSettingModule(framework);
-  configureImportTemplateModule(framework);
   configureUserspaceModule(framework);
   configureAppSidebarModule(framework);
   configureJournalModule(framework);
@@ -126,12 +120,10 @@ export function configureCommonModules(framework: Framework) {
   configureMediaModule(framework);
   configureImportClipperModule(framework);
   configureNotificationModule(framework);
-  configureIntegrationModule(framework);
   configureWorkspacePropertyModule(framework);
   configureCollectionRulesModule(framework);
   configureIndexerEmbeddingModule(framework);
   configureCommentModule(framework);
   configureDocSummaryModule(framework);
-  configurePaywallModule(framework);
   configureIconPickerModule(framework);
 }

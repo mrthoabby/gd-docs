@@ -2,7 +2,6 @@ import { AuthService } from '@affine/core/modules/cloud';
 import type { DocMode } from '@blocksuite/affine/model';
 import { useLiveData, useService } from '@toeverything/infra';
 
-import { ImportTemplateButton } from './import-template';
 import { PresentButton } from './present';
 import { SignIn } from './sign-in';
 import * as styles from './styles.css';
@@ -18,18 +17,13 @@ export type ShareHeaderRightItemProps = {
 const ShareHeaderRightItem = ({
   publishMode,
   isTemplate,
-  templateName,
-  snapshotUrl,
 }: ShareHeaderRightItemProps) => {
   const loginStatus = useLiveData(useService(AuthService).session.status$);
   const authenticated = loginStatus === 'authenticated';
   return (
     <div className={styles.rightItemContainer}>
       {isTemplate ? (
-        <ImportTemplateButton
-          name={templateName ?? ''}
-          snapshotUrl={snapshotUrl ?? ''}
-        />
+        null
       ) : (
         <>
           {authenticated ? null : <SignIn />}

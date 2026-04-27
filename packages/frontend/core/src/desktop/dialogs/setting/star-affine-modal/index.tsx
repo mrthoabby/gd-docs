@@ -13,16 +13,6 @@ export const StarAFFiNEModal = ({
   return (
     <OverlayModal
       open={open}
-      topImage={
-        <video
-          width={400}
-          height={300}
-          style={{ objectFit: 'cover' }}
-          src={'/static/githubStar.mp4'}
-          autoPlay
-          loop
-        />
-      }
       title={t['com.affine.star-affine.title']()}
       onOpenChange={setOpen}
       description={t['com.affine.star-affine.description']()}

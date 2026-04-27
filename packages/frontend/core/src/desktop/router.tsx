@@ -69,36 +69,8 @@ export const topLevelRoutes = [
         lazy: () => import('./pages/invite'),
       },
       {
-        path: '/upgrade-success',
-        lazy: () => import('./pages/upgrade-success'),
-      },
-      {
-        path: '/upgrade-success/team',
-        lazy: () => import('./pages/upgrade-success/team'),
-      },
-      {
-        path: '/upgrade-success/self-hosted-team',
-        lazy: () => import('./pages/upgrade-success/self-host-team'),
-      },
-      {
-        path: '/ai-upgrade-success',
-        lazy: () => import('./pages/ai-upgrade-success'),
-      },
-      {
-        path: '/onboarding',
-        lazy: () => import('./pages/onboarding'),
-      },
-      {
         path: '/redirect-proxy',
         lazy: () => import('./pages/redirect'),
-      },
-      {
-        path: '/subscribe',
-        lazy: () => import('./pages/subscribe'),
-      },
-      {
-        path: '/upgrade-to-team',
-        lazy: () => import('./pages/upgrade-to-team'),
       },
       {
         path: '/try-cloud',
@@ -115,30 +87,6 @@ export const topLevelRoutes = [
       {
         path: '/clipper/import',
         lazy: () => import('./pages/import-clipper'),
-      },
-      {
-        path: '/template/import',
-        lazy: () => import('./pages/import-template'),
-      },
-      {
-        path: '/template/preview',
-        loader: ({ request }) => {
-          const url = new URL(request.url);
-          const workspaceId = url.searchParams.get('workspaceId');
-          const docId = url.searchParams.get('docId');
-          const templateName = url.searchParams.get('name');
-          const templateMode = url.searchParams.get('mode');
-          const snapshotUrl = url.searchParams.get('snapshotUrl');
-
-          return redirect(
-            `/workspace/${workspaceId}/${docId}?${new URLSearchParams({
-              isTemplate: 'true',
-              templateName: templateName ?? '',
-              snapshotUrl: snapshotUrl ?? '',
-              mode: templateMode ?? 'page',
-            }).toString()}`
-          );
-        },
       },
       {
         path: '/auth/:authType',

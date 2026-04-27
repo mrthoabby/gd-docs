@@ -21,6 +21,10 @@ import {
 const require = createRequire(import.meta.url);
 
 const IN_CI = !!process.env.CI;
+const ENABLE_PROD_SOURCEMAPS =
+  process.env.AFFINE_ENABLE_PROD_SOURCEMAPS === 'true';
+const shouldEmitSourceMaps = (debug: boolean) =>
+  debug || ENABLE_PROD_SOURCEMAPS;
 
 const availableChannels = ['canary', 'beta', 'stable', 'internal'];
 function getBuildConfigFromEnv(pkg: Package) {
@@ -59,6 +63,7 @@ export function createHTMLTargetConfig(
   );
 
   const buildConfig = getBuildConfigFromEnv(pkg);
+  const emitSourceMaps = shouldEmitSourceMaps(buildConfig.debug);
   const codeBlockPreviewBackendFile =
     buildConfig.distribution === 'desktop'
       ? 'platform-backend.desktop.ts'
@@ -114,7 +119,11 @@ export function createHTMLTargetConfig(
     },
     target: ['web', 'es2022'],
     mode: buildConfig.debug ? 'development' : 'production',
-    devtool: buildConfig.debug ? 'cheap-module-source-map' : 'source-map',
+    devtool: emitSourceMaps
+      ? buildConfig.debug
+        ? 'cheap-module-source-map'
+        : 'source-map'
+      : false,
     resolve: {
       symlinks: true,
       extensionAlias: {
@@ -151,12 +160,16 @@ export function createHTMLTargetConfig(
       //#region rules
       rules: [
         { test: /\.m?js?$/, resolve: { fullySpecified: false } },
-        {
-          test: /\.js$/,
-          enforce: 'pre',
-          include: /@blocksuite/,
-          use: ['source-map-loader'],
-        },
+        ...(emitSourceMaps
+          ? [
+              {
+                test: /\.js$/,
+                enforce: 'pre' as const,
+                include: /@blocksuite/,
+                use: ['source-map-loader'],
+              },
+            ]
+          : []),
         {
           oneOf: [
             {
@@ -181,8 +194,8 @@ export function createHTMLTargetConfig(
                     decoratorVersion: '2022-03',
                   },
                 },
-                sourceMaps: true,
-                inlineSourcesContent: true,
+                sourceMaps: emitSourceMaps,
+                inlineSourcesContent: emitSourceMaps,
               },
             },
             {
@@ -208,8 +221,8 @@ export function createHTMLTargetConfig(
                     decoratorVersion: '2022-03',
                   },
                 },
-                sourceMaps: true,
-                inlineSourcesContent: true,
+                sourceMaps: emitSourceMaps,
+                inlineSourcesContent: emitSourceMaps,
               },
             },
             {
@@ -294,6 +307,14 @@ export function createHTMLTargetConfig(
             {
               // copy the shared public assets into dist
               from: new Package('@affine/core').join('public').value,
+              globOptions: {
+                ignore: [
+                  '**/onboarding/**',
+                  '**/static/*.gif',
+                  '**/static/*.mp4',
+                  '**/imgs/screenshot*.png',
+                ],
+              },
             },
           ],
         }),
@@ -304,6 +325,7 @@ export function createHTMLTargetConfig(
       // replace # sourceMappingURL=76-6370cd185962bc89.js.map
       // to      # sourceMappingURL=assets://./{dir}/76-6370cd185962bc89.js.map
       buildConfig.isElectron &&
+        emitSourceMaps &&
         new rspack.SourceMapDevToolPlugin({
           append: (pathData: { filename?: string }) => {
             return `\n//# sourceMappingURL=assets://./${pathData.filename ?? ''}.map`;
@@ -389,6 +411,7 @@ export function createWorkerTargetConfig(
 ): Omit<RspackConfiguration, 'name'> & { name: string } {
   const workerName = path.basename(entry).replace(/\.worker\.ts$/, '');
   const buildConfig = getBuildConfigFromEnv(pkg);
+  const emitSourceMaps = shouldEmitSourceMaps(buildConfig.debug);
 
   return {
     name: entry,
@@ -409,7 +432,11 @@ export function createWorkerTargetConfig(
     },
     target: ['webworker', 'es2022'],
     mode: buildConfig.debug ? 'development' : 'production',
-    devtool: buildConfig.debug ? 'cheap-module-source-map' : 'source-map',
+    devtool: emitSourceMaps
+      ? buildConfig.debug
+        ? 'cheap-module-source-map'
+        : 'source-map'
+      : false,
     resolve: {
       symlinks: true,
       extensionAlias: { '.js': ['.js', '.ts'], '.mjs': ['.mjs', '.mts'] },
@@ -430,12 +457,16 @@ export function createWorkerTargetConfig(
       },
       rules: [
         { test: /\.m?js?$/, resolve: { fullySpecified: false } },
-        {
-          test: /\.js$/,
-          enforce: 'pre',
-          include: /@blocksuite/,
-          use: ['source-map-loader'],
-        },
+        ...(emitSourceMaps
+          ? [
+              {
+                test: /\.js$/,
+                enforce: 'pre' as const,
+                include: /@blocksuite/,
+                use: ['source-map-loader'],
+              },
+            ]
+          : []),
         {
           oneOf: [
             {
@@ -460,8 +491,8 @@ export function createWorkerTargetConfig(
                     decoratorVersion: '2022-03',
                   },
                 },
-                sourceMaps: true,
-                inlineSourcesContent: true,
+                sourceMaps: emitSourceMaps,
+                inlineSourcesContent: emitSourceMaps,
               },
             },
           ],
@@ -517,6 +548,7 @@ export function createNodeTargetConfig(
   } = {}
 ): Omit<RspackConfiguration, 'name'> & { name: string } {
   const dev = process.env.NODE_ENV === 'development';
+  const emitSourceMaps = shouldEmitSourceMaps(dev);
   const useLegacyDecorator = options.decoratorVersion !== '2022-03';
   const forceExternal = options.forceExternal ?? [];
   return {
@@ -562,7 +594,7 @@ export function createNodeTargetConfig(
     externalsPresets: { node: true },
     node: { __dirname: false, __filename: false },
     mode: dev ? 'development' : 'production',
-    devtool: 'source-map',
+    devtool: emitSourceMaps ? 'source-map' : false,
     resolve: {
       symlinks: true,
       extensionAlias: { '.js': ['.js', '.ts'], '.mjs': ['.mjs', '.mts'] },
@@ -574,12 +606,16 @@ export function createNodeTargetConfig(
         javascript: { url: false, importMeta: false, createRequire: false },
       },
       rules: [
-        {
-          test: /\.js$/,
-          enforce: 'pre',
-          include: /@blocksuite/,
-          use: ['source-map-loader'],
-        },
+        ...(emitSourceMaps
+          ? [
+              {
+                test: /\.js$/,
+                enforce: 'pre' as const,
+                include: /@blocksuite/,
+                use: ['source-map-loader'],
+              },
+            ]
+          : []),
         {
           test: /\.node$/,
           loader: Path.dir(import.meta.url).join(
@@ -616,8 +652,8 @@ export function createNodeTargetConfig(
                 react: { runtime: 'automatic' },
               },
             },
-            sourceMaps: true,
-            inlineSourcesContent: true,
+            sourceMaps: emitSourceMaps,
+            inlineSourcesContent: emitSourceMaps,
           },
         },
       ],

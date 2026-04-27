@@ -1,4 +1,3 @@
-import { toggleGeneralAIOnboarding } from '@affine/core/components/affine/ai-onboarding/apis';
 import type { AuthAccountInfo, AuthService } from '@affine/core/modules/cloud';
 import type { GlobalDialogService } from '@affine/core/modules/dialogs';
 import {
@@ -852,7 +851,7 @@ Could you make a new website based on these notes and send back just the html fi
     },
   });
 
-  AIProvider.provide('onboarding', toggleGeneralAIOnboarding);
+  AIProvider.provide('onboarding', () => {});
 
   AIProvider.provide('forkChat', options => {
     return client.forkSession(options);
