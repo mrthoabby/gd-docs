@@ -34,7 +34,7 @@
     "test:ui": "vitest --ui",
     "test:coverage": "vitest run --coverage",
     "typecheck": "tsc -b tsconfig.json --verbose",
-    "postinstall": "yarn affine init && yarn husky"
+    "postinstall": "yarn affine init"
   },
   "lint-staged": {
     "*": "prettier --write --ignore-unknown --cache",
@@ -43,22 +43,16 @@
       "cross-env NODE_OPTIONS=\"--max-old-space-size=16384\" eslint --cache --fix"
     ],
     "*.toml": [
-      "taplo format"
-    ],
-    "*.rs": [
-      "cargo fmt --"
+      "prettier --write --ignore-unknown --cache"
     ]
   },
   "devDependencies": {
     "@affine-tools/cli": "workspace:*",
-    "@capacitor/cli": "^7.0.0",
     "@eslint/js": "^9.39.2",
     "@faker-js/faker": "^10.1.0",
     "@istanbuljs/schema": "^0.1.3",
     "@magic-works/i18n-codegen": "^0.6.1",
-    "@playwright/test": "=1.58.2",
     "@smarttools/eslint-plugin-rxjs": "^1.0.8",
-    "@taplo/cli": "^0.7.0",
     "@toeverything/infra": "workspace:*",
     "@types/eslint": "^9.6.1",
     "@types/node": "^22.0.0",
@@ -68,7 +62,6 @@
     "@vitest/coverage-istanbul": "^4.0.18",
     "@vitest/ui": "^4.0.18",
     "cross-env": "^10.1.0",
-    "electron": "^39.0.0",
     "eslint": "^9.39.2",
     "eslint-config-prettier": "^10.1.8",
     "eslint-import-resolver-typescript": "^4.4.4",
@@ -80,8 +73,6 @@
     "eslint-plugin-simple-import-sort": "^12.1.1",
     "eslint-plugin-sonarjs": "^4.0.2",
     "happy-dom": "^20.0.0",
-    "husky": "^9.1.7",
-    "lint-staged": "^16.0.0",
     "msw": "^2.13.2",
     "oxlint": "1.58.0",
     "oxlint-tsgolint": "^0.19.0",

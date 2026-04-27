@@ -13,7 +13,6 @@
   "include": ["./src"],
   "references": [
     { "path": "../../common/s3-compat" },
-    { "path": "../native" },
     { "path": "../../../tools/cli" },
     { "path": "../../../tools/utils" },
     { "path": "../../common/graphql" }

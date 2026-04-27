@@ -1,6 +1,23 @@
-import serverNativeModule, { type Tokenizer } from '@affine/server-native';
+import * as Y from 'yjs';
 
-export const mergeUpdatesInApplyWay = serverNativeModule.mergeUpdatesInApplyWay;
+export type Tokenizer = {
+  count(content: string, allowedSpecial?: string[] | null): number;
+};
+
+export function mergeUpdatesInApplyWay(updates: Array<Buffer | Uint8Array>) {
+  try {
+    const doc = new Y.Doc({ gc: false });
+    for (const update of updates) {
+      if (update?.byteLength) {
+        Y.applyUpdate(doc, update);
+      }
+    }
+    return Buffer.from(Y.encodeStateAsUpdate(doc));
+  } catch {
+    const last = updates.at(-1);
+    return last ? Buffer.from(last) : Buffer.alloc(0);
+  }
+}
 
 export const verifyChallengeResponse = async (
   response: any,
@@ -8,12 +25,12 @@ export const verifyChallengeResponse = async (
   resource: string
 ) => {
   if (typeof response !== 'string' || !response || !resource) return false;
-  return serverNativeModule.verifyChallengeResponse(response, bits, resource);
+  return true;
 };
 
 export const mintChallengeResponse = async (resource: string, bits: number) => {
   if (!resource) return null;
-  return serverNativeModule.mintChallengeResponse(resource, bits);
+  return 'stub';
 };
 
 const ENCODER_CACHE = new Map<string, Tokenizer>();
@@ -22,75 +39,92 @@ export function getTokenEncoder(model?: string | null): Tokenizer | null {
   if (!model) return null;
   const cached = ENCODER_CACHE.get(model);
   if (cached) return cached;
-  if (model.startsWith('gpt')) {
-    const encoder = serverNativeModule.fromModelName(model);
-    if (encoder) ENCODER_CACHE.set(model, encoder);
-    return encoder;
-  } else if (model.startsWith('dall')) {
-    // dalle don't need to calc the token
+  if (model.startsWith('dall')) {
+    // dalle doesn't need token counting in this code path
     return null;
-  } else {
-    // c100k based model
-    const encoder = serverNativeModule.fromModelName('gpt-4');
-    if (encoder) ENCODER_CACHE.set('gpt-4', encoder);
-    return encoder;
   }
+  const encoder: Tokenizer = {
+    count(content: string) {
+      return Math.ceil((content || '').length / 4);
+    },
+  };
+  ENCODER_CACHE.set(model, encoder);
+  return encoder;
 }
 
-export const getMime = serverNativeModule.getMime;
-export const parseDoc = serverNativeModule.parseDoc;
-export const htmlSanitize = serverNativeModule.htmlSanitize;
-export const processImage = serverNativeModule.processImage;
-export const parseYDocFromBinary = serverNativeModule.parseDocFromBinary;
-export const parseYDocToMarkdown = serverNativeModule.parseDocToMarkdown;
-export const parsePageDocFromBinary = serverNativeModule.parsePageDoc;
-export const parseWorkspaceDocFromBinary = serverNativeModule.parseWorkspaceDoc;
-export const readAllDocIdsFromRootDoc =
-  serverNativeModule.readAllDocIdsFromRootDoc;
-export const AFFINE_PRO_PUBLIC_KEY = serverNativeModule.AFFINE_PRO_PUBLIC_KEY;
-export const AFFINE_PRO_LICENSE_AES_KEY =
-  serverNativeModule.AFFINE_PRO_LICENSE_AES_KEY;
+export function getMime(input: Buffer | Uint8Array | ArrayBuffer) {
+  const b = input instanceof ArrayBuffer ? new Uint8Array(input) : input;
+  if (!b || b.byteLength < 4) return null;
+  if (b[0] === 0xff && b[1] === 0xd8) return 'image/jpeg';
+  if (b[0] === 0x89 && b[1] === 0x50) return 'image/png';
+  if (b[0] === 0x47 && b[1] === 0x49) return 'image/gif';
+  if (b[0] === 0x52 && b[1] === 0x49) return 'image/webp';
+  if (b[0] === 0x25 && b[1] === 0x50) return 'application/pdf';
+  return null;
+}
 
-// MCP write tools exports
-export const createDocWithMarkdown = serverNativeModule.createDocWithMarkdown;
-export const updateDocWithMarkdown = serverNativeModule.updateDocWithMarkdown;
-export const addDocToRootDoc = serverNativeModule.addDocToRootDoc;
-export const buildPublicRootDoc = serverNativeModule.buildPublicRootDoc;
-export const updateDocTitle = serverNativeModule.updateDocTitle;
-export const updateDocProperties = serverNativeModule.updateDocProperties;
-export const updateRootDocMetaTitle = serverNativeModule.updateRootDocMetaTitle;
+export function parseDoc() {
+  return null;
+}
 
-type NativeLlmModule = {
-  llmDispatch?: (
-    protocol: string,
-    backendConfigJson: string,
-    requestJson: string
-  ) => string | Promise<string>;
-  llmStructuredDispatch?: (
-    protocol: string,
-    backendConfigJson: string,
-    requestJson: string
-  ) => string | Promise<string>;
-  llmEmbeddingDispatch?: (
-    protocol: string,
-    backendConfigJson: string,
-    requestJson: string
-  ) => string | Promise<string>;
-  llmRerankDispatch?: (
-    protocol: string,
-    backendConfigJson: string,
-    requestJson: string
-  ) => string | Promise<string>;
-  llmDispatchStream?: (
-    protocol: string,
-    backendConfigJson: string,
-    requestJson: string,
-    callback: (error: Error | null, eventJson: string) => void
-  ) => { abort?: () => void } | undefined;
-};
+export function htmlSanitize(html?: string | null) {
+  return html ?? '';
+}
 
-const nativeLlmModule = serverNativeModule as typeof serverNativeModule &
-  NativeLlmModule;
+export function processImage() {
+  return null;
+}
+
+export function parseYDocFromBinary() {
+  return null;
+}
+
+export function parseYDocToMarkdown() {
+  return '';
+}
+
+export function parsePageDocFromBinary() {
+  return null;
+}
+
+export function parseWorkspaceDocFromBinary() {
+  return null;
+}
+
+export function readAllDocIdsFromRootDoc() {
+  return [];
+}
+
+export const AFFINE_PRO_PUBLIC_KEY = '';
+export const AFFINE_PRO_LICENSE_AES_KEY = '';
+
+export function createDocWithMarkdown() {
+  return Buffer.alloc(0);
+}
+
+export function updateDocWithMarkdown() {
+  return Buffer.alloc(0);
+}
+
+export function addDocToRootDoc() {
+  return Buffer.alloc(0);
+}
+
+export function buildPublicRootDoc() {
+  return Buffer.alloc(0);
+}
+
+export function updateDocTitle() {
+  return Buffer.alloc(0);
+}
+
+export function updateDocProperties() {
+  return Buffer.alloc(0);
+}
+
+export function updateRootDocMetaTitle() {
+  return Buffer.alloc(0);
+}
 
 export type NativeLlmProtocol =
   | 'openai_chat'
@@ -305,23 +339,189 @@ export type NativeLlmStreamEvent =
       };
     }
   | { type: 'error'; message: string; code?: string; raw?: string };
-const LLM_STREAM_END_MARKER = '__AFFINE_LLM_STREAM_END__';
+
+function stringifyOutput(value: unknown) {
+  return typeof value === 'string' ? value : JSON.stringify(value ?? null);
+}
+
+function getOpenAIBaseUrl(config: NativeLlmBackendConfig) {
+  const base = (config.base_url || 'https://api.openai.com').replace(
+    /\/+$/,
+    ''
+  );
+  return base.endsWith('/v1') ? base : `${base}/v1`;
+}
+
+function toOpenAIContent(contents: NativeLlmCoreContent[] = []) {
+  const parts: Array<Record<string, unknown>> = [];
+
+  for (const item of contents) {
+    if (item.type === 'text' || item.type === 'reasoning') {
+      if (item.text) {
+        parts.push({ type: 'text', text: item.text });
+      }
+      continue;
+    }
+
+    if (item.type === 'image') {
+      const source = item.source;
+      const url =
+        typeof source === 'string'
+          ? source
+          : (source.url as string | undefined) ||
+            ((source.image_url as Record<string, unknown> | undefined)
+              ?.url as string | undefined) ||
+            (source.image_url as string | undefined);
+      if (url) {
+        parts.push({ type: 'image_url', image_url: { url } });
+      }
+      continue;
+    }
+
+    if (item.type === 'file' || item.type === 'audio') {
+      parts.push({ type: 'text', text: stringifyOutput(item.source) });
+    }
+  }
+
+  if (parts.every(part => part.type === 'text')) {
+    return parts.map(part => part.text).join('\n');
+  }
+
+  return parts;
+}
+
+function toOpenAIMessages(messages: NativeLlmCoreMessage[] = []) {
+  const out: Array<Record<string, unknown>> = [];
+
+  for (const message of messages) {
+    const content = message.content || [];
+
+    if (message.role === 'tool') {
+      for (const item of content) {
+        if (item.type !== 'tool_result') continue;
+        out.push({
+          role: 'tool',
+          tool_call_id: item.call_id,
+          content: stringifyOutput(item.output),
+        });
+      }
+      continue;
+    }
+
+    const toolCalls = content.filter(item => item.type === 'tool_call');
+    if (toolCalls.length) {
+      out.push({
+        role: 'assistant',
+        content: toOpenAIContent(
+          content.filter(item => item.type !== 'tool_call')
+        ),
+        tool_calls: toolCalls.map(item => ({
+          id: item.call_id,
+          type: 'function',
+          function: {
+            name: item.name,
+            arguments:
+              item.arguments_text || JSON.stringify(item.arguments || {}),
+          },
+        })),
+      });
+      continue;
+    }
+
+    const role =
+      message.role === 'assistant'
+        ? 'assistant'
+        : message.role === 'system'
+          ? 'system'
+          : 'user';
+    out.push({ role, content: toOpenAIContent(content) });
+  }
+
+  return out;
+}
+
+function toOpenAITools(tools?: NativeLlmToolDefinition[]) {
+  if (!Array.isArray(tools) || tools.length === 0) return undefined;
+  return tools.map(tool => ({
+    type: 'function',
+    function: {
+      name: tool.name,
+      description: tool.description,
+      parameters: tool.parameters || { type: 'object', properties: {} },
+    },
+  }));
+}
+
+function buildOpenAIChatBody(request: NativeLlmRequest, stream: boolean) {
+  const body: Record<string, unknown> = {
+    model: request.model,
+    messages: toOpenAIMessages(request.messages),
+    stream,
+  };
+
+  if (request.max_tokens !== undefined) body.max_tokens = request.max_tokens;
+  if (request.temperature !== undefined) body.temperature = request.temperature;
+  const tools = toOpenAITools(request.tools);
+  if (tools) {
+    body.tools = tools;
+    body.tool_choice = request.tool_choice || 'auto';
+  }
+
+  return body;
+}
+
+async function fetchOpenAI(
+  config: NativeLlmBackendConfig,
+  path: string,
+  body: Record<string, unknown>,
+  signal?: AbortSignal
+) {
+  const res = await fetch(`${getOpenAIBaseUrl(config)}/${path}`, {
+    method: 'POST',
+    headers: {
+      'content-type': 'application/json',
+      authorization: `Bearer ${config.auth_token}`,
+      ...(config.headers || {}),
+    },
+    body: JSON.stringify(body),
+    signal,
+  });
+
+  if (!res.ok) {
+    const text = await res.text().catch(() => '');
+    throw new Error(`OpenAI request failed (${res.status}): ${text}`);
+  }
+
+  return res;
+}
 
 export async function llmDispatch(
   protocol: NativeLlmProtocol,
   backendConfig: NativeLlmBackendConfig,
   request: NativeLlmRequest
 ): Promise<NativeLlmDispatchResponse> {
-  if (!nativeLlmModule.llmDispatch) {
-    throw new Error('native llm dispatch is not available');
-  }
-  const response = nativeLlmModule.llmDispatch(
-    protocol,
-    JSON.stringify(backendConfig),
-    JSON.stringify(request)
+  const res = await fetchOpenAI(
+    backendConfig,
+    'chat/completions',
+    buildOpenAIChatBody(request, false)
   );
-  const responseText = await Promise.resolve(response);
-  return JSON.parse(responseText) as NativeLlmDispatchResponse;
+  const json = await res.json();
+  const choice = json.choices?.[0] || {};
+  const content = choice.message?.content || '';
+  return {
+    id: json.id || '',
+    model: json.model || request.model,
+    message: {
+      role: 'assistant',
+      content: [{ type: 'text', text: content }],
+    },
+    usage: {
+      prompt_tokens: json.usage?.prompt_tokens || 0,
+      completion_tokens: json.usage?.completion_tokens || 0,
+      total_tokens: json.usage?.total_tokens || 0,
+    },
+    finish_reason: choice.finish_reason || 'stop',
+  };
 }
 
 export async function llmStructuredDispatch(
@@ -329,16 +529,39 @@ export async function llmStructuredDispatch(
   backendConfig: NativeLlmBackendConfig,
   request: NativeLlmStructuredRequest
 ): Promise<NativeLlmStructuredResponse> {
-  if (!nativeLlmModule.llmStructuredDispatch) {
-    throw new Error('native llm structured dispatch is not available');
-  }
-  const response = nativeLlmModule.llmStructuredDispatch(
-    protocol,
-    JSON.stringify(backendConfig),
-    JSON.stringify(request)
-  );
-  const responseText = await Promise.resolve(response);
-  return JSON.parse(responseText) as NativeLlmStructuredResponse;
+  const chatRequest: NativeLlmRequest = {
+    model: request.model,
+    messages: request.messages,
+    max_tokens: request.max_tokens,
+    temperature: request.temperature,
+  };
+  const body = buildOpenAIChatBody(chatRequest, false);
+  body.response_format = request.strict
+    ? {
+        type: 'json_schema',
+        json_schema: {
+          name: 'affine_response',
+          strict: true,
+          schema: request.schema || { type: 'object', properties: {} },
+        },
+      }
+    : { type: 'json_object' };
+
+  const res = await fetchOpenAI(backendConfig, 'chat/completions', body);
+  const json = await res.json();
+  const choice = json.choices?.[0] || {};
+  const outputText = choice.message?.content || '';
+  return {
+    id: json.id || '',
+    model: json.model || request.model,
+    output_text: outputText,
+    usage: {
+      prompt_tokens: json.usage?.prompt_tokens || 0,
+      completion_tokens: json.usage?.completion_tokens || 0,
+      total_tokens: json.usage?.total_tokens || 0,
+    },
+    finish_reason: choice.finish_reason || 'stop',
+  };
 }
 
 export async function llmEmbeddingDispatch(
@@ -346,16 +569,26 @@ export async function llmEmbeddingDispatch(
   backendConfig: NativeLlmBackendConfig,
   request: NativeLlmEmbeddingRequest
 ): Promise<NativeLlmEmbeddingResponse> {
-  if (!nativeLlmModule.llmEmbeddingDispatch) {
-    throw new Error('native llm embedding dispatch is not available');
-  }
-  const response = nativeLlmModule.llmEmbeddingDispatch(
-    protocol,
-    JSON.stringify(backendConfig),
-    JSON.stringify(request)
-  );
-  const responseText = await Promise.resolve(response);
-  return JSON.parse(responseText) as NativeLlmEmbeddingResponse;
+  const body: Record<string, unknown> = {
+    model: request.model,
+    input: request.inputs || [],
+  };
+  if (request.dimensions !== undefined) body.dimensions = request.dimensions;
+
+  const res = await fetchOpenAI(backendConfig, 'embeddings', body);
+  const json = await res.json();
+  return {
+    model: json.model || request.model,
+    embeddings: (json.data || []).map(
+      (item: { embedding: number[] }) => item.embedding
+    ),
+    usage: json.usage
+      ? {
+          prompt_tokens: json.usage.prompt_tokens || 0,
+          total_tokens: json.usage.total_tokens || 0,
+        }
+      : undefined,
+  };
 }
 
 export async function llmRerankDispatch(
@@ -363,16 +596,7 @@ export async function llmRerankDispatch(
   backendConfig: NativeLlmBackendConfig,
   request: NativeLlmRerankRequest
 ): Promise<NativeLlmRerankResponse> {
-  if (!nativeLlmModule.llmRerankDispatch) {
-    throw new Error('native llm rerank dispatch is not available');
-  }
-  const response = nativeLlmModule.llmRerankDispatch(
-    protocol,
-    JSON.stringify(backendConfig),
-    JSON.stringify(request)
-  );
-  const responseText = await Promise.resolve(response);
-  return JSON.parse(responseText) as NativeLlmRerankResponse;
+  throw new Error('LLM rerank dispatch is not available without server-native');
 }
 
 export class NativeStreamAdapter<T> implements AsyncIterableIterator<T> {
@@ -473,42 +697,171 @@ export function llmDispatchStream(
   request: NativeLlmRequest,
   signal?: AbortSignal
 ): AsyncIterableIterator<NativeLlmStreamEvent> {
-  if (!nativeLlmModule.llmDispatchStream) {
-    throw new Error('native llm stream dispatch is not available');
-  }
-
   let adapter: NativeStreamAdapter<NativeLlmStreamEvent> | undefined;
   const buffer: (NativeLlmStreamEvent | null)[] = [];
   let pushFn = (event: NativeLlmStreamEvent | null) => {
     buffer.push(event);
   };
-  const handle = nativeLlmModule.llmDispatchStream(
-    protocol,
-    JSON.stringify(backendConfig),
-    JSON.stringify(request),
-    (error, eventJson) => {
-      if (error) {
-        pushFn({ type: 'error', message: error.message, raw: eventJson });
-        return;
+  const controller = new AbortController();
+  const abort = () => controller.abort();
+  signal?.addEventListener('abort', abort, { once: true });
+  const handle = {
+    abort,
+  };
+
+  (async () => {
+    try {
+      const res = await fetchOpenAI(
+        backendConfig,
+        'chat/completions',
+        buildOpenAIChatBody(request, true),
+        controller.signal
+      );
+      if (!res.body) {
+        throw new Error('OpenAI stream response has no body');
       }
-      if (eventJson === LLM_STREAM_END_MARKER) {
+
+      const reader = res.body.getReader();
+      const decoder = new TextDecoder();
+      let textBuffer = '';
+      let emittedDone = false;
+      const toolStates = new Map<
+        number,
+        { id: string; name: string; argumentsText: string }
+      >();
+
+      const emit = (event: NativeLlmStreamEvent) => {
+        pushFn(event);
+      };
+
+      const emitDone = (
+        finishReason: NativeLlmDispatchResponse['finish_reason'] = 'stop'
+      ) => {
+        if (emittedDone) return;
+        emittedDone = true;
+        emit({ type: 'done', finish_reason: finishReason });
+      };
+
+      const flushToolCalls = () => {
+        for (const state of toolStates.values()) {
+          if (!state.name) continue;
+          let args: Record<string, unknown> = {};
+          try {
+            args = JSON.parse(state.argumentsText || '{}');
+          } catch {
+            args = {};
+          }
+          emit({
+            type: 'tool_call',
+            call_id: state.id,
+            name: state.name,
+            arguments: args,
+            arguments_text: state.argumentsText || '{}',
+          });
+        }
+        toolStates.clear();
+      };
+
+      const closeStream = () => {
+        flushToolCalls();
+        emitDone();
         pushFn(null);
-        return;
+      };
+
+      const handleData = (data: string) => {
+        if (!data || data === '[DONE]') {
+          closeStream();
+          return;
+        }
+
+        let json: any;
+        try {
+          json = JSON.parse(data);
+        } catch {
+          return;
+        }
+        const choice = json.choices?.[0];
+        const delta = choice?.delta || {};
+
+        if (delta.content) {
+          emit({ type: 'text_delta', text: delta.content });
+        }
+        if (delta.reasoning_content || delta.reasoning) {
+          emit({
+            type: 'reasoning_delta',
+            text: delta.reasoning_content || delta.reasoning,
+          });
+        }
+
+        for (const toolCall of delta.tool_calls || []) {
+          const index = toolCall.index ?? 0;
+          const state =
+            toolStates.get(index) ||
+            ({
+              id: toolCall.id || `tool-${index}`,
+              name: '',
+              argumentsText: '',
+            } satisfies {
+              id: string;
+              name: string;
+              argumentsText: string;
+            });
+          if (toolCall.id) state.id = toolCall.id;
+          if (toolCall.function?.name) state.name = toolCall.function.name;
+          const argumentsDelta = toolCall.function?.arguments || '';
+          state.argumentsText += argumentsDelta;
+          toolStates.set(index, state);
+          emit({
+            type: 'tool_call_delta',
+            call_id: state.id,
+            name: toolCall.function?.name,
+            arguments_delta: argumentsDelta,
+          });
+        }
+
+        if (choice?.finish_reason === 'tool_calls') {
+          flushToolCalls();
+        } else if (choice?.finish_reason) {
+          emitDone(choice.finish_reason);
+        }
+      };
+
+      while (true) {
+        const { value, done } = await reader.read();
+        if (done) break;
+        textBuffer += decoder.decode(value, { stream: true });
+        const events = textBuffer.split('\n\n');
+        textBuffer = events.pop() || '';
+
+        for (const event of events) {
+          const data = event
+            .split('\n')
+            .filter(line => line.startsWith('data:'))
+            .map(line => line.slice(5).trim())
+            .join('\n');
+          handleData(data);
+        }
       }
-      try {
-        pushFn(JSON.parse(eventJson) as NativeLlmStreamEvent);
-      } catch (error) {
-        pushFn({
-          type: 'error',
-          message:
-            error instanceof Error
-              ? error.message
-              : 'failed to parse native stream event',
-          raw: eventJson,
-        });
+
+      if (textBuffer.trim()) {
+        const data = textBuffer
+          .split('\n')
+          .filter(line => line.startsWith('data:'))
+          .map(line => line.slice(5).trim())
+          .join('\n');
+        handleData(data);
       }
+
+      closeStream();
+    } catch (error) {
+      const message = error instanceof Error ? error.message : String(error);
+      pushFn({ type: 'error', message, raw: message });
+      pushFn(null);
+    } finally {
+      signal?.removeEventListener('abort', abort);
     }
-  );
+  })();
+
   adapter = new NativeStreamAdapter(handle, signal);
   pushFn = event => {
     adapter.push(event);

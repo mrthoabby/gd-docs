@@ -1,7 +1,5 @@
 // todo(@pengx17): remove jotai
 import { UrlService } from '@affine/core/modules/url';
-import type { UpdateMeta } from '@affine/electron-api';
-import { apis, events } from '@affine/electron-api';
 import { track } from '@affine/track';
 import { appSettingAtom, useService } from '@toeverything/infra';
 import { atom, useAtom, useAtomValue } from 'jotai';
@@ -11,61 +9,30 @@ import { Observable } from 'rxjs';
 
 import { useAsyncCallback } from './affine-async-hooks';
 
-function rpcToObservable<
-  T,
-  H extends () => Promise<T>,
-  E extends (callback: (t: T) => void) => () => void,
->(
-  initialValue: T | null,
-  {
-    event,
-    handler,
-    onSubscribe,
-  }: {
-    event?: E;
-    handler?: H;
-    onSubscribe?: () => void;
-  }
-): Observable<T | null> {
+type UpdateMeta = {
+  version: string;
+};
+
+function rpcToObservable<T>(initialValue: T | null): Observable<T | null> {
   return new Observable<T | null>(subscriber => {
     subscriber.next(initialValue);
-    onSubscribe?.();
-    if (!BUILD_CONFIG.isElectron || !event) {
-      subscriber.complete();
-      return;
-    }
-    handler?.()
-      .then(t => {
-        subscriber.next(t);
-      })
-      .catch(err => {
-        subscriber.error(err);
-      });
-    return event(t => {
-      subscriber.next(t);
-    });
+    subscriber.complete();
   });
 }
 
 // download complete, ready to install
 export const updateReadyAtom = atomWithObservable(() => {
-  return rpcToObservable(null as UpdateMeta | null, {
-    event: events?.updater.onUpdateReady,
-  });
+  return rpcToObservable(null as UpdateMeta | null);
 });
 
 // update available, but not downloaded yet
 export const updateAvailableAtom = atomWithObservable(() => {
-  return rpcToObservable(null as UpdateMeta | null, {
-    event: events?.updater.onUpdateAvailable,
-  });
+  return rpcToObservable(null as UpdateMeta | null);
 });
 
 // downloading new update
 export const downloadProgressAtom = atomWithObservable(() => {
-  return rpcToObservable(null as number | null, {
-    event: events?.updater.onDownloadProgress,
-  });
+  return rpcToObservable(null as number | null);
 });
 
 export const changelogCheckedAtom = atomWithStorage<Record<string, boolean>>(
@@ -76,8 +43,7 @@ export const changelogCheckedAtom = atomWithStorage<Record<string, boolean>>(
 export const checkingForUpdatesAtom = atom(false);
 
 export const currentVersionAtom = atom(async () => {
-  const currentVersion = await apis?.updater.currentVersion();
-  return currentVersion;
+  return BUILD_CONFIG.appVersion;
 });
 
 const currentChangelogUnreadAtom = atom(
@@ -120,10 +86,6 @@ export const useAppUpdater = () => {
     track.$.navigationPanel.bottomButtons.quitAndInstall();
     if (updateReady) {
       setAppQuitting(true);
-      apis?.updater.quitAndInstall().catch(err => {
-        // TODO(@Peng): add error toast here
-        console.error(err);
-      });
     }
   }, [updateReady]);
 
@@ -134,8 +96,7 @@ export const useAppUpdater = () => {
     }
     setCheckingForUpdates(true);
     try {
-      const updateInfo = await apis?.updater.checkForUpdates();
-      return updateInfo?.version ?? false;
+      return false;
     } catch (err) {
       console.error('Error checking for updates:', err);
       return null;
@@ -146,9 +107,6 @@ export const useAppUpdater = () => {
 
   const downloadUpdate = useCallback(() => {
     track.$.settingsPanel.about.downloadUpdate();
-    apis?.updater.downloadUpdate().catch(err => {
-      console.error('Error downloading update:', err);
-    });
   }, []);
 
   const toggleAutoDownload = useCallback(

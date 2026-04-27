@@ -1,13 +1,17 @@
-import type {
-  MenubarStateKey,
-  MenubarStateSchema,
-} from '@affine/electron/main/shared-state-schema';
 import { LiveData, Service } from '@toeverything/infra';
 import { defaults } from 'lodash-es';
 
 import type { GlobalStateService } from '../../storage';
 
-const MENUBAR_SETTING_KEY: typeof MenubarStateKey = 'menubarState';
+type MenubarStateSchema = {
+  enabled: boolean;
+  minimizeToTray: boolean;
+  closeToTray: boolean;
+  startMinimized: boolean;
+  openOnLeftClick: boolean;
+};
+
+const MENUBAR_SETTING_KEY = 'menubarState';
 
 const defaultTraySetting: MenubarStateSchema = {
   enabled: true,

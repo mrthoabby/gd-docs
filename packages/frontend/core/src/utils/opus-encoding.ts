@@ -1,5 +1,4 @@
 import { DebugLogger } from '@affine/debug';
-import { apis } from '@affine/electron-api';
 import type {
   AudioSliceManifestItemInput,
   TranscriptionSourceAudioInput,
@@ -78,15 +77,6 @@ function getRecordingFileUrl(filepath: string): URL {
 }
 
 async function readRecordingFileBuffer(filepath: string): Promise<ArrayBuffer> {
-  if (apis?.recording?.readRecordingFile) {
-    try {
-      const buffer = await apis.recording.readRecordingFile(filepath);
-      return toArrayBuffer(buffer);
-    } catch (error) {
-      logger.error('Failed to read recording file via IPC', error);
-    }
-  }
-
   const response = await fetch(getRecordingFileUrl(filepath));
   if (!response.ok) {
     throw new Error(

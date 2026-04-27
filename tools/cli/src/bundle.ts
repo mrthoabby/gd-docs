@@ -104,8 +104,7 @@ function getRspackBundleConfigs(pkg: Package): MultiRspackOptions {
         }),
       ] as MultiRspackOptions;
     }
-    case '@affine/web':
-    case '@affine/mobile': {
+    case '@affine/web': {
       const workerConfigs = getBaseWorkerConfigs(
         pkg,
         createRspackWorkerTargetConfig
@@ -122,57 +121,6 @@ function getRspackBundleConfigs(pkg: Package): MultiRspackOptions {
           pkg,
           pkg.srcPath.join('index.tsx').value,
           {},
-          workerConfigs.map(config => config.name)
-        ),
-        ...workerConfigs,
-      ] as MultiRspackOptions;
-    }
-    case '@affine/ios':
-    case '@affine/android': {
-      const workerConfigs = getBaseWorkerConfigs(
-        pkg,
-        createRspackWorkerTargetConfig,
-        { includeMermaidAndTypst: false }
-      );
-      workerConfigs.push(
-        createRspackWorkerTargetConfig(
-          pkg,
-          pkg.srcPath.join('nbstore.worker.ts').value
-        )
-      );
-
-      return [
-        createRspackHTMLTargetConfig(
-          pkg,
-          pkg.srcPath.join('index.tsx').value,
-          {},
-          workerConfigs.map(config => config.name)
-        ),
-        ...workerConfigs,
-      ] as MultiRspackOptions;
-    }
-    case '@affine/electron-renderer': {
-      const workerConfigs = getBaseWorkerConfigs(
-        pkg,
-        createRspackWorkerTargetConfig,
-        { includeMermaidAndTypst: false }
-      );
-
-      return [
-        createRspackHTMLTargetConfig(
-          pkg,
-          {
-            index: pkg.srcPath.join('app/index.tsx').value,
-            shell: pkg.srcPath.join('shell/index.tsx').value,
-            popup: pkg.srcPath.join('popup/index.tsx').value,
-            backgroundWorker: pkg.srcPath.join('background-worker/index.ts')
-              .value,
-          },
-          {
-            additionalEntryForSelfhost: false,
-            injectGlobalErrorHandler: false,
-            emitAssetsManifest: false,
-          },
           workerConfigs.map(config => config.name)
         ),
         ...workerConfigs,

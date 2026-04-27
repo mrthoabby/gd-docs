@@ -1,14 +1,19 @@
-import type {
-  MeetingSettingsKey,
-  MeetingSettingsSchema,
-} from '@affine/electron/main/shared-state-schema';
 import { LiveData, Service } from '@toeverything/infra';
 import { defaults } from 'lodash-es';
 
 import { DesktopApiService } from '../../desktop-api';
 import type { GlobalStateService } from '../../storage';
 
-const MEETING_SETTINGS_KEY: typeof MeetingSettingsKey = 'meetingSettings';
+export type MeetingSettingsSchema = {
+  enabled: boolean;
+  betaDisclaimerAccepted: boolean;
+  recordingSavingMode: 'new-doc' | 'append-current-doc';
+  autoTranscriptionSummary: boolean;
+  autoTranscriptionTodo: boolean;
+  recordingMode: 'prompt' | 'auto-start' | 'none';
+};
+
+const MEETING_SETTINGS_KEY = 'meetingSettings';
 
 const defaultMeetingSettings: MeetingSettingsSchema = {
   enabled: false,

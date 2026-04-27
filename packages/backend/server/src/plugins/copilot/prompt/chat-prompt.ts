@@ -1,9 +1,8 @@
-import { type Tokenizer } from '@affine/server-native';
 import { Logger } from '@nestjs/common';
 import { AiPrompt } from '@prisma/client';
 import Mustache from 'mustache';
 
-import { getTokenEncoder } from '../../../native';
+import { getTokenEncoder, type Tokenizer } from '../../../native';
 import type {
   PromptConfig,
   PromptMessage,

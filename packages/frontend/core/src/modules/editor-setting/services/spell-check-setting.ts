@@ -1,7 +1,3 @@
-import type {
-  SpellCheckStateKey,
-  SpellCheckStateSchema,
-} from '@affine/electron/main/shared-state-schema';
 import type { Language } from '@affine/i18n';
 import { LiveData, Service } from '@toeverything/infra';
 
@@ -9,7 +5,11 @@ import type { DesktopApiService } from '../../desktop-api';
 import type { I18n } from '../../i18n';
 import type { GlobalStateService } from '../../storage';
 
-const SPELL_CHECK_SETTING_KEY: typeof SpellCheckStateKey = 'spellCheckState';
+type SpellCheckStateSchema = {
+  enabled: boolean;
+};
+
+const SPELL_CHECK_SETTING_KEY = 'spellCheckState';
 
 export class SpellCheckSettingService extends Service {
   constructor(
