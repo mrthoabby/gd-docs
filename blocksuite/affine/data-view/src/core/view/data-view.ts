@@ -49,10 +49,8 @@ type DataViewComponent = UniComponent<
 >;
 
 export interface DataViewRendererConfig {
-  mobileView?: DataViewComponent;
   icon: UniComponent;
   pcLogic: (view: SingleView) => DataViewUILogicBaseConstructor;
-  mobileLogic?: (view: SingleView) => DataViewUILogicBaseConstructor;
 }
 
 export type ViewMeta<

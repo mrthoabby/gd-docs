@@ -50,11 +50,6 @@ export const publicItemRowStyle = style({
   alignItems: 'center',
   justifyContent: 'space-between',
 });
-export const tagContainerStyle = style({
-  display: 'flex',
-  alignItems: 'center',
-  gap: '8px',
-});
 
 export const informationIcon = style({
   color: cssVarV2('icon/primary'),

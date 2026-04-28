@@ -15,15 +15,12 @@ import {
   CloudWorkspaceIcon,
   CollaborationIcon,
   DoneIcon,
-  InformationFillDuotoneIcon,
-  LocalWorkspaceIcon,
   NoNetworkIcon,
   SettingsIcon,
   TeamWorkspaceIcon,
   UnsyncIcon,
 } from '@blocksuite/icons/rc';
 import { LiveData, useLiveData, useService } from '@toeverything/infra';
-import { cssVar } from '@toeverything/theme';
 import clsx from 'clsx';
 import type { HTMLAttributes } from 'react';
 import { forwardRef, useCallback, useEffect, useMemo, useState } from 'react';
@@ -62,19 +59,6 @@ const UnSyncWorkspaceStatus = () => {
   );
 };
 
-const LocalWorkspaceStatus = () => {
-  return (
-    <>
-      {!BUILD_CONFIG.isElectron ? (
-        <InformationFillDuotoneIcon style={{ color: cssVar('errorColor') }} />
-      ) : (
-        <LocalWorkspaceIcon />
-      )}
-      Local
-    </>
-  );
-};
-
 const OfflineStatus = () => {
   return (
     <>
@@ -106,13 +90,7 @@ const useSyncEngineSyncProgress = (meta: WorkspaceMetadata) => {
 
   let content;
   // TODO(@eyhn): add i18n
-  if (workspace.flavour === 'local') {
-    if (!BUILD_CONFIG.isElectron) {
-      content = 'This is a local demo workspace.';
-    } else {
-      content = 'Saved locally';
-    }
-  } else if (!isOnline) {
+  if (!isOnline) {
     content = 'Disconnected, please check your network connection';
   } else if (engineState.syncRetrying && engineState.syncErrorMessage) {
     content = `${engineState.syncErrorMessage}, reconnecting.`;
@@ -141,19 +119,14 @@ const useSyncEngineSyncProgress = (meta: WorkspaceMetadata) => {
   return {
     message: content,
     icon:
-      workspace.flavour !== 'local' ? (
-        !isOnline ? (
-          <OfflineStatus />
-        ) : (
-          <CloudWorkspaceSyncStatus />
-        )
+      !isOnline ? (
+        <OfflineStatus />
       ) : (
-        <LocalWorkspaceStatus />
+        <CloudWorkspaceSyncStatus />
       ),
     progress,
     active:
-      workspace.flavour !== 'local' &&
-      ((syncing && progress !== undefined) || engineState.syncRetrying), // active if syncing or retrying,
+      (syncing && progress !== undefined) || engineState.syncRetrying,
   };
 };
 
@@ -184,7 +157,6 @@ const WorkspaceSyncInfo = ({
   dense?: boolean;
 }) => {
   const syncStatus = useSyncEngineSyncProgress(workspaceMetadata);
-  const isCloud = workspaceMetadata.flavour !== 'local';
   const { paused, pause } = usePauseAnimation();
 
   // to make sure that animation will play first time
@@ -226,7 +198,7 @@ const WorkspaceSyncInfo = ({
           </div>
           {!dense ? (
             <div className={styles.workspaceStatus}>
-              {isCloud ? <CloudWorkspaceStatus /> : <LocalWorkspaceStatus />}
+              <CloudWorkspaceStatus />
             </div>
           ) : null}
         </div>
@@ -263,7 +235,6 @@ export const WorkspaceCard = forwardRef<
     infoClassName?: string;
     dense?: boolean;
     onClickOpenSettings?: (workspaceMetadata: WorkspaceMetadata) => void;
-    onClickEnableCloud?: (workspaceMetadata: WorkspaceMetadata) => void;
   }
 >(
   (
@@ -272,7 +243,6 @@ export const WorkspaceCard = forwardRef<
       showSyncStatus,
       showArrowDownIcon,
       onClickOpenSettings,
-      onClickEnableCloud,
       className,
       infoClassName,
       disable,
@@ -291,10 +261,6 @@ export const WorkspaceCard = forwardRef<
     const navigate = useNavigateHelper();
 
     const name = information?.name ?? UNTITLED_WORKSPACE_NAME;
-
-    const onEnableCloud = useCatchEventCallback(() => {
-      onClickEnableCloud?.(workspaceMetadata);
-    }, [onClickEnableCloud, workspaceMetadata]);
 
     const onRemoveWorkspace = useAsyncCallback(async () => {
       await workspacesService
@@ -358,15 +324,6 @@ export const WorkspaceCard = forwardRef<
             <Button onClick={onRemoveWorkspace}>Remove</Button>
           ) : null}
           <div className={styles.showOnCardHover}>
-            {onClickEnableCloud && workspaceMetadata.flavour === 'local' ? (
-              <Button
-                className={styles.enableCloudButton}
-                onClick={onEnableCloud}
-              >
-                Enable Cloud
-              </Button>
-            ) : null}
-
             {onClickOpenSettings && (
               <div className={styles.settingButton} onClick={onOpenSettings}>
                 <SettingsIcon width={16} height={16} />

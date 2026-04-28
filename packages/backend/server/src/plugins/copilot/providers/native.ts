@@ -291,8 +291,11 @@ export async function buildNativeRequest({
       response_schema: schema
         ? ToolSchemaExtractor.toJsonSchema(schema)
         : undefined,
-      middleware: middleware?.rust
-        ? { request: middleware.rust.request, stream: middleware.rust.stream }
+      middleware: middleware?.native
+        ? {
+            request: middleware.native.request,
+            stream: middleware.native.stream,
+          }
         : undefined,
     },
     schema,
@@ -356,8 +359,8 @@ export async function buildNativeStructuredRequest({
       reasoning,
       strict,
       response_mime_type: 'application/json',
-      middleware: middleware?.rust
-        ? { request: middleware.rust.request }
+      middleware: middleware?.native
+        ? { request: middleware.native.request }
         : undefined,
     },
     schema,

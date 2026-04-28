@@ -6,10 +6,6 @@ import type { ExtensionType } from '@blocksuite/store';
 export function patchForAudioEmbedView(reactToLit: ReactToLit): ExtensionType {
   return {
     setup: di => {
-      // do not show audio block on mobile
-      if (BUILD_CONFIG.isMobileEdition) {
-        return;
-      }
       di.override(AttachmentEmbedConfigIdentifier('audio'), () => ({
         name: 'audio',
         check: (model, maxFileSize) =>

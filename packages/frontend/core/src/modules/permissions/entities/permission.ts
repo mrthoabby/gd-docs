@@ -37,10 +37,7 @@ export class WorkspacePermission extends Entity {
   revalidate = effect(
     exhaustMapWithTrailing(() => {
       return fromPromise(async signal => {
-        if (
-          this.workspaceService.workspace.flavour !== 'local' &&
-          !this.workspaceService.workspace.openOptions.isSharedMode
-        ) {
+        if (!this.workspaceService.workspace.openOptions.isSharedMode) {
           const info = await this.store.fetchWorkspaceInfo(
             this.workspaceService.workspace.id,
             signal

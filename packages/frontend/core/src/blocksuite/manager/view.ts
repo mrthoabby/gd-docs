@@ -15,10 +15,8 @@ import {
   AffineEditorViewExtension,
   type AffineEditorViewOptions,
 } from '@affine/core/blocksuite/view-extensions/editor-view/editor-view';
-import { ElectronViewExtension } from '@affine/core/blocksuite/view-extensions/electron';
 import { AffineIconPickerExtension } from '@affine/core/blocksuite/view-extensions/icon-picker';
 import { AffineLinkPreviewExtension } from '@affine/core/blocksuite/view-extensions/link-preview-service';
-import { MobileViewExtension } from '@affine/core/blocksuite/view-extensions/mobile';
 import { PdfViewExtension } from '@affine/core/blocksuite/view-extensions/pdf';
 import { AffineThemeViewExtension } from '@affine/core/blocksuite/view-extensions/theme';
 import { TurboRendererViewExtension } from '@affine/core/blocksuite/view-extensions/turbo-renderer';
@@ -54,9 +52,7 @@ type Configure = {
   cloud: (framework?: FrameworkProvider, enableCloud?: boolean) => Configure;
   turboRenderer: (enableTurboRenderer?: boolean) => Configure;
   pdf: (enablePDFEmbedPreview?: boolean, reactToLit?: ReactToLit) => Configure;
-  mobile: (framework?: FrameworkProvider) => Configure;
   ai: (enable?: boolean, framework?: FrameworkProvider) => Configure;
-  electron: (framework?: FrameworkProvider) => Configure;
   linkPreview: (framework?: FrameworkProvider) => Configure;
   codeBlockPreview: (framework?: FrameworkProvider) => Configure;
   iconPicker: (framework?: FrameworkProvider) => Configure;
@@ -94,9 +90,7 @@ class ViewProvider {
       TurboRendererViewExtension,
       CloudViewExtension,
       PdfViewExtension,
-      MobileViewExtension,
       AIViewExtension,
-      ElectronViewExtension,
       AffineLinkPreviewExtension,
       AffineDatabaseViewExtension,
       CommentViewExtension,
@@ -121,9 +115,7 @@ class ViewProvider {
       cloud: this._configureCloud,
       turboRenderer: this._configureTurboRenderer,
       pdf: this._configurePdf,
-      mobile: this._configureMobile,
       ai: this._configureAI,
-      electron: this._configureElectron,
       linkPreview: this._configureLinkPreview,
       codeBlockPreview: this._configureCodeBlockHtmlPreview,
       iconPicker: this._configureIconPicker,
@@ -145,9 +137,7 @@ class ViewProvider {
       .cloud()
       .turboRenderer()
       .pdf()
-      .mobile()
       .ai()
-      .electron()
       .linkPreview()
       .codeBlockPreview()
       .iconPicker()
@@ -244,23 +234,7 @@ class ViewProvider {
   };
 
   private readonly _configureParagraph = (enableAI?: boolean) => {
-    if (BUILD_CONFIG.isMobileEdition) {
-      this._manager.configure(ParagraphViewExtension, {
-        getPlaceholder: model => {
-          const placeholders = {
-            text: '',
-            h1: 'Heading 1',
-            h2: 'Heading 2',
-            h3: 'Heading 3',
-            h4: 'Heading 4',
-            h5: 'Heading 5',
-            h6: 'Heading 6',
-            quote: '',
-          };
-          return placeholders[model.props.type] ?? '';
-        },
-      });
-    } else if (enableAI) {
+    if (enableAI) {
       this._manager.configure(ParagraphViewExtension, {
         getPlaceholder: model => {
           const placeholders = {
@@ -308,21 +282,11 @@ class ViewProvider {
     return this.config;
   };
 
-  private readonly _configureMobile = (framework?: FrameworkProvider) => {
-    this._manager.configure(MobileViewExtension, { framework });
-    return this.config;
-  };
-
   private readonly _configureAI = (
     enable?: boolean,
     framework?: FrameworkProvider
   ) => {
     this._manager.configure(AIViewExtension, { framework, enable });
-    return this.config;
-  };
-
-  private readonly _configureElectron = (framework?: FrameworkProvider) => {
-    this._manager.configure(ElectronViewExtension, { framework });
     return this.config;
   };
 

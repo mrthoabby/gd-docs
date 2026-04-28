@@ -2,12 +2,10 @@ import { effect, fromPromise, Service, smartRetry } from '@toeverything/infra';
 import { catchError, EMPTY, Observable, type Subscription, tap } from 'rxjs';
 
 import type { FeatureFlagService } from '../../feature-flag';
-import type { WorkspaceService } from '../../workspace';
 import type { DocSummaryStore } from '../stores/doc-summary';
 
 export class DocSummaryService extends Service {
   constructor(
-    private readonly workspaceService: WorkspaceService,
     private readonly store: DocSummaryStore,
     private readonly featureFlagService: FeatureFlagService
   ) {
@@ -24,7 +22,6 @@ export class DocSummaryService extends Service {
     if (!cached$) {
       const ob$ = new Observable<string | undefined>(subscribe => {
         if (
-          this.workspaceService.workspace.flavour === 'local' ||
           this.featureFlagService.flags.enable_battery_save_mode.value === false
         ) {
           // use local indexer

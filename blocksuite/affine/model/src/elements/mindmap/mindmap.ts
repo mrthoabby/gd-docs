@@ -963,8 +963,7 @@ export class MindmapElementModel extends GfxGroupLikeElementModel<MindmapElement
       return initialValue;
     }
   })
-  // Use extracted function to avoid playwright test failure
-  // since this model package is imported by playwright
+  // Use an extracted function so decorators do not close over model types.
   @observe(observeChildren)
   @field()
   accessor children: Y.Map<NodeDetail> = new Y.Map();

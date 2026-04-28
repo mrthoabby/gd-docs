@@ -288,65 +288,6 @@ type BlobUploadedPart {
   partNumber: Int!
 }
 
-type CalendarAccountObjectType {
-  calendars: [CalendarSubscriptionObjectType!]!
-  calendarsCount: Int!
-  createdAt: DateTime!
-  displayName: String
-  email: String
-  id: String!
-  lastError: String
-  provider: CalendarProviderType!
-  providerAccountId: String!
-  refreshIntervalMinutes: Int!
-  status: String!
-  updatedAt: DateTime!
-}
-
-type CalendarCalDAVProviderPresetObjectType {
-  docsUrl: String
-  id: String!
-  label: String!
-  requiresAppPassword: Boolean
-}
-
-type CalendarEventObjectType {
-  allDay: Boolean!
-  description: String
-  endAtUtc: DateTime!
-  externalEventId: String!
-  id: String!
-  location: String
-  originalTimezone: String
-  recurrenceId: String
-  startAtUtc: DateTime!
-  status: String
-  subscriptionId: String!
-  title: String
-}
-
-type CalendarProviderRequestErrorDataType {
-  message: String!
-  status: Int!
-}
-
-enum CalendarProviderType {
-  CalDAV
-  Google
-}
-
-type CalendarSubscriptionObjectType {
-  accountId: String!
-  color: String
-  displayName: String
-  enabled: Boolean!
-  externalCalendarId: String!
-  id: String!
-  lastSyncAt: DateTime
-  provider: CalendarProviderType!
-  timezone: String
-}
-
 enum ChatHistoryOrder {
   asc
   desc
@@ -715,16 +656,6 @@ input CreateChatSessionInput {
   workspaceId: String!
 }
 
-input CreateCheckoutSessionInput {
-  args: JSONObject
-  coupon: String
-  idempotencyKey: String @deprecated(reason: "not required anymore")
-  plan: SubscriptionPlan = Pro
-  recurring: SubscriptionRecurring = Yearly
-  successCallbackLink: String!
-  variant: SubscriptionVariant
-}
-
 input CreateUserInput {
   email: String!
   name: String
@@ -895,7 +826,7 @@ type EditorType {
   name: String!
 }
 
-union ErrorDataUnion = AlreadyInSpaceDataType | BlobNotFoundDataType | CalendarProviderRequestErrorDataType | CopilotContextFileNotSupportedDataType | CopilotDocNotFoundDataType | CopilotFailedToAddWorkspaceFileEmbeddingDataType | CopilotFailedToGenerateEmbeddingDataType | CopilotFailedToMatchContextDataType | CopilotFailedToMatchGlobalContextDataType | CopilotFailedToModifyContextDataType | CopilotInvalidContextDataType | CopilotMessageNotFoundDataType | CopilotPromptNotFoundDataType | CopilotProviderNotSupportedDataType | CopilotProviderSideErrorDataType | DocActionDeniedDataType | DocHistoryNotFoundDataType | DocNotFoundDataType | DocUpdateBlockedDataType | ExpectToGrantDocUserRolesDataType | ExpectToRevokeDocUserRolesDataType | ExpectToUpdateDocUserRoleDataType | GraphqlBadRequestDataType | HttpRequestErrorDataType | ImageFormatNotSupportedDataType | InvalidAppConfigDataType | InvalidAppConfigInputDataType | InvalidEmailDataType | InvalidHistoryTimestampDataType | InvalidIndexerInputDataType | InvalidLicenseToActivateDataType | InvalidLicenseUpdateParamsDataType | InvalidOauthCallbackCodeDataType | InvalidOauthResponseDataType | InvalidPasswordLengthDataType | InvalidRuntimeConfigTypeDataType | InvalidSearchProviderRequestDataType | MemberNotFoundInSpaceDataType | MentionUserDocAccessDeniedDataType | MissingOauthQueryParameterDataType | NoCopilotProviderAvailableDataType | NoMoreSeatDataType | NotInSpaceDataType | QueryTooLongDataType | ResponseTooLargeErrorDataType | RuntimeConfigNotFoundDataType | SameSubscriptionRecurringDataType | SpaceAccessDeniedDataType | SpaceNotFoundDataType | SpaceOwnerNotFoundDataType | SpaceShouldHaveOnlyOneOwnerDataType | SsrfBlockedErrorDataType | SubscriptionAlreadyExistsDataType | SubscriptionNotExistsDataType | SubscriptionPlanNotFoundDataType | UnknownOauthProviderDataType | UnsupportedClientVersionDataType | UnsupportedSubscriptionPlanDataType | ValidationErrorDataType | VersionRejectedDataType | WorkspacePermissionNotFoundDataType | WrongSignInCredentialsDataType
+union ErrorDataUnion = AlreadyInSpaceDataType | BlobNotFoundDataType | CopilotContextFileNotSupportedDataType | CopilotDocNotFoundDataType | CopilotFailedToAddWorkspaceFileEmbeddingDataType | CopilotFailedToGenerateEmbeddingDataType | CopilotFailedToMatchContextDataType | CopilotFailedToMatchGlobalContextDataType | CopilotFailedToModifyContextDataType | CopilotInvalidContextDataType | CopilotMessageNotFoundDataType | CopilotPromptNotFoundDataType | CopilotProviderNotSupportedDataType | CopilotProviderSideErrorDataType | DocActionDeniedDataType | DocHistoryNotFoundDataType | DocNotFoundDataType | DocUpdateBlockedDataType | ExpectToGrantDocUserRolesDataType | ExpectToRevokeDocUserRolesDataType | ExpectToUpdateDocUserRoleDataType | GraphqlBadRequestDataType | HttpRequestErrorDataType | ImageFormatNotSupportedDataType | InvalidAppConfigDataType | InvalidAppConfigInputDataType | InvalidEmailDataType | InvalidHistoryTimestampDataType | InvalidIndexerInputDataType | InvalidOauthCallbackCodeDataType | InvalidOauthResponseDataType | InvalidPasswordLengthDataType | InvalidRuntimeConfigTypeDataType | InvalidSearchProviderRequestDataType | MemberNotFoundInSpaceDataType | MentionUserDocAccessDeniedDataType | MissingOauthQueryParameterDataType | NoCopilotProviderAvailableDataType | NoMoreSeatDataType | NotInSpaceDataType | QueryTooLongDataType | ResponseTooLargeErrorDataType | RuntimeConfigNotFoundDataType | SpaceAccessDeniedDataType | SpaceNotFoundDataType | SpaceOwnerNotFoundDataType | SpaceShouldHaveOnlyOneOwnerDataType | SsrfBlockedErrorDataType | UnknownOauthProviderDataType | UnsupportedClientVersionDataType | ValidationErrorDataType | VersionRejectedDataType | WorkspacePermissionNotFoundDataType | WrongSignInCredentialsDataType
 
 enum ErrorNames {
   ACCESS_DENIED
@@ -907,11 +838,9 @@ enum ErrorNames {
   BLOB_INVALID
   BLOB_NOT_FOUND
   BLOB_QUOTA_EXCEEDED
-  CALENDAR_PROVIDER_REQUEST_ERROR
   CANNOT_DELETE_ACCOUNT_WITH_OWNED_TEAM_WORKSPACE
   CANNOT_DELETE_ALL_ADMIN_ACCOUNT
   CANNOT_DELETE_OWN_ACCOUNT
-  CANT_UPDATE_ONETIME_PAYMENT_SUBSCRIPTION
   CAN_NOT_BATCH_GRANT_DOC_OWNER_PERMISSIONS
   CAN_NOT_REVOKE_YOURSELF
   CAPTCHA_VERIFICATION_FAILED
@@ -944,7 +873,6 @@ enum ErrorNames {
   COPILOT_TRANSCRIPTION_AUDIO_NOT_PROVIDED
   COPILOT_TRANSCRIPTION_JOB_EXISTS
   COPILOT_TRANSCRIPTION_JOB_NOT_FOUND
-  CUSTOMER_PORTAL_CREATE_FAILED
   DOC_ACTION_DENIED
   DOC_DEFAULT_ROLE_CAN_NOT_BE_OWNER
   DOC_HISTORY_NOT_FOUND
@@ -960,7 +888,6 @@ enum ErrorNames {
   EXPECT_TO_REVOKE_DOC_USER_ROLES
   EXPECT_TO_REVOKE_PUBLIC_DOC
   EXPECT_TO_UPDATE_DOC_USER_ROLE
-  FAILED_TO_CHECKOUT
   FAILED_TO_SAVE_UPDATES
   FAILED_TO_UPSERT_SNAPSHOT
   GRAPHQL_BAD_REQUEST
@@ -970,28 +897,19 @@ enum ErrorNames {
   INVALID_APP_CONFIG
   INVALID_APP_CONFIG_INPUT
   INVALID_AUTH_STATE
-  INVALID_CHECKOUT_PARAMETERS
   INVALID_EMAIL
   INVALID_EMAIL_TOKEN
   INVALID_HISTORY_TIMESTAMP
   INVALID_INDEXER_INPUT
   INVALID_INVITATION
-  INVALID_LICENSE_SESSION_ID
-  INVALID_LICENSE_TO_ACTIVATE
-  INVALID_LICENSE_UPDATE_PARAMS
   INVALID_OAUTH_CALLBACK_CODE
   INVALID_OAUTH_CALLBACK_STATE
   INVALID_OAUTH_RESPONSE
   INVALID_PASSWORD_LENGTH
   INVALID_RUNTIME_CONFIG_TYPE
   INVALID_SEARCH_PROVIDER_REQUEST
-  INVALID_SUBSCRIPTION_PARAMETERS
-  LICENSE_EXPIRED
-  LICENSE_NOT_FOUND
-  LICENSE_REVEALED
   LINK_EXPIRED
   MAILER_SERVICE_IS_NOT_CONFIGURED
-  MANAGED_BY_APP_STORE_OR_PLAY
   MEMBER_NOT_FOUND_IN_SPACE
   MEMBER_QUOTA_EXCEEDED
   MENTION_USER_DOC_ACCESS_DENIED
@@ -1013,7 +931,6 @@ enum ErrorNames {
   RESPONSE_TOO_LARGE_ERROR
   RUNTIME_CONFIG_NOT_FOUND
   SAME_EMAIL_PROVIDED
-  SAME_SUBSCRIPTION_RECURRING
   SEARCH_PROVIDER_NOT_FOUND
   SIGN_UP_FORBIDDEN
   SPACE_ACCESS_DENIED
@@ -1022,24 +939,14 @@ enum ErrorNames {
   SPACE_SHOULD_HAVE_ONLY_ONE_OWNER
   SSRF_BLOCKED_ERROR
   STORAGE_QUOTA_EXCEEDED
-  SUBSCRIPTION_ALREADY_EXISTS
-  SUBSCRIPTION_EXPIRED
-  SUBSCRIPTION_HAS_BEEN_CANCELED
-  SUBSCRIPTION_HAS_NOT_BEEN_CANCELED
-  SUBSCRIPTION_NOT_EXISTS
-  SUBSCRIPTION_PLAN_NOT_FOUND
   TOO_MANY_REQUEST
   UNKNOWN_OAUTH_PROVIDER
   UNSPLASH_IS_NOT_CONFIGURED
   UNSUPPORTED_CLIENT_VERSION
-  UNSUPPORTED_SUBSCRIPTION_PLAN
   USER_AVATAR_NOT_FOUND
   USER_NOT_FOUND
   VALIDATION_ERROR
   VERSION_REJECTED
-  WORKSPACE_ID_REQUIRED_FOR_TEAM_SUBSCRIPTION
-  WORKSPACE_ID_REQUIRED_TO_UPDATE_TEAM_SUBSCRIPTION
-  WORKSPACE_LICENSE_ALREADY_EXISTS
   WORKSPACE_PERMISSION_NOT_FOUND
   WRONG_SIGN_IN_CREDENTIALS
   WRONG_SIGN_IN_METHOD
@@ -1142,14 +1049,6 @@ type InvalidHistoryTimestampDataType {
 }
 
 type InvalidIndexerInputDataType {
-  reason: String!
-}
-
-type InvalidLicenseToActivateDataType {
-  reason: String!
-}
-
-type InvalidLicenseUpdateParamsDataType {
   reason: String!
 }
 
@@ -1329,28 +1228,6 @@ type InviteUserType {
   status: WorkspaceMemberStatus!
 }
 
-enum InvoiceStatus {
-  Draft
-  Open
-  Paid
-  Uncollectible
-  Void
-}
-
-type InvoiceType {
-  amount: Int!
-  createdAt: DateTime!
-  currency: String!
-  id: String @deprecated(reason: "removed")
-  lastPaymentError: String
-  link: String
-  plan: SubscriptionPlan @deprecated(reason: "removed")
-  reason: String!
-  recurring: SubscriptionRecurring @deprecated(reason: "removed")
-  status: InvoiceStatus!
-  updatedAt: DateTime!
-}
-
 """
 The `JSON` scalar type represents JSON values as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
@@ -1360,15 +1237,6 @@ scalar JSON @specifiedBy(url: "http://www.ecma-international.org/publications/fi
 The `JSONObject` scalar type represents JSON objects as specified by [ECMA-404](http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf).
 """
 scalar JSONObject @specifiedBy(url: "http://www.ecma-international.org/publications/files/ECMA-ST/ECMA-404.pdf")
-
-type License {
-  expiredAt: DateTime
-  installedAt: DateTime!
-  quantity: Int!
-  recurring: SubscriptionRecurring!
-  validatedAt: DateTime!
-  variant: SubscriptionVariant
-}
 
 type LimitedUserType {
   """User email"""
@@ -1383,11 +1251,6 @@ input LinkCalDAVAccountInput {
   password: String!
   providerPresetId: String!
   username: String!
-}
-
-input LinkCalendarAccountInput {
-  provider: CalendarProviderType!
-  redirectUri: String
 }
 
 input ListUserInput {
@@ -1494,7 +1357,6 @@ type MissingOauthQueryParameterDataType {
 type Mutation {
   abortBlobUpload(key: String!, uploadId: String!, workspaceId: String!): Boolean!
   acceptInviteById(inviteId: String!, sendAcceptMail: Boolean @deprecated(reason: "never used"), workspaceId: String @deprecated(reason: "never used")): Boolean!
-  activateLicense(license: String!, workspaceId: String!): License!
 
   """add a blob to context"""
   addContextBlob(options: AddContextBlobInput!): CopilotContextBlob!
@@ -1521,7 +1383,6 @@ type Mutation {
 
   """Ban an user"""
   banUser(id: String!): UserType!
-  cancelSubscription(idempotencyKey: String @deprecated(reason: "use header `Idempotency-Key`"), plan: SubscriptionPlan = Pro, workspaceId: String): SubscriptionType!
   changeEmail(email: String!, token: String!): UserType!
   changePassword(newPassword: String!, token: String!, userId: String): Boolean!
   claimAudioTranscription(jobId: String!): TranscriptionResultType
@@ -1534,8 +1395,6 @@ type Mutation {
   """Create change password url"""
   createChangePasswordUrl(callbackUrl: String!, userId: String!): String!
 
-  """Create a subscription checkout link of stripe"""
-  createCheckoutSession(input: CreateCheckoutSessionInput!): String!
   createComment(input: CommentCreateInput!): CommentObjectType!
 
   """Create a context session"""
@@ -1550,18 +1409,14 @@ type Mutation {
   """Create a chat session and return full session payload"""
   createCopilotSessionWithHistory(options: CreateChatSessionInput!): CopilotHistories!
 
-  """Create a stripe customer portal to manage payment methods"""
-  createCustomerPortal: String!
   createInviteLink(expireTime: WorkspaceInviteLinkExpireTime!, workspaceId: String!): InviteLink!
   createReply(input: ReplyCreateInput!): ReplyObjectType!
-  createSelfhostWorkspaceCustomerPortal(workspaceId: String!): String!
 
   """Create a new user"""
   createUser(input: CreateUserInput!): UserType!
 
   """Create a new workspace"""
   createWorkspace(init: Upload): WorkspaceType!
-  deactivateLicense(workspaceId: String!): Boolean!
   deleteAccount: DeleteAccount!
   deleteBlob(hash: String @deprecated(reason: "use parameter [key]"), key: String, permanently: Boolean! = false, workspaceId: String!): Boolean!
 
@@ -1580,18 +1435,14 @@ type Mutation {
 
   """Create a chat session"""
   forkCopilotSession(options: ForkChatSessionInput!): String!
-  generateLicenseKey(sessionId: String!): String!
   generateUserAccessToken(input: GenerateAccessTokenInput!): RevealedAccessToken!
   grantDocUserRoles(input: GrantDocUserRolesInput!): Boolean!
   grantMember(permission: Permission!, userId: String!, workspaceId: String!): Boolean!
 
   """import users"""
   importUsers(input: ImportUsersInput!): [UserImportResultType!]!
-  installLicense(license: Upload!, workspaceId: String!): License!
   inviteMembers(emails: [String!]!, workspaceId: String!): [InviteResult!]!
   leaveWorkspace(sendLeaveMail: Boolean @deprecated(reason: "no used anymore"), workspaceId: String!, workspaceName: String @deprecated(reason: "no longer used")): Boolean!
-  linkCalDAVAccount(input: LinkCalDAVAccountInput!): CalendarAccountObjectType!
-  linkCalendarAccount(input: LinkCalendarAccountInput!): String!
 
   """mention user in a doc"""
   mentionUser(input: MentionInput!): ID!
@@ -1607,8 +1458,6 @@ type Mutation {
   readNotification(id: String!): Boolean!
   recoverDoc(guid: String!, timestamp: DateTime!, workspaceId: String!): DateTime!
 
-  """Refresh current user subscriptions and return latest."""
-  refreshUserSubscriptions: [SubscriptionType!]!
   releaseDeletedBlobs(workspaceId: String!): Boolean!
 
   """Remove user avatar"""
@@ -1630,12 +1479,8 @@ type Mutation {
   removeWorkspaceEmbeddingFiles(fileId: String!, workspaceId: String!): Boolean!
   removeWorkspaceFeature(feature: FeatureType!, workspaceId: String!): Boolean!
 
-  """Request to apply the subscription in advance"""
-  requestApplySubscription(transactionId: String!): [SubscriptionType!]!
-
   """Resolve a comment or not"""
   resolveComment(input: CommentResolveInput!): Boolean!
-  resumeSubscription(idempotencyKey: String @deprecated(reason: "use header `Idempotency-Key`"), plan: SubscriptionPlan = Pro, workspaceId: String): SubscriptionType!
   retryAudioTranscription(jobId: String!, workspaceId: String!): TranscriptionResultType
   revokeDocUserRoles(input: RevokeDocUserRoleInput!): Boolean!
   revokeInviteLink(workspaceId: String!): Boolean!
@@ -1656,11 +1501,9 @@ type Mutation {
 
   """Trigger generate missing titles cron job"""
   triggerGenerateTitleCron: Boolean!
-  unlinkCalendarAccount(accountId: String!): Boolean!
 
   """update app configuration"""
   updateAppConfig(updates: [UpdateAppConfigInput!]!): JSONObject!
-  updateCalendarAccount(accountId: String!, refreshIntervalMinutes: Int!): CalendarAccountObjectType
 
   """Update a comment content"""
   updateComment(input: CommentUpdateInput!): Boolean!
@@ -1676,7 +1519,6 @@ type Mutation {
 
   """Update user settings"""
   updateSettings(input: UpdateUserSettingsInput!): Boolean!
-  updateSubscriptionRecurring(idempotencyKey: String @deprecated(reason: "use header `Idempotency-Key`"), plan: SubscriptionPlan = Pro, recurring: SubscriptionRecurring!, workspaceId: String): SubscriptionType!
 
   """Update an user"""
   updateUser(id: String!, input: ManageUserInput!): UserType!
@@ -1686,7 +1528,6 @@ type Mutation {
 
   """Update workspace"""
   updateWorkspace(input: UpdateWorkspaceInput!): WorkspaceType!
-  updateWorkspaceCalendars(input: UpdateWorkspaceCalendarsInput!): WorkspaceCalendarObjectType!
 
   """Update ignored docs"""
   updateWorkspaceEmbeddingIgnoredDocs(add: [String!], remove: [String!], workspaceId: String!): Int!
@@ -1922,7 +1763,6 @@ type Query {
 
   """get workspace invitation info"""
   getInviteInfo(inviteId: String!): InvitationType!
-  prices: [SubscriptionPrice!]!
 
   """Get public user by id"""
   publicUserById(id: String!): PublicUserType
@@ -2081,10 +1921,6 @@ The `SafeInt` scalar type represents non-fractional signed whole numeric values 
 """
 scalar SafeInt @specifiedBy(url: "https://www.ecma-international.org/ecma-262/#sec-number.issafeinteger")
 
-type SameSubscriptionRecurringDataType {
-  recurring: String!
-}
-
 type SearchDocObjectType {
   blockId: String!
   createdAt: DateTime!
@@ -2190,8 +2026,6 @@ type ServerConfigType {
 
   """server base url"""
   baseUrl: String!
-  calendarCalDAVProviders: [CalendarCalDAVProviderPresetObjectType!]!
-  calendarProviders: [CalendarProviderType!]!
 
   """credentials requirement"""
   credentialsRequirement: CredentialsRequirementType!
@@ -2224,9 +2058,7 @@ enum ServerFeature {
   Copilot
   CopilotEmbedding
   Indexer
-  LocalWorkspace
   OAuth
-  Payment
 }
 
 type SpaceAccessDeniedDataType {
@@ -2262,91 +2094,6 @@ input SubmitAudioTranscriptionInput {
   quality: TranscriptionQualityInput
   sliceManifest: [AudioSliceManifestItemInput!]
   sourceAudio: TranscriptionSourceAudioInput
-}
-
-type SubscriptionAlreadyExistsDataType {
-  plan: String!
-}
-
-type SubscriptionNotExistsDataType {
-  plan: String!
-}
-
-enum SubscriptionPlan {
-  AI
-  Enterprise
-  Free
-  Pro
-  SelfHosted
-  SelfHostedTeam
-  Team
-}
-
-type SubscriptionPlanNotFoundDataType {
-  plan: String!
-  recurring: String!
-}
-
-type SubscriptionPrice {
-  amount: Int
-  currency: String!
-  lifetimeAmount: Int
-  plan: SubscriptionPlan!
-  type: String!
-  yearlyAmount: Int
-}
-
-enum SubscriptionRecurring {
-  Lifetime
-  Monthly
-  Yearly
-}
-
-enum SubscriptionStatus {
-  Active
-  Canceled
-  Incomplete
-  IncompleteExpired
-  PastDue
-  Paused
-  Trialing
-  Unpaid
-}
-
-type SubscriptionType {
-  canceledAt: DateTime
-  createdAt: DateTime!
-  end: DateTime
-
-  """
-  If provider is revenuecat, indicates underlying store. Read-only. One of: app_store | play_store
-  """
-  iapStore: String
-  id: String @deprecated(reason: "removed")
-  nextBillAt: DateTime
-
-  """
-  The 'Free' plan just exists to be a placeholder and for the type convenience of frontend.
-  There won't actually be a subscription with plan 'Free'
-  """
-  plan: SubscriptionPlan!
-
-  """
-  Payment provider of this subscription. Read-only. One of: stripe | revenuecat
-  """
-  provider: String
-  recurring: SubscriptionRecurring!
-  start: DateTime!
-  status: SubscriptionStatus!
-  trialEnd: DateTime
-  trialStart: DateTime
-  updatedAt: DateTime!
-  variant: SubscriptionVariant
-}
-
-enum SubscriptionVariant {
-  EA
-  Onetime
 }
 
 enum TimeBucket {
@@ -2421,10 +2168,6 @@ type UnsupportedClientVersionDataType {
   requiredVersion: String!
 }
 
-type UnsupportedSubscriptionPlanDataType {
-  plan: String!
-}
-
 input UpdateAppConfigInput {
   key: String!
   module: String!
@@ -2470,11 +2213,6 @@ input UpdateUserSettingsInput {
 
   """Receive mention email"""
   receiveMentionEmail: Boolean
-}
-
-input UpdateWorkspaceCalendarsInput {
-  items: [WorkspaceCalendarItemInput!]!
-  workspaceId: String!
 }
 
 input UpdateWorkspaceInput {
@@ -2548,7 +2286,6 @@ type UserType {
 
   """User avatar url"""
   avatarUrl: String
-  calendarAccounts: [CalendarAccountObjectType!]!
   copilot(workspaceId: String): Copilot!
 
   """User email verified"""
@@ -2570,10 +2307,6 @@ type UserType {
   hasPassword: Boolean
   id: ID!
 
-  """Get user invoice count"""
-  invoiceCount: Int!
-  invoices(skip: Int, take: Int = 8): [InvoiceType!]!
-
   """User name"""
   name: String!
 
@@ -2588,7 +2321,6 @@ type UserType {
 
   """Get user settings"""
   settings: UserSettingsType!
-  subscriptions: [SubscriptionType!]!
   token: tokenType! @deprecated(reason: "use [/api/auth/sign-in?native=true] instead")
 }
 
@@ -2599,31 +2331,6 @@ type ValidationErrorDataType {
 type VersionRejectedDataType {
   serverVersion: String!
   version: String!
-}
-
-input WorkspaceCalendarItemInput {
-  colorOverride: String
-  sortOrder: Int
-  subscriptionId: String!
-}
-
-type WorkspaceCalendarItemObjectType {
-  colorOverride: String
-  enabled: Boolean!
-  id: String!
-  sortOrder: Int
-  subscriptionId: String!
-}
-
-type WorkspaceCalendarObjectType {
-  colorOverride: String
-  createdByUserId: String!
-  displayNameOverride: String
-  enabled: Boolean!
-  events(from: DateTime!, to: DateTime!): [CalendarEventObjectType!]!
-  id: String!
-  items: [WorkspaceCalendarItemObjectType!]!
-  workspaceId: String!
 }
 
 type WorkspaceDocMeta {
@@ -2664,7 +2371,6 @@ type WorkspacePermissions {
   Workspace_CreateDoc: Boolean!
   Workspace_Delete: Boolean!
   Workspace_Organize_Read: Boolean!
-  Workspace_Payment_Manage: Boolean!
   Workspace_Properties_Create: Boolean!
   Workspace_Properties_Delete: Boolean!
   Workspace_Properties_Read: Boolean!
@@ -2719,7 +2425,6 @@ type WorkspaceType {
 
   """Blobs size of workspace"""
   blobsSize: Int!
-  calendars: [WorkspaceCalendarObjectType!]!
 
   """Get comment changes of a doc"""
   commentChanges(docId: String!, pagination: PaginationInput!): PaginatedCommentChangeObjectType!
@@ -2754,13 +2459,6 @@ type WorkspaceType {
 
   """invite link for workspace"""
   inviteLink: InviteLink
-
-  """Get user invoice count"""
-  invoiceCount: Int!
-  invoices(skip: Int, take: Int = 8): [InvoiceType!]!
-
-  """The selfhost license of the workspace"""
-  license: License
 
   """member count of workspace"""
   memberCount: Int!
@@ -2797,9 +2495,6 @@ type WorkspaceType {
 
   """Search docs by keyword"""
   searchDocs(input: SearchDocsInput!): [SearchDocObjectType!]!
-
-  """The team subscription of the workspace, if exists."""
-  subscription: SubscriptionType
 
   """if workspace is team workspace"""
   team: Boolean!

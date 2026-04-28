@@ -4,7 +4,7 @@ abstract class BaseAIError extends Error {
 
 export enum AIErrorType {
   GeneralNetworkError = 'GeneralNetworkError',
-  PaymentRequired = 'PaymentRequired',
+  UsageLimit = 'UsageLimit',
   Unauthorized = 'Unauthorized',
   RequestTimeout = 'RequestTimeout',
 }
@@ -18,11 +18,11 @@ export class UnauthorizedError extends BaseAIError {
 }
 
 // user has used up the quota
-export class PaymentRequiredError extends BaseAIError {
-  readonly type = AIErrorType.PaymentRequired;
+export class UsageLimitError extends BaseAIError {
+  readonly type = AIErrorType.UsageLimit;
 
   constructor() {
-    super('Payment required');
+    super('Usage limit reached');
   }
 }
 
@@ -46,6 +46,6 @@ export class RequestTimeoutError extends BaseAIError {
 
 export type AIError =
   | UnauthorizedError
-  | PaymentRequiredError
+  | UsageLimitError
   | GeneralNetworkError
   | RequestTimeoutError;

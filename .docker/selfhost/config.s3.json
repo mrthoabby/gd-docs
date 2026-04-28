@@ -1,10 +1,8 @@
 {
   "$schema": "https://github.com/toeverything/affine/releases/latest/download/config.schema.json",
-
   "server": {
     "name": "GD docs Server (S3)"
   },
-
   "auth": {
     "allowSignup": true,
     "requireEmailVerification": false,
@@ -13,7 +11,6 @@
       "max": 128
     }
   },
-
   "storages": {
     "avatar.storage": {
       "provider": "s3",
@@ -35,14 +32,5 @@
         "secretAccessKey": "TU_SECRET_ACCESS_KEY"
       }
     }
-  },
-
-  "telemetry": {
-    "ga4.measurementId": "",
-    "ga4.apiSecret": ""
-  },
-
-  "metrics": {
-    "enabled": false
   }
 }

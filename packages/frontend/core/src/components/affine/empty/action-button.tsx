@@ -1,12 +1,7 @@
 import { Button, type ButtonProps } from '@affine/component';
 import clsx from 'clsx';
 
-import {
-  actionButton,
-  actionContent,
-  mobileActionButton,
-  mobileActionContent,
-} from './style.css';
+import { actionButton, actionContent } from './style.css';
 
 export const ActionButton = ({
   className,
@@ -16,14 +11,8 @@ export const ActionButton = ({
   return (
     <Button
       size="large"
-      className={clsx(
-        BUILD_CONFIG.isMobileEdition ? mobileActionButton : actionButton,
-        className
-      )}
-      contentClassName={clsx(
-        BUILD_CONFIG.isMobileEdition ? mobileActionContent : actionContent,
-        contentClassName
-      )}
+      className={clsx(actionButton, className)}
+      contentClassName={clsx(actionContent, contentClassName)}
       {...props}
     />
   );

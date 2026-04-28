@@ -49,7 +49,7 @@ export class UrlService extends Service {
     if (parsed.protocol !== 'http:' && parsed.protocol !== 'https:') {
       throw new Error('only http/https URLs are supported');
     }
-    if (BUILD_CONFIG.isWeb || BUILD_CONFIG.isMobileWeb) {
+    if (BUILD_CONFIG.isWeb) {
       location.href = url;
     } else {
       this.popupWindowProvider?.open(url);

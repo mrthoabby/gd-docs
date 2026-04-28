@@ -1,5 +1,4 @@
 import { unsafeCSSVarV2 } from '@blocksuite/affine-shared/theme';
-import { IS_MOBILE } from '@blocksuite/global/env';
 import { CloseIcon, SearchIcon } from '@blocksuite/icons/lit';
 import { baseTheme } from '@toeverything/theme';
 import { css, html, unsafeCSS } from 'lit';
@@ -133,7 +132,7 @@ export class DataViewHeaderToolsSearch extends WidgetBase<
 
   override connectedCallback() {
     super.connectedCallback();
-    this.style.display = IS_MOBILE ? 'none' : 'flex';
+    this.style.display = 'flex';
   }
 
   override render() {

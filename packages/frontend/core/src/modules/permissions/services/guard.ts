@@ -165,9 +165,6 @@ export class GuardService extends Service {
   );
 
   private readonly loadWorkspacePermission = async () => {
-    if (this.workspaceService.workspace.flavour === 'local') {
-      return {} as Record<WorkspacePermissionActions, boolean>;
-    }
     if (this.workspaceService.workspace.openOptions.isSharedMode) {
       return {};
     }
@@ -177,9 +174,6 @@ export class GuardService extends Service {
   };
 
   private readonly loadDocPermission = async (docId: string) => {
-    if (this.workspaceService.workspace.flavour === 'local') {
-      return {} as Record<DocPermissionActions, boolean>;
-    }
     if (this.workspaceService.workspace.openOptions.isSharedMode) {
       return {};
     }

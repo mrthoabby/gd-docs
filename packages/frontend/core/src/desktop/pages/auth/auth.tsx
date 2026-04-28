@@ -2,7 +2,6 @@ import { notify } from '@affine/component';
 import {
   ChangeEmailPage,
   ChangePasswordPage,
-  OnboardingPage,
   SetPasswordPage,
   SignInSuccessPage,
   SignUpPage,
@@ -29,14 +28,12 @@ import { ConfirmChangeEmail } from './confirm-change-email';
 import { ConfirmVerifiedEmail } from './email-verified-email';
 
 const authTypeSchema = z.enum([
-  'onboarding',
   'setPassword',
   'signIn',
   'changePassword',
   'signUp',
   'changeEmail',
   'confirm-change-email',
-  'subscription-redirect',
   'verify-email',
 ]);
 
@@ -105,10 +102,6 @@ export const Component = () => {
   }
 
   switch (authType) {
-    case 'onboarding':
-      return (
-        account && <OnboardingPage user={account} onOpenAffine={onOpenAffine} />
-      );
     case 'signUp': {
       return (
         account && (

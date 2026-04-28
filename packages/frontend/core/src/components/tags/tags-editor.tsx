@@ -14,17 +14,9 @@ import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
 import { clamp } from 'lodash-es';
 import type { KeyboardEvent, ReactNode } from 'react';
-import {
-  useCallback,
-  useImperativeHandle,
-  useMemo,
-  useReducer,
-  useRef,
-  useState,
-} from 'react';
+import { useCallback, useMemo, useReducer, useRef, useState } from 'react';
 
 import { useAsyncCallback } from '../hooks/affine-async-hooks';
-import { ConfigModal } from '../mobile';
 import { InlineTagList } from './inline-tag-list';
 import * as styles from './styles.css';
 import { TagItem } from './tag';
@@ -257,11 +249,7 @@ export const TagsEditor = ({
     <div
       style={style}
       data-testid="tags-editor-popup"
-      className={
-        BUILD_CONFIG.isMobileEdition
-          ? styles.tagsEditorRootMobile
-          : styles.tagsEditorRoot
-      }
+      className={styles.tagsEditorRoot}
     >
       <div className={styles.tagsEditorSelectedTags}>
         <InlineTagList
@@ -282,16 +270,12 @@ export const TagsEditor = ({
           />
         </InlineTagList>
 
-        {BUILD_CONFIG.isMobileEdition ? null : (
-          <MenuItem
-            className={styles.tagsEditorDoneButton}
-            prefixIcon={<DoneIcon />}
-          />
-        )}
+        <MenuItem
+          className={styles.tagsEditorDoneButton}
+          prefixIcon={<DoneIcon />}
+        />
       </div>
-      {BUILD_CONFIG.isMobileEdition ? null : (
-        <Divider size="thinner" className={styles.tagDivider} />
-      )}
+      <Divider size="thinner" className={styles.tagDivider} />
       <div className={styles.tagsEditorTagsSelector}>
         <div className={styles.tagsEditorTagsSelectorHeader}>
           {t['com.affine.page-properties.tags.selector-header-title']()}
@@ -363,67 +347,6 @@ export const TagsEditor = ({
   );
 };
 
-const MobileInlineEditor = ({
-  readonly,
-  placeholder,
-  className,
-  title,
-  style,
-  onEditorClose,
-  ref,
-  ...props
-}: TagsInlineEditorProps) => {
-  const [editing, setEditing] = useState(false);
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      changeOpen: (open: boolean) => {
-        setEditing(open);
-        if (!open) {
-          onEditorClose?.();
-        }
-      },
-    }),
-    [onEditorClose]
-  );
-
-  const empty = !props.selectedTags || props.selectedTags.length === 0;
-  const selectedTags = useMemo(() => {
-    return props.selectedTags
-      .map(id => props.tags.find(tag => tag.id === id))
-      .filter(tag => tag !== undefined);
-  }, [props.selectedTags, props.tags]);
-  return (
-    <>
-      <ConfigModal
-        title={title}
-        open={editing}
-        onOpenChange={setEditing}
-        onBack={() => {
-          setEditing(false);
-          onEditorClose?.();
-        }}
-      >
-        <TagsEditor {...props} />
-      </ConfigModal>
-      <div
-        className={clsx(styles.tagsInlineEditor, className)}
-        data-empty={empty}
-        data-readonly={readonly}
-        onClick={() => setEditing(true)}
-        style={style}
-      >
-        {empty ? (
-          placeholder
-        ) : (
-          <InlineTagList {...props} tags={selectedTags} onRemoved={undefined} />
-        )}
-      </div>
-    </>
-  );
-};
-
 const DesktopTagsInlineEditor = ({
   readonly,
   placeholder,
@@ -481,9 +404,7 @@ const DesktopTagsInlineEditor = ({
   );
 };
 
-export const TagsInlineEditor = BUILD_CONFIG.isMobileEdition
-  ? MobileInlineEditor
-  : DesktopTagsInlineEditor;
+export const TagsInlineEditor = DesktopTagsInlineEditor;
 
 export const WorkspaceTagsInlineEditor = ({
   selectedTags,

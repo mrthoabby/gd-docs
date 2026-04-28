@@ -3,7 +3,6 @@ import type { TableBlockModel } from '@blocksuite/affine-model';
 import { EDGELESS_TOP_CONTENTEDITABLE_SELECTOR } from '@blocksuite/affine-shared/consts';
 import { DocModeProvider } from '@blocksuite/affine-shared/services';
 import { VirtualPaddingController } from '@blocksuite/affine-shared/utils';
-import { IS_MOBILE } from '@blocksuite/global/env';
 import type { BlockComponent } from '@blocksuite/std';
 import { RANGE_SYNC_EXCLUDE_ATTR } from '@blocksuite/std/inline';
 import { signal } from '@preact/signals-core';
@@ -192,7 +191,7 @@ export class TableBlockComponent extends CaptionedBlockComponent<TableBlockModel
                 }
               )}
             </tbody>
-            ${IS_MOBILE || this.dataManager.readonly$.value
+            ${this.dataManager.readonly$.value
               ? nothing
               : html`<affine-table-add-button
                   style="display: contents;"

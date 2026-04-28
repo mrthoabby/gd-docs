@@ -40,7 +40,7 @@ For the workspace API, see [types.ts](../../packages/frontend/workspace/src/type
 
 The UI component library for AFFiNE.
 
-Each component should be a standalone component which can be used in any context, like the Storybook.
+Each component should be a standalone component which can be used in any web context.
 
 ## Debugging Environments
 
@@ -49,7 +49,3 @@ Each component should be a standalone component which can be used in any context
 ```shell
 yarn dev
 ```
-
-### `@affine/electron`
-
-See [building desktop client app](../building-desktop-client-app.md).

@@ -37,19 +37,20 @@ export type CopilotProviderConfigMap = {
 export type ProviderSpecificConfig =
   CopilotProviderConfigMap[keyof CopilotProviderConfigMap];
 
-export const RustRequestMiddlewareValues = [
+export const NativeRequestMiddlewareValues = [
   'normalize_messages',
   'clamp_max_tokens',
   'tool_schema_rewrite',
 ] as const;
-export type RustRequestMiddleware =
-  (typeof RustRequestMiddlewareValues)[number];
+export type NativeRequestMiddleware =
+  (typeof NativeRequestMiddlewareValues)[number];
 
-export const RustStreamMiddlewareValues = [
+export const NativeStreamMiddlewareValues = [
   'stream_event_normalize',
   'citation_indexing',
 ] as const;
-export type RustStreamMiddleware = (typeof RustStreamMiddlewareValues)[number];
+export type NativeStreamMiddleware =
+  (typeof NativeStreamMiddlewareValues)[number];
 
 export const NodeTextMiddlewareValues = [
   'citation_footnote',
@@ -59,7 +60,10 @@ export const NodeTextMiddlewareValues = [
 export type NodeTextMiddleware = (typeof NodeTextMiddlewareValues)[number];
 
 export type ProviderMiddlewareConfig = {
-  rust?: { request?: RustRequestMiddleware[]; stream?: RustStreamMiddleware[] };
+  native?: {
+    request?: NativeRequestMiddleware[];
+    stream?: NativeStreamMiddleware[];
+  };
   node?: { text?: NodeTextMiddleware[] };
 };
 
@@ -96,10 +100,10 @@ const CopilotProviderProfileBaseShape = z.object({
   models: z.array(z.string()).optional(),
   middleware: z
     .object({
-      rust: z
+      native: z
         .object({
-          request: z.array(z.enum(RustRequestMiddlewareValues)).optional(),
-          stream: z.array(z.enum(RustStreamMiddlewareValues)).optional(),
+          request: z.array(z.enum(NativeRequestMiddlewareValues)).optional(),
+          stream: z.array(z.enum(NativeStreamMiddlewareValues)).optional(),
         })
         .optional(),
       node: z

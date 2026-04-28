@@ -1,24 +1,13 @@
 declare interface BUILD_CONFIG_TYPE {
   debug: boolean;
-  distribution: 'web' | 'desktop' | 'admin' | 'mobile' | 'ios' | 'android';
+  distribution: 'web' | 'admin';
   /**
-   * 'web' | 'desktop' | 'admin'
+   * 'web' | 'admin'
    */
   isDesktopEdition: boolean;
-  /**
-   * 'mobile'
-   */
-  isMobileEdition: boolean;
 
   isElectron: boolean;
   isWeb: boolean;
-  /**
-   * 'desktop' | 'ios' | 'android'
-   */
-  isNative: boolean;
-  isMobileWeb: boolean;
-  isIOS: boolean;
-  isAndroid: boolean;
   isAdmin: boolean;
 
   appVersion: string;

@@ -34,7 +34,6 @@ import { WorkspaceFlavoursService } from './services/flavours';
 import { WorkspaceListService } from './services/list';
 import { WorkspaceProfileService } from './services/profile';
 import { WorkspaceRepositoryService } from './services/repo';
-import { WorkspaceTransformService } from './services/transform';
 import { WorkspaceService } from './services/workspace';
 import { WorkspacesService } from './services/workspaces';
 import { WorkspaceProfileCacheStore } from './stores/profile-cache';
@@ -45,7 +44,6 @@ export function configureWorkspaceModule(framework: Framework) {
       WorkspaceFlavoursService,
       WorkspaceListService,
       WorkspaceProfileService,
-      WorkspaceTransformService,
       WorkspaceRepositoryService,
       WorkspaceFactoryService,
       WorkspaceDestroyService,
@@ -61,10 +59,6 @@ export function configureWorkspaceModule(framework: Framework) {
       WorkspaceFlavoursService,
     ])
     .service(WorkspaceFactoryService, [WorkspaceFlavoursService])
-    .service(WorkspaceTransformService, [
-      WorkspaceFactoryService,
-      WorkspaceDestroyService,
-    ])
     .service(WorkspaceRepositoryService, [
       WorkspaceFlavoursService,
       WorkspaceProfileService,

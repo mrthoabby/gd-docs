@@ -1,4 +1,3 @@
-import { type CreateCheckoutSessionInput } from '@affine/graphql';
 import { tracker } from '@affine/track';
 import { OnEvent, Service } from '@toeverything/infra';
 
@@ -12,7 +11,7 @@ export class SubscriptionService extends Service {
   subscription = this.framework.createEntity(Subscription);
   prices = this.framework.createEntity(SubscriptionPrices);
 
-  constructor(private readonly store: SubscriptionStore) {
+  constructor(_store: SubscriptionStore) {
     super();
     this.subscription.ai$
       .map(sub => !!sub)
@@ -30,10 +29,6 @@ export class SubscriptionService extends Service {
           pro,
         });
       });
-  }
-
-  async createCheckoutSession(input: CreateCheckoutSessionInput) {
-    return await this.store.createCheckoutSession(input);
   }
 
   private onAccountChanged() {

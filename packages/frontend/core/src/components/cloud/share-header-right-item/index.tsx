@@ -9,37 +9,25 @@ import { PublishPageUserAvatar } from './user-avatar';
 
 export type ShareHeaderRightItemProps = {
   publishMode: DocMode;
-  isTemplate?: boolean;
-  templateName?: string;
-  snapshotUrl?: string;
 };
 
-const ShareHeaderRightItem = ({
-  publishMode,
-  isTemplate,
-}: ShareHeaderRightItemProps) => {
+const ShareHeaderRightItem = ({ publishMode }: ShareHeaderRightItemProps) => {
   const loginStatus = useLiveData(useService(AuthService).session.status$);
   const authenticated = loginStatus === 'authenticated';
   return (
     <div className={styles.rightItemContainer}>
-      {isTemplate ? (
-        null
-      ) : (
+      {authenticated ? null : <SignIn />}
+      {publishMode === 'edgeless' ? <PresentButton /> : null}
+      {authenticated ? (
         <>
-          {authenticated ? null : <SignIn />}
-          {publishMode === 'edgeless' ? <PresentButton /> : null}
-          {authenticated ? (
-            <>
-              <div
-                className={styles.headerDivider}
-                data-authenticated={true}
-                data-is-edgeless={publishMode === 'edgeless'}
-              />
-              <PublishPageUserAvatar />
-            </>
-          ) : null}
+          <div
+            className={styles.headerDivider}
+            data-authenticated={true}
+            data-is-edgeless={publishMode === 'edgeless'}
+          />
+          <PublishPageUserAvatar />
         </>
-      )}
+      ) : null}
     </div>
   );
 };

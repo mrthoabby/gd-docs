@@ -78,7 +78,6 @@ export class LatexEditorMenu extends SignalWatcher(
 
       color: ${unsafeCSSVar('placeholderColor')};
 
-      /* MobileTypeface/caption */
       font-family: 'SF Pro Text';
       font-size: 12px;
       font-style: normal;

@@ -186,10 +186,6 @@ export class WorkspaceAccessController extends AccessController<'ws'> {
   private async defaultWorkspaceRole(payload: Resource<'ws'>) {
     const ws = await this.models.workspace.get(payload.workspaceId);
 
-    // NOTE(@forehalo):
-    //   we allow user to use online service with local workspace
-    //   so we always return owner role for local workspace
-    //   copilot session for local workspace is an example
     if (!ws) {
       if (payload.allowLocal) {
         return WorkspaceRole.Owner;

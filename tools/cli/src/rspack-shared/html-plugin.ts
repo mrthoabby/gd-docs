@@ -40,12 +40,7 @@ export const getPublicPath = (BUILD_CONFIG: BUILD_CONFIG_TYPE) => {
     return process.env.PUBLIC_PATH;
   }
 
-  if (
-    BUILD_CONFIG.debug ||
-    BUILD_CONFIG.distribution === 'desktop' ||
-    BUILD_CONFIG.distribution === 'ios' ||
-    BUILD_CONFIG.distribution === 'android'
-  ) {
+  if (BUILD_CONFIG.debug) {
     return '/';
   }
 
@@ -99,7 +94,7 @@ function getHTMLPluginOptions(BUILD_CONFIG: BUILD_CONFIG_TYPE) {
     PRECONNECT: cdnOrigin
       ? `<link rel="preconnect" href="${cdnOrigin}" />`
       : '',
-    VIEWPORT_FIT: BUILD_CONFIG.isMobileEdition ? 'cover' : 'auto',
+    VIEWPORT_FIT: 'auto',
   };
 
   return {

@@ -32,13 +32,9 @@ export async function buildShowcaseWorkspace(
 const logger = new DebugLogger('createFirstAppData');
 
 export async function createFirstAppData(workspacesService: WorkspacesService) {
-  if (localStorage.getItem('is-first-open') !== null) {
-    return;
-  }
-  localStorage.setItem('is-first-open', 'false');
   const { meta, defaultDocId } = await buildShowcaseWorkspace(
     workspacesService,
-    'local',
+    'affine-cloud',
     DEFAULT_WORKSPACE_NAME
   );
   logger.info('create first workspace', defaultDocId);

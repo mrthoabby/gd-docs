@@ -2,7 +2,6 @@ import { type MenuRef, PropertyValue } from '@affine/component';
 import { PublicUserLabel } from '@affine/core/modules/cloud/views/public-user';
 import type { FilterParams } from '@affine/core/modules/collection-rules';
 import { type DocRecord, DocService } from '@affine/core/modules/doc';
-import { WorkspaceService } from '@affine/core/modules/workspace';
 import { useI18n } from '@affine/i18n';
 import { useLiveData, useService } from '@toeverything/infra';
 import { cssVarV2 } from '@toeverything/theme/v2';
@@ -70,23 +69,8 @@ const NoRecordValue = () => {
   );
 };
 
-const LocalUserValue = () => {
-  const t = useI18n();
-  return <span>{t['com.affine.page-properties.local-user']()}</span>;
-};
-
 export const CreatedByValue = () => {
   const doc = useService(DocService).doc.record;
-  const workspaceService = useService(WorkspaceService);
-  const isCloud = workspaceService.workspace.flavour !== 'local';
-
-  if (!isCloud) {
-    return (
-      <PropertyValue readonly>
-        <LocalUserValue />
-      </PropertyValue>
-    );
-  }
 
   return (
     <PropertyValue readonly>
@@ -97,16 +81,6 @@ export const CreatedByValue = () => {
 
 export const UpdatedByValue = () => {
   const doc = useService(DocService).doc.record;
-  const workspaceService = useService(WorkspaceService);
-  const isCloud = workspaceService.workspace.flavour !== 'local';
-
-  if (!isCloud) {
-    return (
-      <PropertyValue readonly>
-        <LocalUserValue />
-      </PropertyValue>
-    );
-  }
 
   return (
     <PropertyValue readonly>

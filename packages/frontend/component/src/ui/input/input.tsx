@@ -9,7 +9,7 @@ import type {
 import { forwardRef } from 'react';
 
 import { RowInput } from './row-input';
-import { input, inputWrapper, mobileInputWrapper } from './style.css';
+import { input, inputWrapper } from './style.css';
 
 export type InputProps = {
   disabled?: boolean;
@@ -51,7 +51,7 @@ export const Input = forwardRef<HTMLInputElement, InputProps>(function Input(
   return (
     <div
       className={clsx(
-        BUILD_CONFIG.isMobileEdition ? mobileInputWrapper : inputWrapper,
+        inputWrapper,
         className,
         {
           // status

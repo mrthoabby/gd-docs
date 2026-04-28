@@ -7,5 +7,4 @@ export interface DocCreateOptions {
   primaryMode?: DocMode;
   skipInit?: boolean;
   docProps?: DocProps;
-  isTemplate?: boolean;
 }

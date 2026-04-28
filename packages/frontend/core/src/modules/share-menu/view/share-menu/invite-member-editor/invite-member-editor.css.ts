@@ -151,9 +151,3 @@ export const noFound = style({
 export const scrollbar = style({
   width: 6,
 });
-
-export const planTagContainer = style({
-  display: 'flex',
-  gap: '8px',
-  alignItems: 'center',
-});

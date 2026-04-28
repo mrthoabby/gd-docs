@@ -1,10 +1,4 @@
 import {
-  SubscriptionPlan,
-  type SubscriptionQuery,
-  SubscriptionRecurring,
-  SubscriptionVariant,
-} from '@affine/graphql';
-import {
   catchErrorInto,
   effect,
   Entity,
@@ -18,12 +12,29 @@ import {
 import { map, tap } from 'rxjs';
 
 import type { AuthService } from '../services/auth';
-import type { ServerService } from '../services/server';
 import type { SubscriptionStore } from '../stores/subscription';
 
-export type SubscriptionType = NonNullable<
-  SubscriptionQuery['currentUser']
->['subscriptions'][number];
+export enum SubscriptionPlan {
+  Free = 'Free',
+  Pro = 'Pro',
+  Team = 'Team',
+  AI = 'AI',
+}
+
+export enum SubscriptionRecurring {
+  Lifetime = 'Lifetime',
+}
+
+export enum SubscriptionVariant {
+  Onetime = 'Onetime',
+}
+
+export type SubscriptionType = {
+  id: string;
+  plan: SubscriptionPlan;
+  recurring?: SubscriptionRecurring | null;
+  variant?: SubscriptionVariant | null;
+};
 
 export class Subscription extends Entity {
   // undefined means no user, null means loading
@@ -53,7 +64,6 @@ export class Subscription extends Entity {
 
   constructor(
     private readonly authService: AuthService,
-    private readonly serverService: ServerService,
     private readonly store: SubscriptionStore
   ) {
     super();
@@ -94,31 +104,13 @@ export class Subscription extends Entity {
       (a, b) => a.accountId === b.accountId,
       ({ accountId }) => {
         return fromPromise(async signal => {
+          signal.throwIfAborted();
           if (!accountId) {
             return undefined; // no subscription if no user
           }
-
-          const serverConfig =
-            await this.serverService.server.features$.waitForNonNull(signal);
-
-          if (!serverConfig.payment) {
-            // No payment feature, no subscription
-            return {
-              userId: accountId,
-              subscriptions: [],
-            };
-          }
-          const { userId, subscriptions } =
-            await this.store.fetchSubscriptions(signal);
-          if (userId !== accountId) {
-            // The user has changed, ignore the result
-            this.authService.session.revalidate();
-            await this.authService.session.waitForRevalidation();
-            return null;
-          }
           return {
-            userId: userId,
-            subscriptions: subscriptions,
+            userId: accountId,
+            subscriptions: [],
           };
         }).pipe(
           smartRetry(),

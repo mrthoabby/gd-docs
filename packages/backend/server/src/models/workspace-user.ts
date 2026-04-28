@@ -301,10 +301,7 @@ export class WorkspaceUserModel extends BaseModel {
     });
   }
 
-  /**
-   * Get the number of users those in the status should be charged in billing system in a workspace.
-   */
-  async chargedCount(workspaceId: string) {
+  async activeCount(workspaceId: string) {
     return this.db.workspaceUserRole.count({
       where: {
         workspaceId,

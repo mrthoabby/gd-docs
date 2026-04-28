@@ -2,9 +2,6 @@ import type { FlagInfo } from './types';
 
 // const isNotStableBuild = BUILD_CONFIG.appBuildType !== 'stable';
 const isCanaryBuild = BUILD_CONFIG.appBuildType === 'canary';
-const isMobile = BUILD_CONFIG.isMobileEdition;
-const isIOS = BUILD_CONFIG.isIOS;
-const isAndroid = BUILD_CONFIG.isAndroid;
 
 // [SELFHOST PATCH] En modo self-hosted todas las funciones experimentales
 // están disponibles y configurables por el usuario. Evita la restricción
@@ -71,16 +68,6 @@ export const AFFINE_FLAGS = {
     configurable: false,
     defaultState: true,
   },
-  enable_ai_onboarding: {
-    category: 'blocksuite',
-    bsFlag: 'enable_ai_onboarding',
-    displayName:
-      'com.affine.settings.workspace.experimental-features.enable-ai-onboarding.name',
-    description:
-      'com.affine.settings.workspace.experimental-features.enable-ai-onboarding.description',
-    configurable: false,
-    defaultState: true,
-  },
   enable_mind_map_import: {
     category: 'blocksuite',
     bsFlag: 'enable_mind_map_import',
@@ -135,7 +122,7 @@ export const AFFINE_FLAGS = {
       'com.affine.settings.workspace.experimental-features.enable-theme-editor.name',
     description:
       'com.affine.settings.workspace.experimental-features.enable-theme-editor.description',
-    configurable: isSelfHostedOrCanary && !isMobile,
+    configurable: isSelfHostedOrCanary,
     defaultState: isSelfHostedOrCanary,
   },
   enable_advanced_block_visibility: {
@@ -148,42 +135,13 @@ export const AFFINE_FLAGS = {
     configurable: true,
     defaultState: false,
   },
-  enable_mobile_keyboard_toolbar: {
-    category: 'blocksuite',
-    bsFlag: 'enable_mobile_keyboard_toolbar',
-    displayName:
-      'com.affine.settings.workspace.experimental-features.enable-mobile-keyboard-toolbar.name',
-    description:
-      'com.affine.settings.workspace.experimental-features.enable-mobile-keyboard-toolbar.description',
-    configurable: false,
-    defaultState: isMobile,
-  },
-  enable_mobile_linked_doc_menu: {
-    category: 'blocksuite',
-    bsFlag: 'enable_mobile_linked_doc_menu',
-    displayName:
-      'com.affine.settings.workspace.experimental-features.enable-mobile-linked-doc-menu.name',
-    description:
-      'com.affine.settings.workspace.experimental-features.enable-mobile-linked-doc-menu.description',
-    configurable: false,
-    defaultState: isMobile,
-  },
-  enable_mobile_edgeless_editing: {
-    category: 'affine',
-    displayName:
-      'com.affine.settings.workspace.experimental-features.enable-mobile-edgeless-editing.name',
-    description:
-      'com.affine.settings.workspace.experimental-features.enable-mobile-edgeless-editing.description',
-    configurable: isMobile,
-    defaultState: false,
-  },
   enable_pdf_embed_preview: {
     category: 'affine',
     displayName:
       'com.affine.settings.workspace.experimental-features.enable-pdf-embed-preview.name',
     description:
       'com.affine.settings.workspace.experimental-features.enable-pdf-embed-preview.description',
-    configurable: !isMobile,
+    configurable: true,
     defaultState: true,
   },
   enable_editor_rtl: {
@@ -195,20 +153,12 @@ export const AFFINE_FLAGS = {
     configurable: isSelfHostedOrCanary,
     defaultState: false,
   },
-  enable_mobile_ai_button: {
-    category: 'affine',
-    displayName: 'Enable AI Button',
-    description: 'Enable AI Button on mobile',
-    configurable: isMobile && isIOS,
-    defaultState: isMobile && isIOS,
-  },
   enable_mermaid_wasm_native_renderer: {
     category: 'affine',
-    displayName: 'Enable Native Mermaid Renderer',
-    description:
-      'Use the new Mermaid renderer backend. Web uses WASM, desktop uses native, and mobile always uses native. The native renderer is more than 10x faster, but its styling/aesthetic quality and the types of graphics it supports are not as good as the JS version.',
-    configurable: !isIOS && !isAndroid,
-    defaultState: isIOS || isAndroid,
+    displayName: 'Enable Mermaid WASM Renderer',
+    description: 'Use the Mermaid WASM renderer backend for web previews.',
+    configurable: true,
+    defaultState: true,
   },
   enable_turbo_renderer: {
     category: 'blocksuite',
@@ -292,14 +242,6 @@ export const AFFINE_FLAGS = {
     description:
       'Limit indexing and other compute-intensive tasks on this device, may experience longer loading time and latency in search and other features, in exchange for quietness.',
     configurable: true,
-    defaultState: isMobile,
-  },
-  enable_mobile_database_editing: {
-    category: 'blocksuite',
-    bsFlag: 'enable_mobile_database_editing',
-    displayName: 'Enable Mobile Database Editing',
-    description: 'Enable mobile database editing',
-    configurable: isMobile,
     defaultState: false,
   },
   enable_pdfmake_export: {

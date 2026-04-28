@@ -1,6 +1,5 @@
 import { Toaster } from '@affine/admin/components/ui/sonner';
 import { lazy, ROUTES } from '@affine/routes';
-import { withSentryReactRouterV7Routing } from '@sentry/react';
 import { useEffect } from 'react';
 import {
   BrowserRouter,
@@ -50,9 +49,7 @@ export const RootPanel = lazy(
   () => import(/* webpackChunkName: "root-panel" */ './modules/root-panel')
 );
 
-const Routes = window.SENTRY_RELEASE
-  ? withSentryReactRouterV7Routing(ReactRouterRoutes)
-  : ReactRouterRoutes;
+const Routes = ReactRouterRoutes;
 
 function AuthenticatedRoutes() {
   const user = useCurrentUser();

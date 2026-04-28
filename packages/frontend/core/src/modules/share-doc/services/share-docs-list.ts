@@ -1,17 +1,13 @@
 import { Service } from '@toeverything/infra';
 
-import type { WorkspaceService } from '../../workspace';
 import { ShareDocsList } from '../entities/share-docs-list';
 
 export class ShareDocsListService extends Service {
-  constructor(private readonly workspaceService: WorkspaceService) {
+  constructor() {
     super();
   }
 
-  shareDocs =
-    this.workspaceService.workspace.flavour !== 'local'
-      ? this.framework.createEntity(ShareDocsList)
-      : null;
+  shareDocs = this.framework.createEntity(ShareDocsList);
 
   override dispose(): void {
     this.shareDocs?.dispose();

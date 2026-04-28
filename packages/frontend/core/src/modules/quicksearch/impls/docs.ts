@@ -15,7 +15,6 @@ import type { DocRecord, DocsService } from '../../doc';
 import type { DocDisplayMetaService } from '../../doc-display-meta';
 import type { DocsSearchService } from '../../docs-search';
 import type { FeatureFlagService } from '../../feature-flag';
-import type { WorkspaceService } from '../../workspace';
 import type { QuickSearchSession } from '../providers/quick-search-provider';
 import type { QuickSearchItem } from '../types/item';
 
@@ -31,7 +30,6 @@ export class DocsQuickSearchSession
   implements QuickSearchSession<'docs', DocsPayload>
 {
   constructor(
-    private readonly workspaceService: WorkspaceService,
     private readonly workspaceServerService: WorkspaceServerService,
     private readonly docsSearchService: DocsSearchService,
     private readonly docsService: DocsService,
@@ -57,7 +55,7 @@ export class DocsQuickSearchSession
 
   private readonly isQueryLoading$ = new LiveData(false);
 
-  isCloudWorkspace = this.workspaceService.workspace.flavour !== 'local';
+  isCloudWorkspace = true;
 
   searchLocallyItem = {
     id: 'search-locally',

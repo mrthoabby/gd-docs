@@ -1,13 +1,7 @@
 import { useAppSettingHelper } from '@affine/core/components/hooks/affine/use-app-setting-helper';
 import { RootAppSidebar } from '@affine/core/components/root-app-sidebar';
 import { AppSidebarService } from '@affine/core/modules/app-sidebar';
-import {
-  AppSidebarFallback,
-  OpenInAppCard,
-  SidebarSwitch,
-} from '@affine/core/modules/app-sidebar/views';
-import { AppTabsHeader } from '@affine/core/modules/app-tabs-header';
-import { NavigationButtons } from '@affine/core/modules/navigation';
+import { AppSidebarFallback } from '@affine/core/modules/app-sidebar/views';
 import { WorkspaceService } from '@affine/core/modules/workspace';
 import {
   useLiveData,
@@ -33,55 +27,17 @@ export const AppContainer = ({
   className?: string;
   fallback?: boolean;
 }>) => {
-  const { appSettings } = useAppSettingHelper();
-
-  const noisyBackground =
-    BUILD_CONFIG.isElectron && appSettings.enableNoisyBackground;
-  const blurBackground =
-    BUILD_CONFIG.isElectron &&
-    environment.isMacOs &&
-    appSettings.enableBlurBackground;
   return (
     <div
       {...rest}
       className={clsx(styles.appStyle, className, {
-        'noisy-background': noisyBackground,
-        'blur-background': blurBackground,
+        'noisy-background': false,
+        'blur-background': false,
       })}
-      data-noise-background={noisyBackground}
-      data-translucent={blurBackground}
+      data-noise-background={false}
+      data-translucent={false}
     >
-      <LayoutComponent fallback={fallback}>{children}</LayoutComponent>
-    </div>
-  );
-};
-
-const DesktopLayout = ({
-  children,
-  fallback = false,
-}: PropsWithChildren<{ fallback?: boolean }>) => {
-  const workspaceService = useServiceOptional(WorkspaceService);
-  const isInWorkspace = !!workspaceService;
-  return (
-    <div className={styles.desktopAppViewContainer}>
-      <div className={styles.desktopTabsHeader}>
-        <AppTabsHeader
-          left={
-            <>
-              {isInWorkspace && <SidebarSwitch show />}
-              {isInWorkspace && <NavigationButtons />}
-            </>
-          }
-        />
-      </div>
-      <div className={styles.desktopAppViewMain}>
-        {fallback ? (
-          <AppSidebarFallback />
-        ) : (
-          isInWorkspace && <RootAppSidebar />
-        )}
-        <MainContainer>{children}</MainContainer>
-      </div>
+      <BrowserLayout fallback={fallback}>{children}</BrowserLayout>
     </div>
   );
 };
@@ -95,14 +51,11 @@ const BrowserLayout = ({
 
   return (
     <div className={styles.browserAppViewContainer}>
-      {/* [SELFHOST PATCH] OpenInAppCard eliminado — GD docs es self-hosted, no hay app externa */}
       {fallback ? <AppSidebarFallback /> : isInWorkspace && <RootAppSidebar />}
       <MainContainer>{children}</MainContainer>
     </div>
   );
 };
-
-const LayoutComponent = BUILD_CONFIG.isElectron ? DesktopLayout : BrowserLayout;
 
 const MainContainer = forwardRef<
   HTMLDivElement,
@@ -118,7 +71,7 @@ const MainContainer = forwardRef<
     <div
       {...props}
       className={clsx(styles.mainContainerStyle, className)}
-      data-is-desktop={BUILD_CONFIG.isElectron}
+      data-is-desktop={false}
       data-transparent={false}
       data-client-border={appSettings.clientBorder}
       data-side-bar-open={open && isInWorkspace}

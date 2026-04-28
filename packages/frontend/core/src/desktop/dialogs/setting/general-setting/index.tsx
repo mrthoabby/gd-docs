@@ -1,15 +1,12 @@
 import { UserFeatureService } from '@affine/core/modules/cloud/services/user-feature';
 import type { SettingTab } from '@affine/core/modules/dialogs/constant';
 import { FeatureFlagService } from '@affine/core/modules/feature-flag';
-import { MeetingSettingsService } from '@affine/core/modules/media/services/meeting-settings';
 import { useI18n } from '@affine/i18n';
 import {
   AppearanceIcon,
   ExperimentIcon,
-  FolderIcon,
   InformationIcon,
   KeyboardIcon,
-  MeetingIcon,
   NotificationIcon,
   PenIcon,
 } from '@blocksuite/icons/rc';
@@ -20,10 +17,8 @@ import { AuthService } from '../../../../modules/cloud';
 import type { SettingSidebarItem, SettingState } from '../types';
 import { AboutAffine } from './about';
 import { AppearanceSettings } from './appearance';
-import { BackupSettingPanel } from './backup';
 import { EditorSettings } from './editor';
 import { ExperimentalFeatures } from './experimental-features';
-import { MeetingsSettings } from './meetings';
 import { NotificationSettings } from './notifications';
 import { Shortcuts } from './shortcuts';
 
@@ -31,16 +26,10 @@ export type GeneralSettingList = SettingSidebarItem[];
 
 export const useGeneralSettingList = (): GeneralSettingList => {
   const t = useI18n();
-  const {
-    authService,
-    userFeatureService,
-    featureFlagService,
-    meetingSettingsService,
-  } = useServices({
+  const { authService, userFeatureService, featureFlagService } = useServices({
     AuthService,
     UserFeatureService,
     FeatureFlagService,
-    MeetingSettingsService,
   });
   const status = useLiveData(authService.session.status$);
   const loggedIn = status === 'authenticated';
@@ -51,8 +40,6 @@ export const useGeneralSettingList = (): GeneralSettingList => {
   useEffect(() => {
     userFeatureService.userFeature.revalidate();
   }, [userFeatureService]);
-
-  const meetingSettings = useLiveData(meetingSettingsService.settings$);
 
   return useMemo(() => {
     const settings: GeneralSettingList = [
@@ -87,28 +74,6 @@ export const useGeneralSettingList = (): GeneralSettingList => {
       });
     }
 
-    if (
-      (environment.isMacOs || environment.isWindows) &&
-      BUILD_CONFIG.isElectron
-    ) {
-      settings.push({
-        key: 'meetings',
-        title: t['com.affine.settings.meetings'](),
-        icon: <MeetingIcon />,
-        testId: 'meetings-panel-trigger',
-        beta: !meetingSettings?.enabled,
-      });
-    }
-
-    if (BUILD_CONFIG.isElectron) {
-      settings.push({
-        key: 'backup',
-        title: t['com.affine.settings.workspace.backup'](),
-        icon: <FolderIcon />,
-        testId: 'backup-panel-trigger',
-      });
-    }
-
     settings.push(
       {
         key: 'experimental-features',
@@ -124,12 +89,7 @@ export const useGeneralSettingList = (): GeneralSettingList => {
       }
     );
     return settings;
-  }, [
-    t,
-    loggedIn,
-    enableEditorSettings,
-    meetingSettings?.enabled,
-  ]);
+  }, [t, loggedIn, enableEditorSettings]);
 };
 
 interface GeneralSettingProps {
@@ -149,14 +109,10 @@ export const GeneralSetting = ({
       return <EditorSettings />;
     case 'appearance':
       return <AppearanceSettings />;
-    case 'meetings':
-      return <MeetingsSettings />;
     case 'about':
       return <AboutAffine />;
     case 'experimental-features':
       return <ExperimentalFeatures />;
-    case 'backup':
-      return <BackupSettingPanel />;
     default:
       return null;
   }

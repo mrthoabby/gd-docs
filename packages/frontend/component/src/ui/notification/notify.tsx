@@ -8,17 +8,11 @@ import { type ExternalToast, toast } from 'sonner';
 
 import { DesktopNotificationCard } from './desktop/notification-card';
 import { DesktopNotificationCenter } from './desktop/notification-center';
-import { MobileNotificationCard } from './mobile/notification-card';
-import { MobileNotificationCenter } from './mobile/notification-center';
 import type { Notification, NotificationCustomRendererProps } from './types';
 
-const NotificationCard = BUILD_CONFIG.isMobileEdition
-  ? MobileNotificationCard
-  : DesktopNotificationCard;
+const NotificationCard = DesktopNotificationCard;
 
-const NotificationCenter = BUILD_CONFIG.isMobileEdition
-  ? MobileNotificationCenter
-  : DesktopNotificationCenter;
+const NotificationCenter = DesktopNotificationCenter;
 
 export { NotificationCenter };
 

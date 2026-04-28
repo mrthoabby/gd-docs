@@ -61,7 +61,6 @@ export const PackageList = [
       "blocksuite/affine/widgets/edgeless-toolbar",
       "blocksuite/affine/widgets/edgeless-zoom-toolbar",
       "blocksuite/affine/widgets/frame-title",
-      "blocksuite/affine/widgets/keyboard-toolbar",
       "blocksuite/affine/widgets/linked-doc",
       "blocksuite/affine/widgets/note-slicer",
       "blocksuite/affine/widgets/page-dragging-area",
@@ -208,6 +207,21 @@ export const PackageList = [
     ]
   },
   {
+    "location": "blocksuite/affine/blocks/embed",
+    "name": "@blocksuite/affine-block-embed",
+    "workspaceDependencies": [
+      "blocksuite/affine/blocks/surface",
+      "blocksuite/affine/components",
+      "blocksuite/affine/ext-loader",
+      "blocksuite/affine/model",
+      "blocksuite/affine/shared",
+      "blocksuite/affine/widgets/slash-menu",
+      "blocksuite/framework/global",
+      "blocksuite/framework/std",
+      "blocksuite/framework/store"
+    ]
+  },
+  {
     "location": "blocksuite/affine/blocks/embed-doc",
     "name": "@blocksuite/affine-block-embed-doc",
     "workspaceDependencies": [
@@ -218,21 +232,6 @@ export const PackageList = [
       "blocksuite/affine/inlines/reference",
       "blocksuite/affine/model",
       "blocksuite/affine/rich-text",
-      "blocksuite/affine/shared",
-      "blocksuite/affine/widgets/slash-menu",
-      "blocksuite/framework/global",
-      "blocksuite/framework/std",
-      "blocksuite/framework/store"
-    ]
-  },
-  {
-    "location": "blocksuite/affine/blocks/embed",
-    "name": "@blocksuite/affine-block-embed",
-    "workspaceDependencies": [
-      "blocksuite/affine/blocks/surface",
-      "blocksuite/affine/components",
-      "blocksuite/affine/ext-loader",
-      "blocksuite/affine/model",
       "blocksuite/affine/shared",
       "blocksuite/affine/widgets/slash-menu",
       "blocksuite/framework/global",
@@ -377,6 +376,18 @@ export const PackageList = [
     ]
   },
   {
+    "location": "blocksuite/affine/blocks/surface",
+    "name": "@blocksuite/affine-block-surface",
+    "workspaceDependencies": [
+      "blocksuite/affine/ext-loader",
+      "blocksuite/affine/model",
+      "blocksuite/affine/shared",
+      "blocksuite/framework/global",
+      "blocksuite/framework/std",
+      "blocksuite/framework/store"
+    ]
+  },
+  {
     "location": "blocksuite/affine/blocks/surface-ref",
     "name": "@blocksuite/affine-block-surface-ref",
     "workspaceDependencies": [
@@ -388,18 +399,6 @@ export const PackageList = [
       "blocksuite/affine/model",
       "blocksuite/affine/shared",
       "blocksuite/affine/widgets/slash-menu",
-      "blocksuite/framework/global",
-      "blocksuite/framework/std",
-      "blocksuite/framework/store"
-    ]
-  },
-  {
-    "location": "blocksuite/affine/blocks/surface",
-    "name": "@blocksuite/affine-block-surface",
-    "workspaceDependencies": [
-      "blocksuite/affine/ext-loader",
-      "blocksuite/affine/model",
-      "blocksuite/affine/shared",
       "blocksuite/framework/global",
       "blocksuite/framework/std",
       "blocksuite/framework/store"
@@ -914,35 +913,6 @@ export const PackageList = [
     ]
   },
   {
-    "location": "blocksuite/affine/widgets/keyboard-toolbar",
-    "name": "@blocksuite/affine-widget-keyboard-toolbar",
-    "workspaceDependencies": [
-      "blocksuite/affine/blocks/attachment",
-      "blocksuite/affine/blocks/database",
-      "blocksuite/affine/blocks/embed",
-      "blocksuite/affine/blocks/image",
-      "blocksuite/affine/blocks/latex",
-      "blocksuite/affine/blocks/list",
-      "blocksuite/affine/blocks/note",
-      "blocksuite/affine/blocks/paragraph",
-      "blocksuite/affine/blocks/surface",
-      "blocksuite/affine/blocks/surface-ref",
-      "blocksuite/affine/blocks/table",
-      "blocksuite/affine/components",
-      "blocksuite/affine/data-view",
-      "blocksuite/affine/ext-loader",
-      "blocksuite/affine/fragments/doc-title",
-      "blocksuite/affine/inlines/latex",
-      "blocksuite/affine/inlines/link",
-      "blocksuite/affine/inlines/preset",
-      "blocksuite/affine/model",
-      "blocksuite/affine/rich-text",
-      "blocksuite/affine/shared",
-      "blocksuite/framework/global",
-      "blocksuite/framework/std"
-    ]
-  },
-  {
     "location": "blocksuite/affine/widgets/linked-doc",
     "name": "@blocksuite/affine-widget-linked-doc",
     "workspaceDependencies": [
@@ -1067,11 +1037,6 @@ export const PackageList = [
     "workspaceDependencies": [
       "blocksuite/framework/global"
     ]
-  },
-  {
-    "location": "docs/reference",
-    "name": "@affine/docs",
-    "workspaceDependencies": []
   },
   {
     "location": "packages/backend/server",
@@ -1237,40 +1202,11 @@ export const PackageList = [
     ]
   },
   {
-    "location": "tools/changelog",
-    "name": "@affine/changelog",
-    "workspaceDependencies": []
-  },
-  {
     "location": "tools/cli",
     "name": "@affine-tools/cli",
     "workspaceDependencies": [
       "packages/common/s3-compat",
       "tools/utils"
-    ]
-  },
-  {
-    "location": "tools/commitlint",
-    "name": "@affine/commitlint-config",
-    "workspaceDependencies": []
-  },
-  {
-    "location": "tools/copilot-result",
-    "name": "@affine/copilot-result",
-    "workspaceDependencies": []
-  },
-  {
-    "location": "tools/doc-diff",
-    "name": "@affine/doc-diff",
-    "workspaceDependencies": [
-      "tools/cli"
-    ]
-  },
-  {
-    "location": "tools/revert-update",
-    "name": "@affine/revert-update",
-    "workspaceDependencies": [
-      "tools/cli"
     ]
   },
   {
@@ -1280,4 +1216,4 @@ export const PackageList = [
   }
 ]
 
-export type PackageName = "@blocksuite/affine" | "@blocksuite/affine-block-attachment" | "@blocksuite/affine-block-bookmark" | "@blocksuite/affine-block-callout" | "@blocksuite/affine-block-code" | "@blocksuite/affine-block-data-view" | "@blocksuite/affine-block-database" | "@blocksuite/affine-block-divider" | "@blocksuite/affine-block-edgeless-text" | "@blocksuite/affine-block-embed-doc" | "@blocksuite/affine-block-embed" | "@blocksuite/affine-block-frame" | "@blocksuite/affine-block-image" | "@blocksuite/affine-block-latex" | "@blocksuite/affine-block-list" | "@blocksuite/affine-block-note" | "@blocksuite/affine-block-paragraph" | "@blocksuite/affine-block-root" | "@blocksuite/affine-block-surface-ref" | "@blocksuite/affine-block-surface" | "@blocksuite/affine-block-table" | "@blocksuite/affine-components" | "@blocksuite/data-view" | "@blocksuite/affine-ext-loader" | "@blocksuite/affine-foundation" | "@blocksuite/affine-fragment-adapter-panel" | "@blocksuite/affine-fragment-doc-title" | "@blocksuite/affine-fragment-frame-panel" | "@blocksuite/affine-fragment-outline" | "@blocksuite/affine-gfx-brush" | "@blocksuite/affine-gfx-connector" | "@blocksuite/affine-gfx-group" | "@blocksuite/affine-gfx-link" | "@blocksuite/affine-gfx-mindmap" | "@blocksuite/affine-gfx-note" | "@blocksuite/affine-gfx-pointer" | "@blocksuite/affine-gfx-shape" | "@blocksuite/affine-gfx-template" | "@blocksuite/affine-gfx-text" | "@blocksuite/affine-gfx-turbo-renderer" | "@blocksuite/affine-inline-comment" | "@blocksuite/affine-inline-footnote" | "@blocksuite/affine-inline-latex" | "@blocksuite/affine-inline-link" | "@blocksuite/affine-inline-mention" | "@blocksuite/affine-inline-preset" | "@blocksuite/affine-inline-reference" | "@blocksuite/affine-model" | "@blocksuite/affine-rich-text" | "@blocksuite/affine-shared" | "@blocksuite/affine-widget-drag-handle" | "@blocksuite/affine-widget-edgeless-auto-connect" | "@blocksuite/affine-widget-edgeless-dragging-area" | "@blocksuite/affine-widget-edgeless-selected-rect" | "@blocksuite/affine-widget-edgeless-toolbar" | "@blocksuite/affine-widget-edgeless-zoom-toolbar" | "@blocksuite/affine-widget-frame-title" | "@blocksuite/affine-widget-keyboard-toolbar" | "@blocksuite/affine-widget-linked-doc" | "@blocksuite/affine-widget-note-slicer" | "@blocksuite/affine-widget-page-dragging-area" | "@blocksuite/affine-widget-remote-selection" | "@blocksuite/affine-widget-scroll-anchoring" | "@blocksuite/affine-widget-slash-menu" | "@blocksuite/affine-widget-toolbar" | "@blocksuite/affine-widget-viewport-overlay" | "@blocksuite/global" | "@blocksuite/std" | "@blocksuite/store" | "@blocksuite/sync" | "@affine/docs" | "@affine/server" | "@affine/debug" | "@affine/env" | "@affine/error" | "@affine/graphql" | "@toeverything/infra" | "@affine/nbstore" | "@affine/reader" | "@affine/s3-compat" | "@affine/admin" | "@affine/web" | "@affine/component" | "@affine/core" | "@affine/i18n" | "@affine/routes" | "@affine/track" | "@types/build-config" | "@types/affine__env" | "@affine/changelog" | "@affine-tools/cli" | "@affine/commitlint-config" | "@affine/copilot-result" | "@affine/doc-diff" | "@affine/revert-update" | "@affine-tools/utils"
+export type PackageName = "@blocksuite/affine" | "@blocksuite/affine-block-attachment" | "@blocksuite/affine-block-bookmark" | "@blocksuite/affine-block-callout" | "@blocksuite/affine-block-code" | "@blocksuite/affine-block-data-view" | "@blocksuite/affine-block-database" | "@blocksuite/affine-block-divider" | "@blocksuite/affine-block-edgeless-text" | "@blocksuite/affine-block-embed" | "@blocksuite/affine-block-embed-doc" | "@blocksuite/affine-block-frame" | "@blocksuite/affine-block-image" | "@blocksuite/affine-block-latex" | "@blocksuite/affine-block-list" | "@blocksuite/affine-block-note" | "@blocksuite/affine-block-paragraph" | "@blocksuite/affine-block-root" | "@blocksuite/affine-block-surface" | "@blocksuite/affine-block-surface-ref" | "@blocksuite/affine-block-table" | "@blocksuite/affine-components" | "@blocksuite/data-view" | "@blocksuite/affine-ext-loader" | "@blocksuite/affine-foundation" | "@blocksuite/affine-fragment-adapter-panel" | "@blocksuite/affine-fragment-doc-title" | "@blocksuite/affine-fragment-frame-panel" | "@blocksuite/affine-fragment-outline" | "@blocksuite/affine-gfx-brush" | "@blocksuite/affine-gfx-connector" | "@blocksuite/affine-gfx-group" | "@blocksuite/affine-gfx-link" | "@blocksuite/affine-gfx-mindmap" | "@blocksuite/affine-gfx-note" | "@blocksuite/affine-gfx-pointer" | "@blocksuite/affine-gfx-shape" | "@blocksuite/affine-gfx-template" | "@blocksuite/affine-gfx-text" | "@blocksuite/affine-gfx-turbo-renderer" | "@blocksuite/affine-inline-comment" | "@blocksuite/affine-inline-footnote" | "@blocksuite/affine-inline-latex" | "@blocksuite/affine-inline-link" | "@blocksuite/affine-inline-mention" | "@blocksuite/affine-inline-preset" | "@blocksuite/affine-inline-reference" | "@blocksuite/affine-model" | "@blocksuite/affine-rich-text" | "@blocksuite/affine-shared" | "@blocksuite/affine-widget-drag-handle" | "@blocksuite/affine-widget-edgeless-auto-connect" | "@blocksuite/affine-widget-edgeless-dragging-area" | "@blocksuite/affine-widget-edgeless-selected-rect" | "@blocksuite/affine-widget-edgeless-toolbar" | "@blocksuite/affine-widget-edgeless-zoom-toolbar" | "@blocksuite/affine-widget-frame-title" | "@blocksuite/affine-widget-linked-doc" | "@blocksuite/affine-widget-note-slicer" | "@blocksuite/affine-widget-page-dragging-area" | "@blocksuite/affine-widget-remote-selection" | "@blocksuite/affine-widget-scroll-anchoring" | "@blocksuite/affine-widget-slash-menu" | "@blocksuite/affine-widget-toolbar" | "@blocksuite/affine-widget-viewport-overlay" | "@blocksuite/global" | "@blocksuite/std" | "@blocksuite/store" | "@blocksuite/sync" | "@affine/server" | "@affine/debug" | "@affine/env" | "@affine/error" | "@affine/graphql" | "@toeverything/infra" | "@affine/nbstore" | "@affine/reader" | "@affine/s3-compat" | "@affine/admin" | "@affine/web" | "@affine/component" | "@affine/core" | "@affine/i18n" | "@affine/routes" | "@affine/track" | "@types/build-config" | "@types/affine__env" | "@affine-tools/cli" | "@affine-tools/utils"

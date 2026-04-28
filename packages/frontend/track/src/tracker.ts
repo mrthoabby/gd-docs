@@ -22,7 +22,7 @@ export const tracker = {
       environment: BUILD_CONFIG.appBuildType,
       editorVersion: BUILD_CONFIG.editorVersion,
       isDesktop: BUILD_CONFIG.isElectron,
-      isMobile: BUILD_CONFIG.isMobileEdition,
+      isMobile: false,
       distribution: BUILD_CONFIG.distribution,
     });
   },
@@ -441,7 +441,7 @@ function buildContext(): TelemetryEvent['context'] {
       TelemetryEvent['context']
     >['channel'],
     isDesktop: BUILD_CONFIG.isElectron,
-    isMobile: BUILD_CONFIG.isMobileEdition,
+    isMobile: false,
     locale: getLocale(),
     timezone: getTimezone(),
     url: getLocationHref(),

@@ -95,14 +95,6 @@ export const passwordLimitsFragment = `fragment PasswordLimits on PasswordLimits
   minLength
   maxLength
 }`;
-export const licenseBodyFragment = `fragment licenseBody on License {
-  expiredAt
-  installedAt
-  quantity
-  recurring
-  validatedAt
-  variant
-}`;
 export const generateUserAccessTokenMutation = {
   id: 'generateUserAccessTokenMutation' as const,
   op: 'generateUserAccessToken',
@@ -643,200 +635,6 @@ export const getBlobUploadPartUrlQuery = {
     }
   }
 }`,
-};
-
-export const calendarAccountsQuery = {
-  id: 'calendarAccountsQuery' as const,
-  op: 'calendarAccounts',
-  query: `query calendarAccounts {
-  currentUser {
-    calendarAccounts {
-      id
-      provider
-      providerAccountId
-      displayName
-      email
-      status
-      lastError
-      refreshIntervalMinutes
-      calendarsCount
-      createdAt
-      updatedAt
-      calendars {
-        id
-        accountId
-        provider
-        externalCalendarId
-        displayName
-        timezone
-        color
-        enabled
-        lastSyncAt
-      }
-    }
-  }
-}`,
-};
-
-export const calendarEventsQuery = {
-  id: 'calendarEventsQuery' as const,
-  op: 'calendarEvents',
-  query: `query calendarEvents($workspaceId: String!, $from: DateTime!, $to: DateTime!) {
-  workspace(id: $workspaceId) {
-    calendars {
-      id
-      events(from: $from, to: $to) {
-        id
-        subscriptionId
-        externalEventId
-        recurrenceId
-        status
-        title
-        description
-        location
-        startAtUtc
-        endAtUtc
-        originalTimezone
-        allDay
-      }
-    }
-  }
-}`,
-};
-
-export const calendarProvidersQuery = {
-  id: 'calendarProvidersQuery' as const,
-  op: 'calendarProviders',
-  query: `query calendarProviders {
-  serverConfig {
-    calendarCalDAVProviders {
-      id
-      label
-      requiresAppPassword
-      docsUrl
-    }
-    calendarProviders
-  }
-}`,
-};
-
-export const linkCalDavAccountMutation = {
-  id: 'linkCalDavAccountMutation' as const,
-  op: 'linkCalDavAccount',
-  query: `mutation linkCalDavAccount($input: LinkCalDAVAccountInput!) {
-  linkCalDAVAccount(input: $input) {
-    id
-    provider
-    providerAccountId
-    displayName
-    email
-    status
-    lastError
-    refreshIntervalMinutes
-    calendarsCount
-    createdAt
-    updatedAt
-  }
-}`,
-};
-
-export const linkCalendarAccountMutation = {
-  id: 'linkCalendarAccountMutation' as const,
-  op: 'linkCalendarAccount',
-  query: `mutation linkCalendarAccount($input: LinkCalendarAccountInput!) {
-  linkCalendarAccount(input: $input)
-}`,
-};
-
-export const unlinkCalendarAccountMutation = {
-  id: 'unlinkCalendarAccountMutation' as const,
-  op: 'unlinkCalendarAccount',
-  query: `mutation unlinkCalendarAccount($accountId: String!) {
-  unlinkCalendarAccount(accountId: $accountId)
-}`,
-};
-
-export const updateCalendarAccountMutation = {
-  id: 'updateCalendarAccountMutation' as const,
-  op: 'updateCalendarAccount',
-  query: `mutation updateCalendarAccount($accountId: String!, $refreshIntervalMinutes: Int!) {
-  updateCalendarAccount(
-    accountId: $accountId
-    refreshIntervalMinutes: $refreshIntervalMinutes
-  ) {
-    id
-    provider
-    providerAccountId
-    displayName
-    email
-    status
-    lastError
-    refreshIntervalMinutes
-    calendarsCount
-    createdAt
-    updatedAt
-  }
-}`,
-};
-
-export const updateWorkspaceCalendarsMutation = {
-  id: 'updateWorkspaceCalendarsMutation' as const,
-  op: 'updateWorkspaceCalendars',
-  query: `mutation updateWorkspaceCalendars($input: UpdateWorkspaceCalendarsInput!) {
-  updateWorkspaceCalendars(input: $input) {
-    id
-    workspaceId
-    createdByUserId
-    displayNameOverride
-    colorOverride
-    enabled
-    items {
-      id
-      subscriptionId
-      sortOrder
-      colorOverride
-      enabled
-    }
-  }
-}`,
-};
-
-export const workspaceCalendarsQuery = {
-  id: 'workspaceCalendarsQuery' as const,
-  op: 'workspaceCalendars',
-  query: `query workspaceCalendars($workspaceId: String!) {
-  workspace(id: $workspaceId) {
-    calendars {
-      id
-      workspaceId
-      createdByUserId
-      displayNameOverride
-      colorOverride
-      enabled
-      items {
-        id
-        subscriptionId
-        sortOrder
-        colorOverride
-        enabled
-      }
-    }
-  }
-}`,
-};
-
-export const cancelSubscriptionMutation = {
-  id: 'cancelSubscriptionMutation' as const,
-  op: 'cancelSubscription',
-  query: `mutation cancelSubscription($plan: SubscriptionPlan = Pro, $workspaceId: String) {
-  cancelSubscription(plan: $plan, workspaceId: $workspaceId) {
-    id
-    status
-    nextBillAt
-    canceledAt
-  }
-}`,
-  deprecations: ["'id' is deprecated: removed"],
 };
 
 export const changeEmailMutation = {
@@ -1840,30 +1638,6 @@ export const removeWorkspaceEmbeddingIgnoredDocsMutation = {
 }`,
 };
 
-export const createCheckoutSessionMutation = {
-  id: 'createCheckoutSessionMutation' as const,
-  op: 'createCheckoutSession',
-  query: `mutation createCheckoutSession($input: CreateCheckoutSessionInput!) {
-  createCheckoutSession(input: $input)
-}`,
-};
-
-export const createCustomerPortalMutation = {
-  id: 'createCustomerPortalMutation' as const,
-  op: 'createCustomerPortal',
-  query: `mutation createCustomerPortal {
-  createCustomerPortal
-}`,
-};
-
-export const createSelfhostCustomerPortalMutation = {
-  id: 'createSelfhostCustomerPortalMutation' as const,
-  op: 'createSelfhostCustomerPortal',
-  query: `mutation createSelfhostCustomerPortal($workspaceId: String!) {
-  createSelfhostWorkspaceCustomerPortal(workspaceId: $workspaceId)
-}`,
-};
-
 export const createWorkspaceMutation = {
   id: 'createWorkspaceMutation' as const,
   op: 'createWorkspace',
@@ -1921,14 +1695,6 @@ export const getDocRolePermissionsQuery = {
       }
     }
   }
-}`,
-};
-
-export const generateLicenseKeyMutation = {
-  id: 'generateLicenseKeyMutation' as const,
-  op: 'generateLicenseKey',
-  query: `mutation generateLicenseKey($sessionId: String!) {
-  generateLicenseKey(sessionId: $sessionId)
 }`,
 };
 
@@ -2287,7 +2053,6 @@ export const getWorkspaceInfoQuery = {
       Workspace_CreateDoc
       Workspace_Delete
       Workspace_Organize_Read
-      Workspace_Payment_Manage
       Workspace_Properties_Create
       Workspace_Properties_Delete
       Workspace_Properties_Read
@@ -2366,27 +2131,6 @@ export const getWorkspacePublicPagesQuery = {
     }
   }
 }`,
-};
-
-export const getWorkspaceSubscriptionQuery = {
-  id: 'getWorkspaceSubscriptionQuery' as const,
-  op: 'getWorkspaceSubscription',
-  query: `query getWorkspaceSubscription($workspaceId: String!) {
-  workspace(id: $workspaceId) {
-    subscription {
-      id
-      status
-      plan
-      recurring
-      start
-      end
-      nextBillAt
-      canceledAt
-      variant
-    }
-  }
-}`,
-  deprecations: ["'id' is deprecated: removed"],
 };
 
 export const getWorkspaceQuery = {
@@ -2512,87 +2256,12 @@ export const indexerSearchQuery = {
 }`,
 };
 
-export const getInvoicesCountQuery = {
-  id: 'getInvoicesCountQuery' as const,
-  op: 'getInvoicesCount',
-  query: `query getInvoicesCount {
-  currentUser {
-    invoiceCount
-  }
-}`,
-};
-
-export const invoicesQuery = {
-  id: 'invoicesQuery' as const,
-  op: 'invoices',
-  query: `query invoices($take: Int!, $skip: Int!) {
-  currentUser {
-    invoiceCount
-    invoices(take: $take, skip: $skip) {
-      id
-      status
-      currency
-      amount
-      reason
-      lastPaymentError
-      link
-      createdAt
-    }
-  }
-}`,
-  deprecations: ["'id' is deprecated: removed"],
-};
-
 export const leaveWorkspaceMutation = {
   id: 'leaveWorkspaceMutation' as const,
   op: 'leaveWorkspace',
   query: `mutation leaveWorkspace($workspaceId: String!, $sendLeaveMail: Boolean) {
   leaveWorkspace(workspaceId: $workspaceId, sendLeaveMail: $sendLeaveMail)
 }`,
-};
-
-export const activateLicenseMutation = {
-  id: 'activateLicenseMutation' as const,
-  op: 'activateLicense',
-  query: `mutation activateLicense($workspaceId: String!, $license: String!) {
-  activateLicense(workspaceId: $workspaceId, license: $license) {
-    ...licenseBody
-  }
-}
-${licenseBodyFragment}`,
-};
-
-export const deactivateLicenseMutation = {
-  id: 'deactivateLicenseMutation' as const,
-  op: 'deactivateLicense',
-  query: `mutation deactivateLicense($workspaceId: String!) {
-  deactivateLicense(workspaceId: $workspaceId)
-}`,
-};
-
-export const getLicenseQuery = {
-  id: 'getLicenseQuery' as const,
-  op: 'getLicense',
-  query: `query getLicense($workspaceId: String!) {
-  workspace(id: $workspaceId) {
-    license {
-      ...licenseBody
-    }
-  }
-}
-${licenseBodyFragment}`,
-};
-
-export const installLicenseMutation = {
-  id: 'installLicenseMutation' as const,
-  op: 'installLicense',
-  query: `mutation installLicense($workspaceId: String!, $license: Upload!) {
-  installLicense(workspaceId: $workspaceId, license: $license) {
-    ...licenseBody
-  }
-}
-${licenseBodyFragment}`,
-  file: true,
 };
 
 export const listNotificationsQuery = {
@@ -2641,21 +2310,6 @@ export const notificationCountQuery = {
     notifications(pagination: {first: 1}) {
       totalCount
     }
-  }
-}`,
-};
-
-export const pricesQuery = {
-  id: 'pricesQuery' as const,
-  op: 'prices',
-  query: `query prices {
-  prices {
-    type
-    plan
-    currency
-    amount
-    yearlyAmount
-    lifetimeAmount
   }
 }`,
 };
@@ -2731,21 +2385,6 @@ export const removeAvatarMutation = {
     success
   }
 }`,
-};
-
-export const resumeSubscriptionMutation = {
-  id: 'resumeSubscriptionMutation' as const,
-  op: 'resumeSubscription',
-  query: `mutation resumeSubscription($plan: SubscriptionPlan = Pro, $workspaceId: String) {
-  resumeSubscription(plan: $plan, workspaceId: $workspaceId) {
-    id
-    status
-    nextBillAt
-    start
-    end
-  }
-}`,
-  deprecations: ["'id' is deprecated: removed"],
 };
 
 export const revokeDocUserRolesMutation = {
@@ -2827,7 +2466,6 @@ export const serverConfigQuery = {
     features
     type
     initialized
-    calendarProviders
     credentialsRequirement {
       ...CredentialsRequirements
     }
@@ -2847,66 +2485,6 @@ export const setWorkspacePublicByIdMutation = {
 }`,
 };
 
-export const refreshSubscriptionMutation = {
-  id: 'refreshSubscriptionMutation' as const,
-  op: 'refreshSubscription',
-  query: `mutation refreshSubscription {
-  refreshUserSubscriptions {
-    id
-    status
-    plan
-    recurring
-    start
-    end
-    nextBillAt
-    canceledAt
-    variant
-  }
-}`,
-  deprecations: ["'id' is deprecated: removed"],
-};
-
-export const requestApplySubscriptionMutation = {
-  id: 'requestApplySubscriptionMutation' as const,
-  op: 'requestApplySubscription',
-  query: `mutation requestApplySubscription($transactionId: String!) {
-  requestApplySubscription(transactionId: $transactionId) {
-    id
-    status
-    plan
-    recurring
-    start
-    end
-    nextBillAt
-    canceledAt
-    variant
-  }
-}`,
-  deprecations: ["'id' is deprecated: removed"],
-};
-
-export const subscriptionQuery = {
-  id: 'subscriptionQuery' as const,
-  op: 'subscription',
-  query: `query subscription {
-  currentUser {
-    id
-    subscriptions {
-      id
-      status
-      plan
-      recurring
-      start
-      end
-      nextBillAt
-      canceledAt
-      variant
-    }
-  }
-}`,
-  deprecations: ["'id' is deprecated: removed"],
-};
-
 export const updateDocDefaultRoleMutation = {
   id: 'updateDocDefaultRoleMutation' as const,
   op: 'updateDocDefaultRole',
@@ -2921,24 +2499,6 @@ export const updateDocUserRoleMutation = {
   query: `mutation updateDocUserRole($input: UpdateDocUserRoleInput!) {
   updateDocUserRole(input: $input)
 }`,
-};
-
-export const updateSubscriptionMutation = {
-  id: 'updateSubscriptionMutation' as const,
-  op: 'updateSubscription',
-  query: `mutation updateSubscription($plan: SubscriptionPlan = Pro, $recurring: SubscriptionRecurring!, $workspaceId: String) {
-  updateSubscriptionRecurring(
-    plan: $plan
-    recurring: $recurring
-    workspaceId: $workspaceId
-  ) {
-    id
-    plan
-    recurring
-    nextBillAt
-  }
-}`,
-  deprecations: ["'id' is deprecated: removed"],
 };
 
 export const updateUserProfileMutation = {
@@ -3094,27 +2654,6 @@ export const revokeInviteLinkMutation = {
 }`,
 };
 
-export const workspaceInvoicesQuery = {
-  id: 'workspaceInvoicesQuery' as const,
-  op: 'workspaceInvoices',
-  query: `query workspaceInvoices($take: Int!, $skip: Int!, $workspaceId: String!) {
-  workspace(id: $workspaceId) {
-    invoiceCount
-    invoices(take: $take, skip: $skip) {
-      id
-      status
-      currency
-      amount
-      reason
-      lastPaymentError
-      link
-      createdAt
-    }
-  }
-}`,
-  deprecations: ["'id' is deprecated: removed"],
-};
-
 export const workspaceQuotaQuery = {
   id: 'workspaceQuotaQuery' as const,
   op: 'workspaceQuota',
@@ -3157,7 +2696,6 @@ export const getWorkspaceRolePermissionsQuery = {
       Workspace_CreateDoc
       Workspace_Delete
       Workspace_Organize_Read
-      Workspace_Payment_Manage
       Workspace_Properties_Create
       Workspace_Properties_Delete
       Workspace_Properties_Read

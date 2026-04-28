@@ -26,7 +26,3 @@ export const withAskContent = style({
   gap: 4,
   color: cssVarV2.icon.primary,
 });
-
-export const templateMenu = style({
-  width: 280,
-});

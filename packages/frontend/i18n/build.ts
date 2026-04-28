@@ -89,9 +89,7 @@ async function cleanupResources() {
 
   for (const resource of Object.values(resources)) {
     Object.keys(resource).forEach(key => {
-      if (!key.startsWith('com.affine.payment.modal.')) {
-        candidateKeys.add(key);
-      }
+      candidateKeys.add(key);
     });
   }
 

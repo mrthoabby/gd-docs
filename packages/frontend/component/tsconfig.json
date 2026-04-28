@@ -3,8 +3,7 @@
   "include": [
     "./src/**/*",
     "./src/**/*.json",
-    "./src/type.d.ts",
-    "./.storybook"
+    "./src/type.d.ts"
   ],
   "compilerOptions": {
     "rootDir": ".",

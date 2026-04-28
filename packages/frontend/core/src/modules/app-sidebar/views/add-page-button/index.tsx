@@ -1,11 +1,7 @@
-import { Button, IconButton, Menu, MenuItem, MenuSub } from '@affine/component';
+import { Button, IconButton, Menu, MenuItem } from '@affine/component';
 import { usePageHelper } from '@affine/core/blocksuite/block-suite-page-list/utils';
 import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
-import { DocsService } from '@affine/core/modules/doc';
 import { EditorSettingService } from '@affine/core/modules/editor-setting';
-import { TemplateDocService } from '@affine/core/modules/template-doc';
-import { TemplateListMenuContentScrollable } from '@affine/core/modules/template-doc/view/template-list-menu';
-import { WorkbenchService } from '@affine/core/modules/workbench';
 import { WorkspaceService } from '@affine/core/modules/workspace';
 import { inferOpenMode } from '@affine/core/utils';
 import { useI18n } from '@affine/i18n';
@@ -16,7 +12,6 @@ import {
   EdgelessIcon,
   PageIcon,
   PlusIcon,
-  TemplateIcon,
 } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
@@ -26,35 +21,20 @@ import { type MouseEvent, useCallback } from 'react';
 import * as styles from './index.css';
 
 /**
- * @return a function to create a new doc, will duplicate the template doc if the page template is enabled
+ * @return a function to create a new doc
  */
 const useNewDoc = () => {
   const workspaceService = useService(WorkspaceService);
-  const templateDocService = useService(TemplateDocService);
-  const docsService = useService(DocsService);
-  const workbench = useService(WorkbenchService).workbench;
 
   const currentWorkspace = workspaceService.workspace;
-  const enablePageTemplate = useLiveData(
-    templateDocService.setting.enablePageTemplate$
-  );
-  const pageTemplateDocId = useLiveData(
-    templateDocService.setting.pageTemplateDocId$
-  );
 
   const pageHelper = usePageHelper(currentWorkspace.docCollection);
 
   const createPage = useAsyncCallback(
     async (e?: MouseEvent, mode?: DocMode) => {
-      if (enablePageTemplate && pageTemplateDocId) {
-        const docId =
-          await docsService.duplicateFromTemplate(pageTemplateDocId);
-        workbench.openDoc(docId, { at: inferOpenMode(e) });
-      } else {
-        pageHelper.createPage(mode, { at: inferOpenMode(e) });
-      }
+      pageHelper.createPage(mode, { at: inferOpenMode(e) });
     },
-    [docsService, enablePageTemplate, pageHelper, pageTemplateDocId, workbench]
+    [pageHelper]
   );
 
   return createPage;
@@ -82,8 +62,6 @@ export function AddPageButton(props: AddPageButtonProps) {
 function AddPageWithAsk({ className, style }: AddPageButtonProps) {
   const t = useI18n();
   const createDoc = useNewDoc();
-  const workbench = useService(WorkbenchService).workbench;
-  const docsService = useService(DocsService);
 
   const createPage = useCallback(
     (e?: MouseEvent) => {
@@ -100,15 +78,6 @@ function AddPageWithAsk({ className, style }: AddPageButtonProps) {
       track.$.sidebar.newDoc.quickStart({ with: 'edgeless' });
     },
     [createDoc]
-  );
-
-  const createDocFromTemplate = useAsyncCallback(
-    async (templateId: string) => {
-      const docId = await docsService.duplicateFromTemplate(templateId);
-      workbench.openDoc(docId);
-      track.$.sidebar.newDoc.quickStart({ with: 'template' });
-    },
-    [docsService, workbench]
   );
 
   return (
@@ -129,22 +98,6 @@ function AddPageWithAsk({ className, style }: AddPageButtonProps) {
           >
             {t['Edgeless']()}
           </MenuItem>
-          <MenuSub
-            triggerOptions={{
-              prefixIcon: <TemplateIcon />,
-            }}
-            subContentOptions={{
-              sideOffset: 16,
-              className: styles.templateMenu,
-            }}
-            items={
-              <TemplateListMenuContentScrollable
-                onSelect={createDocFromTemplate}
-              />
-            }
-          >
-            {t['Template']()}
-          </MenuSub>
         </>
       }
     >

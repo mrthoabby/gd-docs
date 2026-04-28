@@ -13,7 +13,6 @@
     "@affine/core": "workspace:*",
     "@affine/env": "workspace:*",
     "@affine/nbstore": "workspace:*",
-    "@affine/track": "workspace:*",
     "@emotion/react": "^11.14.0",
     "@toeverything/infra": "workspace:*",
     "react": "^19.2.1",

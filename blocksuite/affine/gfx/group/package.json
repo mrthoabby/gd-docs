@@ -25,9 +25,6 @@
     "fractional-indexing": "^3.2.0",
     "lit": "^3.2.0"
   },
-  "devDependencies": {
-    "vitest": "^4.0.18"
-  },
   "exports": {
     ".": "./src/index.ts",
     "./view": "./src/view.ts",

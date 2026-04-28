@@ -3,7 +3,6 @@ import type {
   EventTraceFn,
 } from '@blocksuite/affine-shared/services';
 import type { DisposableMember } from '@blocksuite/global/disposable';
-import { IS_MOBILE } from '@blocksuite/global/env';
 import { BlockSuiteError } from '@blocksuite/global/exceptions';
 import { SignalWatcher, WithDisposable } from '@blocksuite/global/lit';
 import {
@@ -68,11 +67,7 @@ export class DataViewRootUILogic {
       );
     }
 
-    const pcLogic = view.meta.renderer.pcLogic;
-    const mobileLogic = view.meta.renderer.mobileLogic;
-    const logic = (IS_MOBILE ? mobileLogic : pcLogic) ?? pcLogic;
-
-    return new (logic(view))(this, view);
+    return new (view.meta.renderer.pcLogic(view))(this, view);
   }
   private readonly _viewsCache = new Map<
     string,

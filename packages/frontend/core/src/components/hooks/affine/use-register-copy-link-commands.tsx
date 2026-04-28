@@ -20,7 +20,6 @@ export function useRegisterCopyLinkCommands({
 }) {
   const isActiveView = useIsActiveView();
   const workspaceId = workspaceMeta.id;
-  const isCloud = workspaceMeta.flavour !== 'local';
   const currentMode = useLiveData(useService(EditorService).editor.mode$);
 
   const { onClickCopyLink } = useSharingUrl({
@@ -46,14 +45,12 @@ export function useRegisterCopyLinkCommands({
         icon: null,
         run() {
           track.$.cmdk.general.copyShareLink();
-          isActiveView &&
-            isCloud &&
-            onClickCopyLink(getDefaultShareMode(currentMode));
+          isActiveView && onClickCopyLink(getDefaultShareMode(currentMode));
         },
       })
     );
     return () => {
       unsubs.forEach(unsub => unsub());
     };
-  }, [currentMode, docId, isActiveView, isCloud, onClickCopyLink]);
+  }, [currentMode, docId, isActiveView, onClickCopyLink]);
 }

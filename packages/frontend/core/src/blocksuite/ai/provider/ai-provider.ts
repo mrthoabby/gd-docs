@@ -1,10 +1,9 @@
 import type { EditorHost } from '@blocksuite/affine/std';
-import { captureException } from '@sentry/react';
 import { BehaviorSubject, Subject } from 'rxjs';
 
 import type { ChatContextValue } from '../components/ai-chat-content';
 import {
-  PaymentRequiredError,
+  UsageLimitError,
   RequestTimeoutError,
   UnauthorizedError,
 } from './error';
@@ -37,11 +36,24 @@ export interface AIEmbeddingStatus {
   total: number;
 }
 
+function logAIProviderError(
+  error: unknown,
+  user: AIUserInfo | null,
+  action: string
+) {
+  console.error('AI provider error', {
+    error,
+    userId: user?.id,
+    action,
+    session: AIProvider.LAST_ACTION_SESSIONID,
+  });
+}
+
 export type ActionEventType =
   | 'started'
   | 'finished'
   | 'error'
-  | 'aborted:paywall'
+  | 'aborted:usage-limit'
   | 'aborted:login-required'
   | 'aborted:server-error'
   | 'aborted:stop'
@@ -143,7 +155,7 @@ export class AIProvider {
       mode: 'page' | 'edgeless';
     }>(),
     requestLogin: new Subject<{ host?: EditorHost | null }>(),
-    requestUpgradePlan: new Subject<{ host?: EditorHost | null }>(),
+    requestAIUsageHelp: new Subject<{ host?: EditorHost | null }>(),
     // stream of AI actions triggered by users
     actions: new Subject<{
       action: keyof BlockSuitePresets.AIActions;
@@ -220,11 +232,11 @@ export class AIProvider {
                   options,
                   event: 'aborted:timeout',
                 });
-              } else if (err instanceof PaymentRequiredError) {
+              } else if (err instanceof UsageLimitError) {
                 slots.actions.next({
                   action: id,
                   options,
-                  event: 'aborted:paywall',
+                  event: 'aborted:usage-limit',
                 });
               } else if (err instanceof UnauthorizedError) {
                 slots.actions.next({
@@ -238,13 +250,7 @@ export class AIProvider {
                   options,
                   event: 'aborted:server-error',
                 });
-                captureException(err, {
-                  user: { id: user?.id },
-                  extra: {
-                    action: id,
-                    session: AIProvider.LAST_ACTION_SESSIONID,
-                  },
-                });
+                logAIProviderError(err, user, id);
               }
               throw err;
             }
@@ -268,20 +274,14 @@ export class AIProvider {
               options,
               event: 'error',
             });
-            if (err instanceof PaymentRequiredError) {
+            if (err instanceof UsageLimitError) {
               slots.actions.next({
                 action: id,
                 options,
-                event: 'aborted:paywall',
+                event: 'aborted:usage-limit',
               });
             } else {
-              captureException(err, {
-                user: { id: user?.id },
-                extra: {
-                  action: id,
-                  session: AIProvider.LAST_ACTION_SESSIONID,
-                },
-              });
+              logAIProviderError(err, user, id);
             }
             throw err;
           });

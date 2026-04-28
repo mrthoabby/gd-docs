@@ -1,4 +1,3 @@
-import { IS_MOBILE } from '@blocksuite/global/env';
 import {
   CheckBoxCheckSolidIcon,
   CheckBoxUnIcon,
@@ -114,80 +113,7 @@ export class MenuButton extends MenuFocusable {
   accessor data!: MenuButtonData;
 }
 
-export class MobileMenuButton extends MenuFocusable {
-  static override styles = css`
-    .mobile-menu-button {
-      display: flex;
-      width: 100%;
-      cursor: pointer;
-      align-items: center;
-      font-size: 20px;
-      padding: 11px 8px;
-      gap: 8px;
-      border-radius: 4px;
-      color: var(--affine-icon-color);
-    }
-
-    .mobile-menu-button .affine-menu-action-text {
-      flex: 1;
-      color: var(--affine-text-primary-color);
-      font-size: 17px;
-      line-height: 22px;
-    }
-
-    .mobile-menu-button.delete-item {
-      color: var(--affine-error-color);
-    }
-
-    .mobile-menu-button.delete-item .mobile-menu-action-text {
-      color: var(--affine-error-color);
-    }
-  `;
-
-  override connectedCallback() {
-    super.connectedCallback();
-    this.disposables.addFromEvent(this, 'click', this.onClick);
-  }
-
-  // oxlint-disable-next-line sonarjs/no-identical-functions
-  onClick() {
-    if (this.data.select(this) !== false) {
-      this.menu.options.onComplete?.();
-      if (this.data.closeOnSelect !== false) {
-        this.menu.close();
-      }
-    }
-  }
-
-  override onPressEnter() {
-    this.onClick();
-  }
-
-  protected override render(): unknown {
-    const classString = classMap({
-      'mobile-menu-button': true,
-      focused: this.isFocused$.value,
-      ...this.data.class,
-    });
-    return html` <div
-      class="${classString}"
-      data-testid=${ifDefined(this.data.testId)}
-    >
-      ${this.data.content()}
-    </div>`;
-  }
-
-  @property({ attribute: false })
-  accessor data!: MenuButtonData;
-}
-
 const renderButton = (data: MenuButtonData, menu: Menu) => {
-  if (IS_MOBILE) {
-    return html`<mobile-menu-button
-      .data="${data}"
-      .menu="${menu}"
-    ></mobile-menu-button>`;
-  }
   return html`<affine-menu-button
     .data="${data}"
     .menu="${menu}"

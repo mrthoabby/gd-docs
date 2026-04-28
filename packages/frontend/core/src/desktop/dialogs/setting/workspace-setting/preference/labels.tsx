@@ -1,5 +1,4 @@
 import { WorkspacePermissionService } from '@affine/core/modules/permissions';
-import { WorkspaceService } from '@affine/core/modules/workspace';
 import { useI18n } from '@affine/i18n';
 import { useLiveData, useService } from '@toeverything/infra';
 import { cssVarV2 } from '@toeverything/theme/v2';
@@ -8,9 +7,7 @@ import { useEffect, useMemo } from 'react';
 import * as style from './style.css';
 
 type WorkspaceStatus =
-  | 'local'
-  | 'syncCloud'
-  | 'selfHosted'
+  | 'server'
   | 'joinedWorkspace'
   | 'availableOffline'
   | 'teamWorkspace'
@@ -40,39 +37,22 @@ const Label = ({ value, background }: LabelProps) => {
 
 const getConditions = (
   isOwner: boolean | null,
-  flavour: string,
   isTeam: boolean | null
 ): labelConditionsProps[] => {
   return [
     { condition: !isOwner, label: 'joinedWorkspace' },
-    { condition: flavour === 'local', label: 'local' },
     {
-      condition: flavour === 'affine-cloud',
-      label: 'syncCloud',
+      condition: true,
+      label: 'server',
     },
-    {
-      condition: !!isTeam,
-      label: 'teamWorkspace',
-    },
-    {
-      condition: flavour !== 'affine-cloud' && flavour !== 'local',
-      label: 'selfHosted',
-    },
+    { condition: !!isTeam, label: 'teamWorkspace' },
   ];
 };
 
 const getLabelMap = (t: ReturnType<typeof useI18n>): LabelMap => ({
-  local: {
-    value: t['com.affine.settings.workspace.state.local'](),
-    background: cssVarV2('chip/label/orange'),
-  },
-  syncCloud: {
+  server: {
     value: t['com.affine.settings.workspace.state.sync-affine-cloud'](),
     background: cssVarV2('chip/label/blue'),
-  },
-  selfHosted: {
-    value: t['com.affine.settings.workspace.state.self-hosted'](),
-    background: cssVarV2('chip/label/purple'),
   },
   joinedWorkspace: {
     value: t['com.affine.settings.workspace.state.joined'](),
@@ -93,7 +73,6 @@ const getLabelMap = (t: ReturnType<typeof useI18n>): LabelMap => ({
 });
 
 export const LabelsPanel = () => {
-  const workspace = useService(WorkspaceService).workspace;
   const permissionService = useService(WorkspacePermissionService);
   const isOwner = useLiveData(permissionService.permission.isOwner$);
   const isTeam = useLiveData(permissionService.permission.isTeam$);
@@ -106,8 +85,8 @@ export const LabelsPanel = () => {
   const labelMap = useMemo(() => getLabelMap(t), [t]);
 
   const labelConditions = useMemo(
-    () => getConditions(isOwner, workspace.flavour, isTeam),
-    [isOwner, isTeam, workspace.flavour]
+    () => getConditions(isOwner, isTeam),
+    [isOwner, isTeam]
   );
 
   return (

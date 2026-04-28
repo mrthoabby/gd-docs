@@ -142,41 +142,27 @@ O bien en `affine.json`:
 
 Los siguientes cambios fueron aplicados directamente al código. Se necesita **rebuild** de la imagen Docker para que tomen efecto. Si usás la imagen oficial de Docker Hub, estos cambios no se reflejan — necesitás construir la imagen desde el source.
 
-### 1. Features habilitadas en self-hosted
+### 1. Features habilitadas en Docker propio
 **Archivo:** `packages/frontend/core/src/modules/cloud/constant.ts`
 
-El modo self-hosted ahora tiene habilitadas todas las features:
-- `LocalWorkspace` — permite workspaces locales además de los sincronizados
+La imagen Docker propia expone solo features de servidor:
 - `Copilot` — AI integrada (requiere configurar API key)
 - `Indexer` — búsqueda avanzada
 - `OAuth` — login con proveedores externos
 - Límite de contraseña extendido a 128 caracteres
 
-### 2. Banners de "Enable AFFiNE Cloud" removidos
+### 2. Banners de sincronizacion externa removidos
 **Archivo:** `packages/frontend/core/src/components/top-tip.tsx`
 **Archivo:** `packages/frontend/component/src/components/affine-banner/local-demo-tips.tsx`
 
-Se eliminó el banner que decía "Your local data is stored in the browser and may be lost. Don't risk it - enable cloud now!" — en self-hosted esto no aplica ya que la sincronización va a tu propio servidor.
+Se elimino el banner que empujaba sincronizacion externa. En este build no aplica: la sincronizacion va a tu propio servidor.
 
 ### 3. Footer publicitario en páginas compartidas removido
 **Archivo:** `packages/frontend/core/src/desktop/pages/workspace/share/share-footer.tsx`
 
 Se eliminó el footer que enlazaba a affine.pro en páginas compartidas públicamente.
 
-### 4. Telemetría redirigida a servidor propio
-**Archivo:** `packages/frontend/core/src/modules/cloud/constant.ts`
-
-En modo self-hosted, la telemetría ya no se envía a `https://app.affine.pro`. Ahora apunta a tu propio servidor (`location.origin`). Adicionalmente, si no configurás `GA4_MEASUREMENT_ID` en tu config, el backend no reenvía nada a Google Analytics.
-
-Para **desactivar la telemetría completamente** desde el backend, en tu `affine.json`:
-```json
-"telemetry": {
-  "ga4.measurementId": "",
-  "ga4.apiSecret": ""
-}
-```
-
-### 5. Feature flags experimentales desbloqueados
+### 4. Feature flags experimentales desbloqueados
 **Archivo:** `packages/frontend/core/src/modules/feature-flag/constant.ts`
 
 Las siguientes funciones experimentales que antes solo estaban disponibles en "canary" ahora son accesibles en self-hosted:
@@ -262,7 +248,7 @@ docker compose -f .docker/selfhost/compose.yml ps
 |---|---|
 | Sentry (errores a sentry.io) | ✅ Desactivado (stub sin-op) |
 | Check de actualizaciones (affine.pro) | ✅ Desactivado |
-| Servidor de licencias (app.affine.pro) | ✅ Solo activo si se configura AFFINE_PRO_SERVER_ENDPOINT |
+| Servidor de licencias (app.affine.pro) | ✅ Eliminado |
 | Telemetría de analytics | ✅ Redirigida a servidor local (ya hecho en sesión 1) |
 | affine.pro en redirect allowlist | ✅ Eliminado |
 | Links a affine.pro en emails | ✅ Reemplazados por URLs relativas |
@@ -328,19 +314,7 @@ Logo y footer de emails reemplazados por texto — sin tracking pixels de `cdn.a
 
 ## Cambios adicionales aplicados (sesión 4)
 
-### 1. Sistema de licencias — ELIMINADO COMPLETAMENTE
-
-El sistema de licencias de AFFiNE (que requería contactar `app.affine.pro`) fue eliminado:
-
-- **`LicenseService`** → reemplazado por stub no-op (sin BD, sin llamadas externas)
-- **`team_plan_v1`** → `memberLimit: 99999` (sin restricción de miembros)
-- **`QuotaService.tryCheckSeat`** → siempre retorna `true` en self-hosted
-- **`getWorkspaceQuota`** → auto-otorga `team_plan_v1` a todos los workspaces en self-hosted
-- **`LicenseModule`** → simplificado, sin dependencias de pago/payment
-
-**Resultado:** Cualquier workspace puede tener tantos miembros como quieras, sin licencia, sin servidor externo.
-
-### 2. Autenticación de `/admin/root` — sesión real de usuario admin
+### 1. Autenticación de `/admin/root` — sesión real de usuario admin
 
 Reemplazado el HTTP Basic Auth por la autenticación real de sesión de NestJS:
 

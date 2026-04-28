@@ -19,13 +19,11 @@ import type { KeyboardEvent, ReactNode } from 'react';
 import {
   useCallback,
   useEffect,
-  useImperativeHandle,
   useMemo,
   useRef,
   useState,
 } from 'react';
 
-import { ConfigModal } from '../mobile';
 import { InlineMemberList } from './inline-member-list';
 import * as styles from './styles.css';
 
@@ -212,12 +210,7 @@ export const MemberSelector = ({
     <div
       style={style}
       data-testid="tags-editor-popup"
-      className={clsx(
-        className,
-        BUILD_CONFIG.isMobileEdition
-          ? styles.memberSelectorRootMobile
-          : styles.memberSelectorRoot
-      )}
+      className={clsx(className, styles.memberSelectorRoot)}
     >
       <div className={styles.memberSelectorSelectedTags}>
         <InlineMemberList
@@ -236,16 +229,12 @@ export const MemberSelector = ({
             placeholder="Type here ..."
           />
         </InlineMemberList>
-        {BUILD_CONFIG.isMobileEdition ? null : (
-          <MenuItem
-            className={styles.memberSelectorDoneButton}
-            prefixIcon={<DoneIcon />}
-          />
-        )}
+        <MenuItem
+          className={styles.memberSelectorDoneButton}
+          prefixIcon={<DoneIcon />}
+        />
       </div>
-      {BUILD_CONFIG.isMobileEdition ? null : (
-        <Divider size="thinner" className={styles.memberDivider} />
-      )}
+      <Divider size="thinner" className={styles.memberDivider} />
       <div className={styles.memberSelectorBody}>
         <Scrollable.Root>
           <Scrollable.Viewport
@@ -282,58 +271,6 @@ export const MemberSelector = ({
         </Scrollable.Root>
       </div>
     </div>
-  );
-};
-
-const MobileMemberSelectorInline = ({
-  readonly,
-  placeholder,
-  className,
-  title,
-  style,
-  onEditorClose,
-  ref,
-  ...props
-}: MemberSelectorInlineProps) => {
-  const [editing, setEditing] = useState(false);
-
-  useImperativeHandle(
-    ref,
-    () => ({
-      changeOpen: (open: boolean) => {
-        setEditing(open);
-        if (!open) {
-          onEditorClose?.();
-        }
-      },
-    }),
-    [onEditorClose]
-  );
-
-  const empty = !props.selected || props.selected.length === 0;
-  return (
-    <>
-      <ConfigModal
-        title={title}
-        open={editing}
-        onOpenChange={setEditing}
-        onBack={() => {
-          setEditing(false);
-          onEditorClose?.();
-        }}
-      >
-        <MemberSelector {...props} />
-      </ConfigModal>
-      <div
-        className={clsx(styles.membersSelectorInline, className)}
-        data-empty={empty}
-        data-readonly={readonly}
-        onClick={() => setEditing(true)}
-        style={style}
-      >
-        {empty ? placeholder : <InlineMemberList members={props.selected} />}
-      </div>
-    </>
   );
 };
 
@@ -382,6 +319,4 @@ const DesktopMemberSelectorInline = ({
   );
 };
 
-export const MemberSelectorInline = BUILD_CONFIG.isMobileEdition
-  ? MobileMemberSelectorInline
-  : DesktopMemberSelectorInline;
+export const MemberSelectorInline = DesktopMemberSelectorInline;

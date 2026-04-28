@@ -22,11 +22,9 @@ import * as styles from './styles.css';
 export const MemberList = ({
   isOwner,
   isAdmin,
-  goToTeamBilling,
 }: {
   isOwner: boolean;
   isAdmin: boolean;
-  goToTeamBilling: () => void;
 }) => {
   const membersService = useService(WorkspaceMembersService);
   const memberCount = useLiveData(membersService.members.memberCount$);
@@ -84,7 +82,6 @@ export const MemberList = ({
             member={member}
             isOwner={isOwner}
             isAdmin={isAdmin}
-            goToTeamBilling={goToTeamBilling}
           />
         ))
       )}
@@ -130,13 +127,11 @@ const MemberItem = ({
   isOwner,
   isAdmin,
   currentAccount,
-  goToTeamBilling,
 }: {
   member: Member;
   isAdmin: boolean;
   isOwner: boolean;
   currentAccount: AuthAccountInfo;
-  goToTeamBilling: () => void;
 }) => {
   const t = useI18n();
   const [open, setOpen] = useState(false);
@@ -169,8 +164,8 @@ const MemberItem = ({
         if (result) {
           setOpen(false);
           notify.success({
-            title: t['com.affine.payment.member.team.assign.notify.title'](),
-            message: t['com.affine.payment.member.team.assign.notify.message']({
+            title: t['com.affine.workspace.members.team.assign.notify.title'](),
+            message: t['com.affine.workspace.members.team.assign.notify.message']({
               name: member.name || member.email || member.id,
             }),
           });
@@ -225,7 +220,6 @@ const MemberItem = ({
             openAssignModal={handleOpenAssignModal}
             isAdmin={isAdmin}
             isOwner={isOwner}
-            goToTeamBilling={goToTeamBilling}
           />
         }
       >

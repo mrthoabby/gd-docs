@@ -4,11 +4,7 @@ import type {
   ServerService,
   SubscriptionService,
 } from '@affine/core/modules/cloud';
-import {
-  type CopilotChatHistoryFragment,
-  ServerDeploymentType,
-  SubscriptionStatus,
-} from '@affine/graphql';
+import type { CopilotChatHistoryFragment } from '@affine/graphql';
 import {
   menu,
   popMenu,
@@ -22,7 +18,6 @@ import {
   ArrowDownSmallIcon,
   CloudWorkspaceIcon,
   DoneIcon,
-  LockIcon,
   ThinkingIcon,
 } from '@blocksuite/icons/lit';
 import { ShadowlessElement } from '@blocksuite/std';
@@ -154,12 +149,6 @@ export class ChatInputPreference extends SignalWatcher(
         options: {
           items: this.aiModelService.models.value.map(model => {
             const isSelected = model.id === this.model.value?.id;
-            const isSelfHosted =
-              this.serverService.server.config$.value?.type ===
-              ServerDeploymentType.Selfhosted;
-            const status =
-              this.subscriptionService.subscription.ai$.value?.status;
-            const isSubscribed = status === SubscriptionStatus.Active;
             return menu.action({
               name: model.category,
               info: html`
@@ -170,18 +159,8 @@ export class ChatInputPreference extends SignalWatcher(
                   ${isSelected ? DoneIcon() : undefined}
                 </div>
               `,
-              postfix: html`
-                <div class="ai-model-postfix" @click=${this.onAISubscribe}>
-                  ${model.isPro && !isSubscribed ? LockIcon() : undefined}
-                </div>
-              `,
+              postfix: html`<div class="ai-model-postfix"></div>`,
               select: () => {
-                if (model.isPro && !isSelfHosted && !isSubscribed) {
-                  this.notificationService.toast(
-                    `Pro models require an AI subscription. Contact your administrator.`
-                  );
-                  return;
-                }
                 this.aiModelService.setModel(model.id);
               },
             });

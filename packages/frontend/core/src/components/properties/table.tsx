@@ -15,7 +15,6 @@ import type {
   DatabaseRow,
   DatabaseValueCell,
 } from '@affine/core/modules/doc-info/types';
-import { DocIntegrationPropertiesTable } from '@affine/core/modules/integration';
 import { ViewService, WorkbenchService } from '@affine/core/modules/workbench';
 import { WorkspacePropertyService } from '@affine/core/modules/workspace-property';
 import type { AffineDNDData } from '@affine/core/types/dnd';
@@ -445,9 +444,6 @@ const WorkspacePropertiesTableInner = ({
           onOpenChange={setExpanded}
         />
         <Collapsible.Content>
-          <DocIntegrationPropertiesTable
-            divider={<div className={styles.tableHeaderDivider} />}
-          />
           <WorkspaceWorkspacePropertiesTableBody
             defaultOpen={
               !defaultOpenProperty || defaultOpenProperty.type === 'workspace'

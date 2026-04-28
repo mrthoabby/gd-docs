@@ -1,9 +1,8 @@
 import { ScrollableContainer } from '@affine/component';
 import { MenuItem } from '@affine/component/ui/menu';
-import { AuthService, DefaultServerService } from '@affine/core/modules/cloud';
+import { AuthService } from '@affine/core/modules/cloud';
 import { GlobalDialogService } from '@affine/core/modules/dialogs';
 import { type WorkspaceMetadata } from '@affine/core/modules/workspace';
-import { ServerFeature } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
 import { track } from '@affine/track';
 import { Logo1Icon } from '@blocksuite/icons/rc';
@@ -40,7 +39,7 @@ export const SignInItem = () => {
             {t['com.affine.workspace.cloud.auth']()}
           </div>
           <div className={styles.signInTextSecondary}>
-            {t['com.affine.workspace.cloud.description']()}
+            {t['com.affine.workspace.server.description']()}
           </div>
         </div>
       </div>
@@ -55,18 +54,15 @@ interface UserWithWorkspaceListProps {
     metadata: WorkspaceMetadata;
     defaultDocId?: string;
   }) => void;
-  showEnableCloudButton?: boolean;
 }
 
 export const UserWithWorkspaceList = ({
   onEventEnd,
   onClickWorkspace,
   onCreatedWorkspace,
-  showEnableCloudButton,
 }: UserWithWorkspaceListProps) => {
   const globalDialogService = useService(GlobalDialogService);
   const session = useLiveData(useService(AuthService).session.session$);
-  const defaultServerService = useService(DefaultServerService);
 
   const isAuthenticated = session.status === 'authenticated';
 
@@ -75,12 +71,7 @@ export const UserWithWorkspaceList = ({
   }, [globalDialogService]);
 
   const onNewWorkspace = useCallback(() => {
-    const enableLocalWorkspace =
-      BUILD_CONFIG.isNative ||
-      defaultServerService.server.config$.value.features.includes(
-        ServerFeature.LocalWorkspace
-      );
-    if (!isAuthenticated && !enableLocalWorkspace) {
+    if (!isAuthenticated) {
       return openSignInModal();
     }
     track.$.navigationPanel.workspaceList.createWorkspace();
@@ -92,7 +83,6 @@ export const UserWithWorkspaceList = ({
     onEventEnd?.();
   }, [
     globalDialogService,
-    defaultServerService,
     isAuthenticated,
     onCreatedWorkspace,
     onEventEnd,
@@ -122,7 +112,6 @@ export const UserWithWorkspaceList = ({
         <AFFiNEWorkspaceList
           onEventEnd={onEventEnd}
           onClickWorkspace={onClickWorkspace}
-          showEnableCloudButton={showEnableCloudButton}
         />
       </ScrollableContainer>
       <div className={styles.workspaceFooter}>

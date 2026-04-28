@@ -2,9 +2,6 @@
   "name": "@affine/env",
   "private": true,
   "type": "module",
-  "devDependencies": {
-    "vitest": "^4.0.18"
-  },
   "exports": {
     "./automation": "./src/automation.ts",
     "./global": "./src/global.ts",

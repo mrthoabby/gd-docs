@@ -35,19 +35,6 @@ export const localMembersPanel = style({
   flexDirection: 'column',
 });
 
-export const goUpgradeWrapper = style({
-  display: 'inline-flex',
-  alignItems: 'center',
-});
-
-export const goUpgrade = style({
-  fontSize: cssVar('fontXs'),
-  color: cssVarV2('text/emphasis'),
-  cursor: 'pointer',
-  marginLeft: '4px',
-  display: 'inline',
-});
-
 export const errorStyle = style({
   color: cssVarV2('status/error'),
 });

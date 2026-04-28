@@ -1,10 +1,4 @@
 {
-  "metrics": {
-    "enabled": {
-      "type": "Boolean",
-      "desc": "Activa la recopilación de métricas y trazas internas del servidor."
-    }
-  },
   "crypto": {
     "privateKey": {
       "type": "String",
@@ -27,10 +21,6 @@
     "queues.copilot": {
       "type": "Object",
       "desc": "Concurrencia y opciones específicas para la cola de trabajos del asistente de IA (Copilot). Ej: <code>{\"concurrency\":10}</code> — procesa hasta 10 peticiones de IA en paralelo."
-    },
-    "queues.calendar": {
-      "type": "Object",
-      "desc": "Concurrencia para la cola de sincronización de calendarios. Ej: <code>{\"concurrency\":4}</code>"
     },
     "queues.doc": {
       "type": "Object",
@@ -260,47 +250,12 @@
       "placeholder": "/docs"
     }
   },
-  "flags": {
-    "allowGuestDemoWorkspace": {
-      "type": "Boolean",
-      "desc": "Permite que usuarios no autenticados creen workspaces de demostración públicos. Desactívalo en instalaciones privadas o corporativas."
-    }
-  },
   "docService": {
     "endpoint": {
       "type": "String",
       "desc": "URL del servicio externo de procesamiento de documentos. Déjalo vacío para que el servidor principal maneje todo internamente. Solo necesario en arquitecturas distribuidas con microservicio separado.",
       "env": "DOC_SERVICE_ENDPOINT",
       "placeholder": "http://doc-service:3020"
-    }
-  },
-  "telemetry": {
-    "allowedOrigin": {
-      "type": "Array",
-      "desc": "Orígenes permitidos para recopilación de telemetría."
-    },
-    "ga4.measurementId": {
-      "type": "String",
-      "desc": "Measurement ID de GA4 para Measurement Protocol.",
-      "env": "GA4_MEASUREMENT_ID",
-      "placeholder": "G-XXXXXXXXXX"
-    },
-    "ga4.apiSecret": {
-      "type": "String",
-      "desc": "API secret de GA4 para Measurement Protocol.",
-      "env": "GA4_API_SECRET"
-    },
-    "dedupe.ttlHours": {
-      "type": "Number",
-      "desc": "TTL en horas para deduplicación de eventos de telemetría."
-    },
-    "dedupe.maxEntries": {
-      "type": "Number",
-      "desc": "Máximo de entradas en el caché de deduplicación de telemetría."
-    },
-    "batch.maxEvents": {
-      "type": "Number",
-      "desc": "Máximo de eventos por lote de telemetría."
     }
   },
   "client": {
@@ -312,17 +267,6 @@
       "type": "String",
       "desc": "Rango de versiones de la app permitidas para conectarse. Usa sintaxis semver. Ej: <code>&gt;=0.25.0</code> bloquea clientes más antiguos. Requiere que 'versionControl.enabled' esté activo.",
       "placeholder": ">=0.25.0"
-    }
-  },
-  "calendar": {
-    "google": {
-      "type": "Object",
-      "desc": "Integración con Google Calendar. Requiere un proyecto en Google Cloud con la API habilitada y OAuth2 configurado. Ej: <code>{\"enabled\":false,\"clientId\":\"tu-client-id.apps.googleusercontent.com\",\"clientSecret\":\"tu-secret\",\"externalWebhookUrl\":\"https://docs.miempresa.com/api/calendar/google/webhook\",\"webhookVerificationToken\":\"token-seguro\",\"requestTimeoutMs\":10000}</code>",
-      "link": "https://developers.google.com/calendar/api/guides/push"
-    },
-    "caldav": {
-      "type": "Object",
-      "desc": "Integración CalDAV (compatible con Nextcloud, Fastmail, Apple Calendar, etc.). <strong>blockPrivateNetwork</strong>: protege contra SSRF bloqueando IPs privadas (recomendado mantenerlo <code>true</code>). <strong>allowInsecureHttp</strong>: permite conexiones sin TLS (solo para servidores CalDAV internos sin certificado). <strong>maxRedirects</strong> y <strong>requestTimeoutMs</strong> controlan el comportamiento de las peticiones. Ej: <code>{\"enabled\":false,\"allowCustomProvider\":false,\"providers\":[],\"blockPrivateNetwork\":true,\"allowInsecureHttp\":false,\"allowedHosts\":[],\"maxRedirects\":5,\"requestTimeoutMs\":10000}</code>"
     }
   },
   "captcha": {
@@ -446,17 +390,6 @@
       "placeholder": "10"
     }
   },
-  "customerIo": {
-    "enabled": {
-      "type": "Boolean",
-      "desc": "Activa la integración con Customer.io para automatización de marketing y notificaciones externas."
-    },
-    "token": {
-      "type": "String",
-      "desc": "Token de API de Customer.io.",
-      "placeholder": "tu-token-customerio"
-    }
-  },
   "oauth": {
     "providers.google": {
       "type": "Object",
@@ -477,36 +410,6 @@
       "type": "Object",
       "desc": "Configuración de Sign in with Apple.",
       "link": "https://developer.apple.com/documentation/sign_in_with_apple/sign_in_with_apple_js/implementing_sign_in_with_apple_in_your_app"
-    }
-  },
-  "payment": {
-    "enabled": {
-      "type": "Boolean",
-      "desc": "Activa el módulo de pagos. No necesario para instalaciones self-hosted sin suscripciones."
-    },
-    "showLifetimePrice": {
-      "type": "Boolean",
-      "desc": "Muestra la opción de precio de por vida (pago único)."
-    },
-    "apiKey": {
-      "type": "String",
-      "desc": "[Deprecado] Usa payment.stripe.apiKey.",
-      "env": "STRIPE_API_KEY"
-    },
-    "webhookKey": {
-      "type": "String",
-      "desc": "[Deprecado] Usa payment.stripe.webhookKey.",
-      "env": "STRIPE_WEBHOOK_KEY"
-    },
-    "stripe": {
-      "type": "Object",
-      "desc": "Credenciales y opciones del SDK de Stripe.",
-      "link": "https://docs.stripe.com/api"
-    },
-    "revenuecat": {
-      "type": "Object",
-      "desc": "Configuración de la integración con RevenueCat.",
-      "link": "https://www.revenuecat.com/docs/"
     }
   },
   "worker": {

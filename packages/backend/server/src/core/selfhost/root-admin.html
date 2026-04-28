@@ -571,11 +571,6 @@
           <div class="value" id="health-ws">—</div>
           <div class="sub" id="health-ws-sub" style="font-size:11px;word-break:break-all"></div>
         </div>
-        <div class="card loading" id="card-telemetry">
-          <h3>Telemetría externa</h3>
-          <div class="value" id="health-telemetry">—</div>
-          <div class="sub" id="health-telemetry-sub"></div>
-        </div>
       </div>
 
       <!-- Detalle diagnóstico WS (solo visible cuando hay error) -->
@@ -917,7 +912,7 @@ function setCard(id, text, sub, state /* 'success'|'warn'|'error'|'loading' */) 
 
 async function loadHealth() {
   // Reset all to loading
-  ['api','db','ws','telemetry'].forEach(id => setCard(id, 'Verificando...', '', 'loading'));
+  ['api','db','ws'].forEach(id => setCard(id, 'Verificando...', '', 'loading'));
   document.getElementById('ws-diagnostics').style.display = 'none';
   document.getElementById('health-last-check').textContent = '';
 
@@ -944,9 +939,6 @@ async function loadHealth() {
 
   // 3. WebSocket — prueba real de conexión
   await testWebSocket();
-
-  // 4. Telemetría
-  setCard('telemetry', '✅ Desactivada', 'Sin Sentry ni GA4 externos', 'success');
 
   document.getElementById('health-last-check').textContent =
     `Última verificación: ${new Date().toLocaleTimeString('es')}`;
@@ -1155,9 +1147,7 @@ async function loadConfig() {
       "allowSignup": true,
       "requireEmailVerification": false,
       "passwordRequirements": { "min": 8, "max": 128 }
-    },
-    "telemetry": { "ga4.measurementId": "", "ga4.apiSecret": "" },
-    "metrics": { "enabled": false }
+    }
   };
   document.getElementById('current-config').textContent =
     '// Config activa en: ~/.affine/self-host/config/gd-docs.json\n\n' +

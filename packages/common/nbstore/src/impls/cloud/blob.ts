@@ -25,8 +25,7 @@ interface CloudBlobStorageOptions {
   id: string;
 }
 
-const SHOULD_MANUAL_REDIRECT =
-  BUILD_CONFIG.isAndroid || BUILD_CONFIG.isIOS || BUILD_CONFIG.isElectron;
+const SHOULD_MANUAL_REDIRECT = false;
 const UPLOAD_REQUEST_TIMEOUT = 0;
 
 function toStrictArrayBuffer(

@@ -10,7 +10,7 @@ import {
 } from '@blocksuite/icons/rc';
 import { useMemo } from 'react';
 
-import type { SettingSidebarItem, SettingState } from '../types';
+import type { SettingSidebarItem } from '../types';
 import { MembersPanel } from './members';
 import { WorkspaceSettingDetail } from './preference';
 import { WorkspaceSettingProperties } from './properties';
@@ -19,12 +19,9 @@ import { WorkspaceSettingStorage } from './storage';
 export const WorkspaceSetting = ({
   activeTab,
   onCloseSetting,
-  onChangeSettingState,
 }: {
   activeTab: SettingTab;
-  scrollAnchor?: string;
   onCloseSetting: () => void;
-  onChangeSettingState: (settingState: SettingState) => void;
 }) => {
   switch (activeTab) {
     case 'workspace:preference':
@@ -32,12 +29,7 @@ export const WorkspaceSetting = ({
     case 'workspace:properties':
       return <WorkspaceSettingProperties />;
     case 'workspace:members':
-      return (
-        <MembersPanel
-          onCloseSetting={onCloseSetting}
-          onChangeSettingState={onChangeSettingState}
-        />
-      );
+      return <MembersPanel onCloseSetting={onCloseSetting} />;
     case 'workspace:storage':
       return <WorkspaceSettingStorage onCloseSetting={onCloseSetting} />;
     case 'workspace:embedding':

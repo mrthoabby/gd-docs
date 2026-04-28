@@ -12,11 +12,7 @@ export { DocSummaryService };
 export function configureDocSummaryModule(framework: Framework) {
   framework
     .scope(WorkspaceScope)
-    .service(DocSummaryService, [
-      WorkspaceService,
-      DocSummaryStore,
-      FeatureFlagService,
-    ])
+    .service(DocSummaryService, [DocSummaryStore, FeatureFlagService])
     .store(DocSummaryStore, [
       WorkspaceService,
       WorkspaceServerService,

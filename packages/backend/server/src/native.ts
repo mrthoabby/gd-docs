@@ -21,14 +21,17 @@ export function mergeUpdatesInApplyWay(updates: Array<Buffer | Uint8Array>) {
 
 export const verifyChallengeResponse = async (
   response: any,
-  bits: number,
+  _bits: number,
   resource: string
 ) => {
   if (typeof response !== 'string' || !response || !resource) return false;
   return true;
 };
 
-export const mintChallengeResponse = async (resource: string, bits: number) => {
+export const mintChallengeResponse = async (
+  resource: string,
+  _bits: number
+) => {
   if (!resource) return null;
   return 'stub';
 };
@@ -94,9 +97,6 @@ export function parseWorkspaceDocFromBinary() {
 export function readAllDocIdsFromRootDoc() {
   return [];
 }
-
-export const AFFINE_PRO_PUBLIC_KEY = '';
-export const AFFINE_PRO_LICENSE_AES_KEY = '';
 
 export function createDocWithMarkdown() {
   return Buffer.alloc(0);
@@ -496,7 +496,7 @@ async function fetchOpenAI(
 }
 
 export async function llmDispatch(
-  protocol: NativeLlmProtocol,
+  _protocol: NativeLlmProtocol,
   backendConfig: NativeLlmBackendConfig,
   request: NativeLlmRequest
 ): Promise<NativeLlmDispatchResponse> {
@@ -525,7 +525,7 @@ export async function llmDispatch(
 }
 
 export async function llmStructuredDispatch(
-  protocol: NativeLlmProtocol,
+  _protocol: NativeLlmProtocol,
   backendConfig: NativeLlmBackendConfig,
   request: NativeLlmStructuredRequest
 ): Promise<NativeLlmStructuredResponse> {
@@ -565,7 +565,7 @@ export async function llmStructuredDispatch(
 }
 
 export async function llmEmbeddingDispatch(
-  protocol: NativeLlmProtocol,
+  _protocol: NativeLlmProtocol,
   backendConfig: NativeLlmBackendConfig,
   request: NativeLlmEmbeddingRequest
 ): Promise<NativeLlmEmbeddingResponse> {
@@ -592,11 +592,11 @@ export async function llmEmbeddingDispatch(
 }
 
 export async function llmRerankDispatch(
-  protocol: NativeLlmProtocol,
-  backendConfig: NativeLlmBackendConfig,
-  request: NativeLlmRerankRequest
+  _protocol: NativeLlmProtocol,
+  _backendConfig: NativeLlmBackendConfig,
+  _request: NativeLlmRerankRequest
 ): Promise<NativeLlmRerankResponse> {
-  throw new Error('LLM rerank dispatch is not available without server-native');
+  throw new Error('LLM rerank dispatch is not available in this build');
 }
 
 export class NativeStreamAdapter<T> implements AsyncIterableIterator<T> {
@@ -692,7 +692,7 @@ export class NativeStreamAdapter<T> implements AsyncIterableIterator<T> {
 }
 
 export function llmDispatchStream(
-  protocol: NativeLlmProtocol,
+  _protocol: NativeLlmProtocol,
   backendConfig: NativeLlmBackendConfig,
   request: NativeLlmRequest,
   signal?: AbortSignal

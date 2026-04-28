@@ -9,8 +9,5 @@
   "peerDependencies": {
     "@affine/graphql": "workspace:*",
     "graphql": "^16.9.0"
-  },
-  "devDependencies": {
-    "vitest": "^4.0.18"
   }
 }

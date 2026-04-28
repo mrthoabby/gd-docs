@@ -8,7 +8,6 @@ import dotBgDark from './assets/dot-bg.dark.png';
 import dotBgLight from './assets/dot-bg.light.png';
 import { DesktopNavbar } from './desktop-navbar';
 import * as styles from './index.css';
-import { MobileNavbar } from './mobile-navbar';
 
 export const AffineOtherPageLayout = ({
   children,
@@ -45,7 +44,6 @@ export const AffineOtherPageLayout = ({
           >
             {t['com.affine.auth.open.affine.download-app']()}
           </Button>
-          <MobileNavbar />
         </div>
       )}
 

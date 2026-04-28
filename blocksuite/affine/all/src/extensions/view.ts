@@ -47,7 +47,6 @@ import { EdgelessSelectedRectViewExtension } from '@blocksuite/affine-widget-edg
 import { EdgelessToolbarViewExtension } from '@blocksuite/affine-widget-edgeless-toolbar/view';
 import { EdgelessZoomToolbarViewExtension } from '@blocksuite/affine-widget-edgeless-zoom-toolbar/view';
 import { FrameTitleViewExtension } from '@blocksuite/affine-widget-frame-title/view';
-import { KeyboardToolbarViewExtension } from '@blocksuite/affine-widget-keyboard-toolbar/view';
 import { LinkedDocViewExtension } from '@blocksuite/affine-widget-linked-doc/view';
 import { NoteSlicerViewExtension } from '@blocksuite/affine-widget-note-slicer/view';
 import { PageDraggingAreaViewExtension } from '@blocksuite/affine-widget-page-dragging-area/view';
@@ -109,7 +108,6 @@ export function getInternalViewExtensions() {
     DragHandleViewExtension,
     EdgelessAutoConnectViewExtension,
     FrameTitleViewExtension,
-    KeyboardToolbarViewExtension,
     LinkedDocViewExtension,
     RemoteSelectionViewExtension,
     ScrollAnchoringViewExtension,

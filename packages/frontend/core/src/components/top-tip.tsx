@@ -1,5 +1,3 @@
-// [SELFHOST PATCH] Se eliminó la importación de LocalDemoTips para suprimir
-// el banner "Enable AFFiNE Cloud" en despliegues self-hosted.
 import { BrowserWarning } from '@affine/component/affine-banner';
 import { Trans, useI18n } from '@affine/i18n';
 import { useState } from 'react';
@@ -14,9 +12,6 @@ const shouldShowWarning = (() => {
     //  we don't want to show the warning
     return false;
   }
-  if (BUILD_CONFIG.isMobileEdition) {
-    return true;
-  }
   if (environment.isChrome && environment.chromeVersion) {
     return environment.chromeVersion < minimumChromeVersion;
   }
@@ -30,11 +25,6 @@ const OSWarningMessage = () => {
     environment.isChrome &&
     environment.chromeVersion &&
     environment.chromeVersion < minimumChromeVersion;
-
-  // TODO(@L-Sun): remove this message when mobile version is able to edit.
-  if (environment.isMobile) {
-    return <span>{t['com.affine.top-tip.mobile']()}</span>;
-  }
 
   if (notChrome) {
     return (
@@ -60,10 +50,6 @@ export const TopTip = ({
   workspace: Workspace;
 }) => {
   const [showWarning, setShowWarning] = useState(shouldShowWarning);
-
-  // [SELFHOST PATCH] El banner de "Enable AFFiNE Cloud" (LocalDemoTips)
-  // fue removido. En self-hosted los datos ya se sincronizan al servidor propio.
-  // Solo se mantiene la advertencia de compatibilidad del navegador.
 
   return (
     <BrowserWarning

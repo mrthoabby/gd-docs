@@ -1,9 +1,7 @@
 import { Button } from '@affine/component/ui/button';
-import { notify } from '@affine/component/ui/notification';
 import { useAsyncCallback } from '@affine/core/components/hooks/affine-async-hooks';
-import { AuthService, ServerService } from '@affine/core/modules/cloud';
+import { ServerService } from '@affine/core/modules/cloud';
 import { UrlService } from '@affine/core/modules/url';
-import { UserFriendlyError } from '@affine/error';
 import { OAuthProviderType } from '@affine/graphql';
 import track from '@affine/track';
 import {
@@ -45,42 +43,26 @@ export function OAuth({ redirectUrl }: { redirectUrl?: string }) {
   const oauthProviders = useLiveData(
     serverService.server.config$.map(r => r?.oauthProviders)
   );
-  const auth = useService(AuthService);
-
   const onContinue = useAsyncCallback(
     async (provider: OAuthProviderType) => {
       track.$.$.auth.signIn({ method: 'oauth', provider });
 
-      const open: () => Promise<void> | void = BUILD_CONFIG.isNative
-        ? async () => {
-            try {
-              const scheme = urlService.getClientScheme();
-              const options = await auth.oauthPreflight(
-                provider,
-                scheme ?? 'web'
-              );
-              urlService.openPopupWindow(options.url);
-            } catch (e) {
-              notify.error(UserFriendlyError.fromAny(e));
-            }
-          }
-        : () => {
-            const params = new URLSearchParams();
+      const open = () => {
+        const params = new URLSearchParams();
 
-            params.set('provider', provider);
+        params.set('provider', provider);
 
-            if (redirectUrl) {
-              params.set('redirect_uri', redirectUrl);
-            }
+        if (redirectUrl) {
+          params.set('redirect_uri', redirectUrl);
+        }
 
-            params.set('flow', 'redirect');
+        params.set('flow', 'redirect');
 
-            const oauthUrl =
-              serverService.server.baseUrl +
-              `/oauth/login?${params.toString()}`;
+        const oauthUrl =
+          serverService.server.baseUrl + `/oauth/login?${params.toString()}`;
 
-            urlService.openExternal(oauthUrl);
-          };
+        urlService.openExternal(oauthUrl);
+      };
 
       const ret = open();
 
@@ -88,7 +70,7 @@ export function OAuth({ redirectUrl }: { redirectUrl?: string }) {
         await ret;
       }
     },
-    [urlService, redirectUrl, serverService, auth]
+    [urlService, redirectUrl, serverService]
   );
 
   if (!oauth) {

@@ -28,9 +28,7 @@ const doc = await storage.getDoc('my-first-doc');
 import { SpaceStorage } from '@affine/nbstore';
 import type { ConnectionStatus } from '@affine/nbstore';
 import { IndexedDBDocStorage } from '@affine/nbstore/idb';
-import { SqliteBlobStorage } from '@affine/nbstore/sqlite';
-
-const storage = new SpaceStorage([new IndexedDBDocStorage({}), new SqliteBlobStorage({})]);
+const storage = new SpaceStorage([new IndexedDBDocStorage({})]);
 
 await storage.connect();
 storage.on('connection', ({ storage, status, error }) => {

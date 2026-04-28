@@ -33,7 +33,6 @@ type NavigationEvents =
 // SECTION: doc events
 type WorkspaceEvents =
   | 'createWorkspace'
-  | 'upgradeWorkspace'
   | 'enableCloudWorkspace'
   | 'import'
   | 'export'
@@ -127,17 +126,6 @@ type AuthEvents =
   | 'signOut'
   | 'deleteAccount';
 type AccountEvents = 'uploadAvatar' | 'removeAvatar' | 'updateUserName';
-type PaymentEvents =
-  | 'viewPlans'
-  | 'bookDemo'
-  | 'checkout'
-  | 'subscribe'
-  | 'changeSubscriptionRecurring'
-  | 'confirmChangingSubscriptionRecurring'
-  | 'cancelSubscription'
-  | 'confirmCancelingSubscription'
-  | 'resumeSubscription'
-  | 'confirmResumingSubscription';
 // END SECTION
 
 // SECTION: ai
@@ -230,7 +218,6 @@ type UserEvents =
   | DocRoleEvents
   | AuthEvents
   | AccountEvents
-  | PaymentEvents
   | DNDEvents
   | AIEvents
   | CommentEvents
@@ -262,7 +249,7 @@ interface PageEvents extends PageDivision {
   // to: page.$.segment.module.event1()
   $: {
     $: {
-      $: ['createWorkspace', 'checkout'];
+      $: ['createWorkspace'];
       auth: [
         'requestSignIn',
         'signIn',
@@ -291,7 +278,6 @@ interface PageEvents extends PageDivision {
     settingsPanel: {
       menu: ['openSettings'];
       workspace: [
-        'viewPlans',
         'export',
         'addProperty',
         'editPropertyMeta',
@@ -301,31 +287,10 @@ interface PageEvents extends PageDivision {
         'recoverArchivedWorkspace',
         'deleteArchivedWorkspace',
       ];
-      profileAndBadge: ['viewPlans'];
-      accountUsage: ['viewPlans'];
+      profileAndBadge: [];
+      accountUsage: [];
       accountSettings: ['uploadAvatar', 'removeAvatar', 'updateUserName'];
-      plans: [
-        'checkout',
-        'subscribe',
-        'changeSubscriptionRecurring',
-        'confirmChangingSubscriptionRecurring',
-        'cancelSubscription',
-        'confirmCancelingSubscription',
-        'resumeSubscription',
-        'confirmResumingSubscription',
-      ];
-      billing: ['viewPlans', 'bookDemo'];
       about: ['checkUpdates', 'downloadUpdate', 'changeAppSetting'];
-      integrationList: [
-        'connectIntegration',
-        'disconnectIntegration',
-        'modifyIntegrationSettings',
-        'startIntegrationImport',
-        'selectIntegrationImport',
-        'confirmIntegrationImport',
-        'abortIntegrationImport',
-        'completeIntegrationImport',
-      ];
       meetings: ['toggleMeetingFeatureFlag'];
       indexerEmbedding: [
         'toggleWorkspaceEmbedding',
@@ -397,18 +362,11 @@ interface PageEvents extends PageDivision {
       profileAndBadge: ['openSettings'];
       journal: ['navigate'];
     };
-    aiOnboarding: {
-      dialog: ['viewPlans'];
-    };
     docHistory: {
-      $: ['open', 'close', 'switchPageMode', 'viewPlans'];
+      $: ['open', 'close', 'switchPageMode'];
     };
     importModal: {
       $: ['open', 'import', 'createDoc'];
-    };
-    paywall: {
-      storage: ['viewPlans'];
-      aiAction: ['viewPlans'];
     };
     appTabsHeader: {
       $: ['tabAction', 'dragStart'];
@@ -517,11 +475,6 @@ interface PageEvents extends PageDivision {
       ];
     };
   };
-  workspace: {
-    $: {
-      $: ['upgradeWorkspace'];
-    };
-  };
   allDocs: {
     header: {
       navigation: ['navigateAllDocsRouter', 'navigatePinedCollectionRouter'];
@@ -554,7 +507,7 @@ interface PageEvents extends PageDivision {
   trash: {};
   subscriptionLanding: {
     $: {
-      $: ['checkout'];
+      $: [];
     };
   };
   menubarApp: {
@@ -598,11 +551,6 @@ type OrganizeItemArgs =
       type: OrganizeItemType;
     };
 
-type PaymentEventArgs = {
-  plan: string;
-  recurring: string;
-};
-
 type AttachmentEventArgs = {
   type: string; // file type
 };
@@ -642,15 +590,6 @@ type ImportArgs = {
     docCount: number;
   };
 };
-type IntegrationArgs<T extends Record<string, any>> = {
-  type: string;
-  control:
-    | 'Readwise Card'
-    | 'Readwise settings'
-    | 'Readwise import list'
-    | 'Calendar Setting';
-} & T;
-
 type RecordingEventArgs = {
   type: 'Meeting record';
   method?: string;
@@ -669,15 +608,6 @@ export type EventArgs = {
   signIn: AuthArgs;
   signedIn: AuthArgs;
   signInFail: AuthArgs & { reason: string };
-  viewPlans: PaymentEventArgs;
-  checkout: PaymentEventArgs;
-  subscribe: PaymentEventArgs;
-  cancelSubscription: PaymentEventArgs;
-  confirmCancelingSubscription: PaymentEventArgs;
-  resumeSubscription: PaymentEventArgs;
-  confirmResumingSubscription: PaymentEventArgs;
-  changeSubscriptionRecurring: PaymentEventArgs;
-  confirmChangingSubscriptionRecurring: PaymentEventArgs;
   navigate: { to: string };
   openSettings: { to: string };
   changeAppSetting: { key: string; value: string | boolean | number };
@@ -740,33 +670,6 @@ export type EventArgs = {
     item: 'read' | 'button' | 'dismiss';
     button?: string;
   };
-  connectIntegration: IntegrationArgs<{ result: 'success' | 'failed' }>;
-  disconnectIntegration: IntegrationArgs<{ method: 'keep' | 'delete' }>;
-  modifyIntegrationSettings: IntegrationArgs<{
-    item: string;
-    option: any;
-    method: any;
-  }>;
-  startIntegrationImport: IntegrationArgs<{
-    method: 'new' | 'withtimestamp' | 'cleartimestamp';
-  }>;
-  selectIntegrationImport: IntegrationArgs<{
-    method: 'single' | 'all';
-    option: 'on' | 'off';
-  }>;
-  confirmIntegrationImport: IntegrationArgs<{
-    method: 'new' | 'withtimestamp';
-  }>;
-  abortIntegrationImport: IntegrationArgs<{
-    time: number;
-    done: number;
-    total: number;
-  }>;
-  completeIntegrationImport: IntegrationArgs<{
-    time: number;
-    done: number;
-    total: number;
-  }>;
   toggleRecordingBar: RecordingEventArgs & {
     method: string;
     appName: string;

@@ -65,7 +65,6 @@ export class WorkspaceDBService extends Service {
   }
 
   userdataDB(userId: (string & {}) | '__local__') {
-    // __local__ for local workspace
     const userdataDb = this.userdataDBPool.get(userId);
     if (userdataDb) {
       return userdataDb.obj as WorkspaceDBWithTables<AFFiNEWorkspaceUserdataDbSchema>;
@@ -101,12 +100,8 @@ export class WorkspaceDBService extends Service {
 
   authService = this.workspaceServerService.server?.scope.get(AuthService);
   public get userdataDB$() {
-    // if is local workspace or no account, use __local__ userdata
-    // sometimes we may have cloud workspace but no account for a short time, we also use __local__ userdata
-    if (
-      this.workspaceService.workspace.meta.flavour === 'local' ||
-      !this.authService
-    ) {
+    // During auth bootstrap there may be no account yet, so keep anonymous userdata isolated.
+    if (!this.authService) {
       return new LiveData(this.userdataDB('__local__'));
     } else {
       return this.authService.session.account$.map(account => {

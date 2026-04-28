@@ -103,7 +103,7 @@ export interface DocStorage extends Storage {
    *
    *   There is not always update emitted from storage itself.
    *
-   *   For example, in Sqlite storage, the update will only come from user's updating on docs,
+   *   For example, in a local storage backend, the update will only come from user's updating on docs,
    *   in other words, the update will never somehow auto generated in storage internally.
    *
    *   But for Cloud storage, there will be updates broadcasted from other clients,

@@ -73,8 +73,3 @@ export const menuTriggerStyle = style({
 export const remove = style({
   color: cssVarV2('status/error'),
 });
-export const planTagContainer = style({
-  display: 'flex',
-  gap: '8px',
-  alignItems: 'center',
-});

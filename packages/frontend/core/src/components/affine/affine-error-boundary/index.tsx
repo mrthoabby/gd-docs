@@ -1,6 +1,6 @@
-import { ErrorBoundary, type FallbackRender } from '@sentry/react';
 import type { FC, PropsWithChildren } from 'react';
 import { useCallback } from 'react';
+import { ErrorBoundary, type FallbackRender } from 'react-error-boundary';
 
 import { AffineErrorFallback } from './affine-error-fallback';
 
@@ -33,7 +33,7 @@ export const AffineErrorBoundary: FC<AffineErrorBoundaryProps> = props => {
   }, []);
 
   return (
-    <ErrorBoundary fallback={fallbackRender} onError={onError}>
+    <ErrorBoundary fallbackRender={fallbackRender} onError={onError}>
       {props.children}
     </ErrorBoundary>
   );

@@ -1,6 +1,5 @@
 export const TRUSTED_REDIRECT_DOMAINS = [
   'google.com',
-  'stripe.com',
   'github.com',
   'twitter.com',
   'discord.gg',

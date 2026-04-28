@@ -259,9 +259,6 @@ export const journalDateCellDotType = styleVariants({
   journal: {
     backgroundColor: cssVarV2.calendar.blue,
   },
-  event: {
-    backgroundColor: cssVarV2.calendar.green,
-  },
   activity: {
     backgroundColor: cssVarV2.calendar.red,
   },

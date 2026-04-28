@@ -3,7 +3,6 @@ import { Cli } from 'clipanion';
 
 import { BuildCommand } from './build';
 import { BundleCommand } from './bundle';
-import { CertCommand } from './cert';
 import { CleanCommand } from './clean';
 import type { CliContext } from './context';
 import { DevCommand } from './dev';
@@ -24,7 +23,6 @@ cli.register(CleanCommand);
 cli.register(BuildCommand);
 cli.register(DevCommand);
 cli.register(BundleCommand);
-cli.register(CertCommand);
 
 await cli.runExit(process.argv.slice(2), {
   workspace: new Workspace(),

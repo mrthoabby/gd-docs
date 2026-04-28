@@ -10,14 +10,12 @@ import {
 } from '@affine/component';
 import { Guard } from '@affine/core/components/guard';
 import { MoveToTrash } from '@affine/core/components/page-list';
-import { WorkspaceServerService } from '@affine/core/modules/cloud';
 import {
   type DocRecord,
   DocService,
   DocsService,
 } from '@affine/core/modules/doc';
 import { DocDisplayMetaService } from '@affine/core/modules/doc-display-meta';
-import { IntegrationService } from '@affine/core/modules/integration';
 import { JournalService } from '@affine/core/modules/journal';
 import {
   ViewService,
@@ -37,10 +35,7 @@ import dayjs from 'dayjs';
 import type { HTMLAttributes, PropsWithChildren, ReactNode } from 'react';
 import { useCallback, useEffect, useMemo, useRef, useState } from 'react';
 
-import { CalendarEvents } from './calendar-events';
 import * as styles from './journal.css';
-import { JournalTemplateOnboarding } from './template-onboarding';
-import { JournalTemplateSetting } from './template-setting';
 
 /**
  * @internal
@@ -106,18 +101,15 @@ interface JournalBlockProps {
   date: dayjs.Dayjs;
 }
 
-type DateDotType = 'journal' | 'event' | 'activity';
+type DateDotType = 'journal' | 'activity';
 
-const mobile = environment.isMobile;
+const mobile = false;
 export const EditorJournalPanel = () => {
   const t = useI18n();
   const doc = useServiceOptional(DocService)?.doc;
   const workbench = useService(WorkbenchService).workbench;
   const viewService = useService(ViewService);
   const journalService = useService(JournalService);
-  const calendar = useService(IntegrationService).calendar;
-  const workspaceServerService = useService(WorkspaceServerService);
-  const server = useLiveData(workspaceServerService.server$);
   const location = useLiveData(viewService.view.location$);
   const journalDateStr = useLiveData(
     doc ? journalService.journalDate$(doc.id) : null
@@ -133,21 +125,8 @@ export const EditorJournalPanel = () => {
   const [selectedDate, setSelectedDate] = useState(() => {
     return journalDate ?? routeDate ?? dayjs();
   });
-  const [calendarCursor, setCalendarCursor] = useState(selectedDate);
-  const calendarCursorMonthKey = useMemo(() => {
-    return calendarCursor.format('YYYY-MM');
-  }, [calendarCursor]);
-  const calendarCursorMonthStart = useMemo(() => {
-    return dayjs(`${calendarCursorMonthKey}-01`);
-  }, [calendarCursorMonthKey]);
-  const calendarCursorMonthEnd = useMemo(() => {
-    return dayjs(`${calendarCursorMonthKey}-01`).endOf('month');
-  }, [calendarCursorMonthKey]);
   const docRecords = useLiveData(useService(DocsService).list.docs$);
   const allJournalDates = useLiveData(journalService.allJournalDates$);
-  const eventDates = useLiveData(calendar.eventDates$);
-  const workspaceCalendars = useLiveData(calendar.workspaceCalendars$);
-  const workspaceCalendarId = workspaceCalendars[0]?.id;
 
   useEffect(() => {
     if (journalDate && !journalDate.isSame(selectedDate, 'day')) {
@@ -161,10 +140,6 @@ export const EditorJournalPanel = () => {
       setSelectedDate(routeDate);
     }
   }, [journalDate, routeDate, selectedDate]);
-
-  useEffect(() => {
-    setCalendarCursor(selectedDate);
-  }, [selectedDate]);
 
   const openJournal = useCallback(
     (date: string) => {
@@ -202,42 +177,18 @@ export const EditorJournalPanel = () => {
     return dates;
   }, [docRecords]);
 
-  useEffect(() => {
-    calendar.revalidateWorkspaceCalendars().catch(() => undefined);
-    calendar.loadAccountCalendars().catch(() => undefined);
-  }, [calendar, server]);
-
-  useEffect(() => {
-    const update = () => {
-      calendar
-        .revalidateEventsRange(calendarCursorMonthStart, calendarCursorMonthEnd)
-        .catch(() => undefined);
-    };
-    update();
-    const interval = setInterval(update, 5 * 60 * 1000);
-    return () => clearInterval(interval);
-  }, [
-    calendar,
-    calendarCursorMonthEnd,
-    calendarCursorMonthStart,
-    workspaceCalendarId,
-  ]);
-
   const getDotType = useCallback(
     (dateKey: string): DateDotType[] => {
       const dotTypes: DateDotType[] = [];
       if (allJournalDates.has(dateKey)) {
         dotTypes.push('journal');
       }
-      if (eventDates.has(dateKey)) {
-        dotTypes.push('event');
-      }
       if (docActivityDates.has(dateKey)) {
         dotTypes.push('activity');
       }
       return dotTypes;
     },
-    [allJournalDates, docActivityDates, eventDates]
+    [allJournalDates, docActivityDates]
   );
 
   const customDayRenderer = useCallback(
@@ -290,15 +241,11 @@ export const EditorJournalPanel = () => {
           customDayRenderer={customDayRenderer}
           value={selectedDate.format('YYYY-MM-DD')}
           onChange={onDateSelect}
-          onCursorChange={setCalendarCursor}
           cellSize={34}
         />
       </div>
-      <JournalTemplateOnboarding />
       <JournalConflictBlock date={selectedDate} />
-      <CalendarEvents date={selectedDate} />
       <JournalDailyCountBlock date={selectedDate} />
-      <JournalTemplateSetting />
     </div>
   );
 };

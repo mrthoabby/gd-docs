@@ -1,16 +1,11 @@
 import { MenuItem } from '@affine/core/modules/app-sidebar/views';
 import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
-import { WorkspaceService } from '@affine/core/modules/workspace';
 import { useI18n } from '@affine/i18n';
 import { CollaborationIcon } from '@blocksuite/icons/rc';
 import { useService } from '@toeverything/infra';
 import { useCallback } from 'react';
 
 export const InviteMembersButton = () => {
-  const workspace = useService(WorkspaceService).workspace;
-
-  const isLocal = workspace.flavour === 'local';
-
   const dialogService = useService(WorkspaceDialogService);
   const onOpenInviteMembersModal = useCallback(() => {
     dialogService.open('setting', {
@@ -19,10 +14,6 @@ export const InviteMembersButton = () => {
   }, [dialogService]);
 
   const t = useI18n();
-
-  if (isLocal) {
-    return null;
-  }
 
   return (
     <MenuItem

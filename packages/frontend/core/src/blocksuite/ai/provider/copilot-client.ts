@@ -37,7 +37,7 @@ import { getCurrentStore } from '@toeverything/infra';
 
 import {
   GeneralNetworkError,
-  PaymentRequiredError,
+  UsageLimitError,
   UnauthorizedError,
 } from './error';
 
@@ -69,7 +69,7 @@ function codeToError(error: UserFriendlyError) {
     case 401:
       return new UnauthorizedError();
     case 402:
-      return new PaymentRequiredError();
+      return new UsageLimitError();
     default:
       return new GeneralNetworkError(
         error.code

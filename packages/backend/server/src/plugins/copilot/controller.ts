@@ -42,7 +42,7 @@ import {
   NoCopilotProviderAvailable,
   UnsplashIsNotConfigured,
 } from '../../base';
-import { ServerFeature, ServerService } from '../../core';
+import { ServerService } from '../../core';
 import { CurrentUser, Public } from '../../core/auth';
 import { CopilotContextService } from './context/service';
 import { CopilotProviderFactory } from './providers/factory';
@@ -112,10 +112,7 @@ export class CopilotController implements BeforeApplicationShutdown {
       throw new CopilotSessionNotFound();
     }
 
-    const model = await session.resolveModel(
-      this.server.features.includes(ServerFeature.Payment),
-      modelId
-    );
+    const model = await session.resolveModel(modelId);
 
     const hasAttachment = messageId
       ? !!(await session.getMessageById(messageId)).attachments?.length

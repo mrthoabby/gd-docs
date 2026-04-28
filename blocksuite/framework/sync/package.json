@@ -18,9 +18,6 @@
     "rxjs": "^7.8.2",
     "y-protocols": "^1.0.6"
   },
-  "devDependencies": {
-    "vitest": "^4.0.18"
-  },
   "peerDependencies": {
     "yjs": "*"
   },

@@ -177,10 +177,7 @@ export const Button = forwardRef<HTMLButtonElement, ButtonProps>(
           data-disabled={disabled || undefined}
           data-size={size}
           data-variant={variant}
-          data-no-hover={
-            withoutHover || BUILD_CONFIG.isMobileEdition || undefined
-          }
-          data-mobile={BUILD_CONFIG.isMobileEdition}
+          data-no-hover={withoutHover || undefined}
           onClick={handleClick}
         >
           <IconSlot

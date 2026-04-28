@@ -176,7 +176,7 @@ function DocPeekPreviewEditor({
         </Scrollable.Viewport>
         <Scrollable.Scrollbar />
       </Scrollable.Root>
-      {!BUILD_CONFIG.isMobileEdition && !BUILD_CONFIG.isMobileWeb ? (
+      {BUILD_CONFIG.isWeb ? (
         <EditorOutlineViewer
           editor={editorElement?.host ?? null}
           show={mode === 'page'}

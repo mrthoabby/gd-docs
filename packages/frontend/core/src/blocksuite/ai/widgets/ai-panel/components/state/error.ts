@@ -158,7 +158,7 @@ export class AIPanelError extends WithDisposable(LitElement) {
               </div>`,
         ],
         [
-          AIErrorType.PaymentRequired,
+          AIErrorType.UsageLimit,
           () =>
             html` <div class="error-info">
                 You've reached the current usage cap for GD docs AI. Contact your
@@ -169,10 +169,10 @@ export class AIPanelError extends WithDisposable(LitElement) {
                   <span>Cancel</span>
                 </div>
                 <div
-                  @click=${this.config.upgrade}
+                  @click=${this.config.usageHelp}
                   class="action-button primary"
                 >
-                  <span>Upgrade</span>
+                  <span>Contact admin</span>
                 </div>
               </div>`,
         ],

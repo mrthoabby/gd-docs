@@ -11,7 +11,7 @@ import { property } from 'lit/decorators.js';
 import {
   type AIError,
   AIProvider,
-  PaymentRequiredError,
+  UsageLimitError,
   UnauthorizedError,
 } from '../provider';
 
@@ -186,11 +186,11 @@ export class AIErrorWrapper extends SignalWatcher(WithDisposable(LitElement)) {
   accessor testId = 'ai-error';
 }
 
-const PaymentRequiredErrorRenderer = (host?: EditorHost | null) => html`
+const UsageLimitErrorRenderer = (host?: EditorHost | null) => html`
   <ai-error-wrapper
     .text=${"You've reached the current usage cap for GD docs AI. Contact your administrator to configure AI access."}
-    .actionText=${'Upgrade'}
-    .onClick=${() => AIProvider.slots.requestUpgradePlan.next({ host })}
+    .actionText=${'Contact admin'}
+    .onClick=${() => AIProvider.slots.requestAIUsageHelp.next({ host })}
   ></ai-error-wrapper>
 `;
 
@@ -224,8 +224,8 @@ const GeneralErrorRenderer = (props: ErrorProps = {}) => {
 };
 
 export function AIChatErrorRenderer(error: AIError, host?: EditorHost | null) {
-  if (error instanceof PaymentRequiredError) {
-    return PaymentRequiredErrorRenderer(host);
+  if (error instanceof UsageLimitError) {
+    return UsageLimitErrorRenderer(host);
   } else if (error instanceof UnauthorizedError) {
     return LoginRequiredErrorRenderer(host);
   } else {

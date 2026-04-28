@@ -160,31 +160,6 @@ export class OAuthController {
       state.token = stateStr;
     }
 
-    if (
-      state.provider === OAuthProviderName.Apple &&
-      rawState &&
-      state.client &&
-      state.client !== 'web'
-    ) {
-      const clientUrl = new URL(`${state.client}://authentication`);
-      clientUrl.searchParams.set('method', 'oauth');
-      clientUrl.searchParams.set(
-        'payload',
-        JSON.stringify({
-          state: stateStr,
-          code,
-          provider: rawState.provider,
-        })
-      );
-      clientUrl.searchParams.set('server', this.url.requestOrigin);
-
-      return res.redirect(
-        this.url.link('/open-app/url?', {
-          url: clientUrl.toString(),
-        })
-      );
-    }
-
     if (!state.provider) {
       throw new MissingOauthQueryParameter({ name: 'provider' });
     }

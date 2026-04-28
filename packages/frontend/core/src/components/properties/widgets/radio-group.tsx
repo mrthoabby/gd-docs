@@ -29,7 +29,7 @@ export const PropertyRadioGroup = ({
 
   return (
     <RadioGroup
-      width={BUILD_CONFIG.isMobileEdition ? '100%' : width}
+      width={width}
       itemHeight={20}
       borderRadius={8}
       value={value}

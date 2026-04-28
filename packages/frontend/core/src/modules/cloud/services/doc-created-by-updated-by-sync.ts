@@ -136,8 +136,7 @@ export class DocCreatedByUpdatedBySyncService extends Service {
           workspaceRootDocSynced &&
           isOwnerOrAdmin &&
           missingCreatedBy &&
-          !markedSynced &&
-          this.workspaceService.workspace.flavour !== 'local'
+          !markedSynced
       )
     ),
     false

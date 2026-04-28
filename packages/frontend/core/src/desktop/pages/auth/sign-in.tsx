@@ -60,15 +60,13 @@ export const SignIn = ({
     [handleClose, navigate, redirectUrl]
   );
 
-  const initStep = server ? 'addSelfhosted' : 'signIn';
-
   return (
     <SignInPageContainer>
       <div style={{ maxWidth: '400px', width: '100%', zIndex: 1 }}>
         <SignInPanel
           onSkip={handleClose}
           onAuthenticated={handleAuthenticated}
-          initStep={initStep}
+          initStep="signIn"
           server={server}
         />
       </div>

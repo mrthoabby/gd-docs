@@ -37,10 +37,6 @@ export const useResponsiveSidebar = (
 
     OBSERVED = true;
     const unobserve = observeResize(document.body, entry => {
-      if (BUILD_CONFIG.isMobileEdition) {
-        return;
-      }
-
       const width = entry.contentRect.width;
       const previousWidth = previousWidthRef.current;
 

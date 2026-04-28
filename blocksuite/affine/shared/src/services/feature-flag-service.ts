@@ -6,15 +6,11 @@ export interface BlockSuiteFlags {
   enable_database_full_width: boolean;
   enable_block_query: boolean;
   enable_edgeless_text: boolean;
-  enable_ai_onboarding: boolean;
   enable_ai_chat_block: boolean;
   enable_color_picker: boolean;
   enable_mind_map_import: boolean;
   enable_advanced_block_visibility: boolean;
   enable_shape_shadow_blur: boolean;
-  enable_mobile_keyboard_toolbar: boolean;
-  enable_mobile_linked_doc_menu: boolean;
-  enable_mobile_database_editing: boolean;
   enable_block_meta: boolean;
   enable_edgeless_scribbled_style: boolean;
   enable_table_virtual_scroll: boolean;
@@ -31,16 +27,12 @@ export class FeatureFlagService extends StoreExtension {
     enable_database_full_width: false,
     enable_block_query: false,
     enable_edgeless_text: true,
-    enable_ai_onboarding: true,
     enable_ai_chat_block: true,
     enable_color_picker: true,
     enable_mind_map_import: true,
     enable_advanced_block_visibility: false,
     enable_shape_shadow_blur: false,
-    enable_mobile_keyboard_toolbar: false,
-    enable_mobile_linked_doc_menu: false,
     enable_block_meta: true,
-    enable_mobile_database_editing: false,
     enable_edgeless_scribbled_style: false,
     enable_table_virtual_scroll: false,
     enable_turbo_renderer: false,

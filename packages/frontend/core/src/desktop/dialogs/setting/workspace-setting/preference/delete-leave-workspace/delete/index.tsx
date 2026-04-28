@@ -43,25 +43,14 @@ export const WorkspaceDeleteModal = ({
       }}
       {...props}
     >
-      {workspaceMetadata.flavour === 'local' ? (
-        <Trans i18nKey="com.affine.workspaceDelete.description">
-          Deleting (
-          <span className={styles.workspaceName}>
-            {{ workspace: workspaceName } as any}
-          </span>
-          ) cannot be undone, please proceed with caution. All contents will be
-          lost.
-        </Trans>
-      ) : (
-        <Trans i18nKey="com.affine.workspaceDelete.description2">
-          Deleting (
-          <span className={styles.workspaceName}>
-            {{ workspace: workspaceName } as any}
-          </span>
-          ) will delete both local and cloud data, this operation cannot be
-          undone, please proceed with caution.
-        </Trans>
-      )}
+      <Trans i18nKey="com.affine.workspaceDelete.description2">
+        Deleting (
+        <span className={styles.workspaceName}>
+          {{ workspace: workspaceName } as any}
+        </span>
+        ) will delete workspace data from this server, this operation cannot be
+        undone, please proceed with caution.
+      </Trans>
       <div className={styles.inputContent}>
         <Input
           autoFocus

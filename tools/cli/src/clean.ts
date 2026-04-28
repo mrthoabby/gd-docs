@@ -1,14 +1,11 @@
 import { rmSync } from 'node:fs';
 
-import { exec } from '@affine-tools/utils/process';
-
 import { Command, Option } from './command';
 
 export class CleanCommand extends Command {
   static override paths = [['clean']];
 
   cleanDist = Option.Boolean('--dist', false);
-  cleanRustTarget = Option.Boolean('--rust', false);
   cleanNodeModules = Option.Boolean('--node-modules', false);
   all = Option.Boolean('--all,-a', false);
 
@@ -22,9 +19,6 @@ export class CleanCommand extends Command {
       this.doCleanDist();
     }
 
-    if (this.all || this.cleanRustTarget) {
-      this.doCleanRust();
-    }
   }
 
   doCleanNodeModules() {
@@ -63,9 +57,5 @@ export class CleanCommand extends Command {
     });
 
     this.logger.info('dist cleaned');
-  }
-
-  doCleanRust() {
-    exec('', 'cargo clean');
   }
 }

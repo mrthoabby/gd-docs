@@ -5,7 +5,6 @@ import {
   MenuItem,
   PropertyValue,
 } from '@affine/component';
-import { MobileJournalConflictList } from '@affine/core/mobile/pages/workspace/detail/menu/journal-conflicts';
 import type { FilterParams } from '@affine/core/modules/collection-rules';
 import { DocService } from '@affine/core/modules/doc';
 import { JournalService } from '@affine/core/modules/journal';
@@ -28,7 +27,6 @@ import { FilterValueMenu } from '../filter/filter-value-menu';
 import type { PropertyValueProps } from '../properties/types';
 import * as styles from './journal.css';
 
-const stopPropagation = (e: React.MouseEvent) => e.stopPropagation();
 export const JournalValue = ({ readonly }: PropertyValueProps) => {
   const t = useI18n();
 
@@ -156,25 +154,13 @@ export const JournalValue = ({ readonly }: PropertyValueProps) => {
         ) : null}
 
         {checked && conflict ? (
-          BUILD_CONFIG.isMobileEdition ? (
-            <Menu items={<MobileJournalConflictList date={selectedDate} />}>
-              <div
-                data-testid="conflict-tag"
-                className={styles.duplicateTag}
-                onClick={stopPropagation}
-              >
-                {t['com.affine.page-properties.property.journal-duplicated']()}
-              </div>
-            </Menu>
-          ) : (
-            <div
-              data-testid="conflict-tag"
-              className={styles.duplicateTag}
-              onClick={handleOpenDuplicate}
-            >
-              {t['com.affine.page-properties.property.journal-duplicated']()}
-            </div>
-          )
+          <div
+            data-testid="conflict-tag"
+            className={styles.duplicateTag}
+            onClick={handleOpenDuplicate}
+          >
+            {t['com.affine.page-properties.property.journal-duplicated']()}
+          </div>
         ) : null}
       </div>
     </PropertyValue>

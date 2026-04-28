@@ -21,15 +21,11 @@ const tsxRuntimeLoader = currentDir
   .toString();
 
 const ignoreLoaderScripts = [
-  'vitest',
-  'vite',
   'tsx',
   'prisma',
-  'cap',
   'tsc',
   'typedoc',
   /^r$/,
-  /electron(?!-)/,
 ];
 
 export class RunCommand extends PackageCommand {
@@ -42,7 +38,7 @@ export class RunCommand extends PackageCommand {
 
       \`affine init\`            Generate the required files if there are any package added or removed
 
-      \`affine clean\`           Clean the output files of ts, cargo, bundler outputs, etc.
+      \`affine clean\`           Clean generated TypeScript and bundler outputs
 
       \`affine bundle\`          Bundle the packages
 

@@ -48,10 +48,7 @@ export const ScrollableScrollbar = forwardRef<
       orientation="vertical"
       {...props}
       ref={ref}
-      className={clsx(
-        className,
-        BUILD_CONFIG.isMobileEdition ? styles.mobileScrollbar : styles.scrollbar
-      )}
+      className={clsx(className, styles.scrollbar)}
     >
       <ScrollArea.Thumb className={styles.scrollbarThumb} />
       {children}

@@ -8,12 +8,10 @@
   },
   "dependencies": {
     "@affine/debug": "workspace:*",
-    "@sentry/react": "^10.47.0",
     "nanoid": "^5.1.6",
     "react-router-dom": "^6.30.3"
   },
   "devDependencies": {
-    "@types/react": "^19.0.1",
-    "vitest": "^4.0.18"
+    "@types/react": "^19.0.1"
   }
 }

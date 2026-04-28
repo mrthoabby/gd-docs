@@ -191,60 +191,6 @@ export function registerAffineSettingsCommands({
     })
   );
 
-  unsubs.push(
-    registerAffineCommand({
-      id: `affine:change-noise-background-on-the-sidebar`,
-      label: () =>
-        `${t[
-          'com.affine.cmdk.affine.noise-background-on-the-sidebar.to'
-        ]()} ${t[
-          store.get(appSettingAtom).enableNoisyBackground
-            ? 'com.affine.cmdk.affine.switch-state.off'
-            : 'com.affine.cmdk.affine.switch-state.on'
-        ]()}`,
-      category: 'affine:settings',
-      icon: <SettingsIcon />,
-      preconditionStrategy: () => BUILD_CONFIG.isElectron,
-      run() {
-        track.$.cmdk.settings.changeAppSetting({
-          key: 'enableNoisyBackground',
-          value: store.get(appSettingAtom).enableNoisyBackground ? 'off' : 'on',
-        });
-
-        store.set(appSettingAtom, prev => ({
-          ...prev,
-          enableNoisyBackground: !prev.enableNoisyBackground,
-        }));
-      },
-    })
-  );
-
-  unsubs.push(
-    registerAffineCommand({
-      id: `affine:change-translucent-ui-on-the-sidebar`,
-      label: () =>
-        `${t['com.affine.cmdk.affine.translucent-ui-on-the-sidebar.to']()} ${t[
-          store.get(appSettingAtom).enableBlurBackground
-            ? 'com.affine.cmdk.affine.switch-state.off'
-            : 'com.affine.cmdk.affine.switch-state.on'
-        ]()}`,
-      category: 'affine:settings',
-      icon: <SettingsIcon />,
-      preconditionStrategy: () =>
-        BUILD_CONFIG.isElectron && environment.isMacOs,
-      run() {
-        track.$.cmdk.settings.changeAppSetting({
-          key: 'enableBlurBackground',
-          value: store.get(appSettingAtom).enableBlurBackground ? 'off' : 'on',
-        });
-        store.set(appSettingAtom, prev => ({
-          ...prev,
-          enableBlurBackground: !prev.enableBlurBackground,
-        }));
-      },
-    })
-  );
-
   return () => {
     unsubs.forEach(unsub => unsub());
   };

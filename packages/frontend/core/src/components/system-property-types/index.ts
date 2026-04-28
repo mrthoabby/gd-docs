@@ -7,11 +7,9 @@ import {
   EdgelessIcon,
   FavoriteIcon,
   HistoryIcon,
-  IntegrationsIcon,
   LongerIcon,
   MemberIcon,
   TagIcon,
-  TemplateIcon,
   TitleIcon,
 } from '@blocksuite/icons/rc';
 
@@ -38,22 +36,12 @@ import {
 } from './edgeless-theme';
 import { FavoriteFilterValue } from './favorite';
 import {
-  IntegrationTypeDocListProperty,
-  IntegrationTypeFilterValue,
-  IntegrationTypeGroupHeader,
-} from './integration-type';
-import {
   PageWidthDocListProperty,
   PageWidthFilterValue,
   PageWidthGroupHeader,
 } from './page-width';
 import { SharedFilterValue } from './shared';
 import { TagsDocListProperty, TagsFilterValue, TagsGroupHeader } from './tags';
-import {
-  TemplateDocListProperty,
-  TemplateFilterValue,
-  TemplateGroupHeader,
-} from './template';
 
 export const SystemPropertyTypes = {
   title: {
@@ -181,36 +169,6 @@ export const SystemPropertyTypes = {
     },
     filterValue: PageWidthFilterValue,
     defaultFilter: { method: 'is', value: 'fullWidth' },
-  },
-  template: {
-    icon: TemplateIcon,
-    name: 'com.affine.page-properties.property.template',
-    showInDocList: 'stack',
-    allowInGroupBy: true,
-    allowInOrderBy: true,
-    docListProperty: TemplateDocListProperty,
-    groupHeader: TemplateGroupHeader,
-    filterMethod: {
-      is: 'com.affine.editCollection.rules.include.is',
-      'is-not': 'com.affine.editCollection.rules.include.is-not',
-    },
-    filterValue: TemplateFilterValue,
-    defaultFilter: { method: 'is', value: 'true' },
-  },
-  integrationType: {
-    icon: IntegrationsIcon,
-    name: 'com.affine.integration.integrations',
-    showInDocList: 'stack',
-    allowInGroupBy: true,
-    allowInOrderBy: true,
-    docListProperty: IntegrationTypeDocListProperty,
-    groupHeader: IntegrationTypeGroupHeader,
-    filterMethod: {
-      is: 'com.affine.editCollection.rules.include.is',
-      'is-not': 'com.affine.editCollection.rules.include.is-not',
-    },
-    filterValue: IntegrationTypeFilterValue,
-    defaultFilter: { method: 'is', value: 'readwise' },
   },
 } as {
   [type: string]: {

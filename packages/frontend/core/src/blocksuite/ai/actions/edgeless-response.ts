@@ -731,8 +731,8 @@ export function actionToErrorResponse<
   >
 ): ErrorConfig {
   return {
-    upgrade: () => {
-      AIProvider.slots.requestUpgradePlan.next({ host: panel.host });
+    usageHelp: () => {
+      AIProvider.slots.requestAIUsageHelp.next({ host: panel.host });
       panel.hide();
     },
     login: () => {

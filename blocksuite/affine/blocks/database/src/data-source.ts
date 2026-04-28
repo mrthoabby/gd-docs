@@ -21,7 +21,6 @@ import {
   type ViewMeta,
 } from '@blocksuite/data-view';
 import { propertyPresets } from '@blocksuite/data-view/property-presets';
-import { IS_MOBILE } from '@blocksuite/global/env';
 import { BlockSuiteError, ErrorCode } from '@blocksuite/global/exceptions';
 import type { EditorHost } from '@blocksuite/std';
 import { type BlockModel } from '@blocksuite/store';
@@ -158,13 +157,7 @@ export class DatabaseBlockDataSource extends DataSourceBase {
   });
 
   readonly$: ReadonlySignal<boolean> = computed(() => {
-    return (
-      this._model.store.readonly ||
-      (IS_MOBILE &&
-        !this._model.store.provider
-          .get(FeatureFlagService)
-          .getFlag('enable_mobile_database_editing'))
-    );
+    return this._model.store.readonly;
   });
 
   rows$: ReadonlySignal<string[]> = computed(() => {

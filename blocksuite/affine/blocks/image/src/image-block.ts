@@ -10,7 +10,6 @@ import {
   ToolbarRegistryIdentifier,
 } from '@blocksuite/affine-shared/services';
 import { formatSize } from '@blocksuite/affine-shared/utils';
-import { IS_MOBILE } from '@blocksuite/global/env';
 import { BrokenImageIcon, ImageIcon } from '@blocksuite/icons/lit';
 import { BlockSelection } from '@blocksuite/std';
 import { computed } from '@preact/signals-core';
@@ -28,9 +27,7 @@ import {
   turnImageIntoCardView,
 } from './utils';
 
-@Peekable({
-  enableOn: () => !IS_MOBILE,
-})
+@Peekable()
 export class ImageBlockComponent extends CaptionedBlockComponent<ImageBlockModel> {
   resizeable$ = computed(() =>
     this.std.selection.value.some(

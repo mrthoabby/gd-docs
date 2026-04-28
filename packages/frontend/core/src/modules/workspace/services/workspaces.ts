@@ -7,7 +7,6 @@ import type { WorkspaceFlavoursService } from './flavours';
 import type { WorkspaceListService } from './list';
 import type { WorkspaceProfileService } from './profile';
 import type { WorkspaceRepositoryService } from './repo';
-import type { WorkspaceTransformService } from './transform';
 
 export class WorkspacesService extends Service {
   get list() {
@@ -18,7 +17,6 @@ export class WorkspacesService extends Service {
     private readonly flavoursService: WorkspaceFlavoursService,
     private readonly listService: WorkspaceListService,
     private readonly profileRepo: WorkspaceProfileService,
-    private readonly transform: WorkspaceTransformService,
     private readonly workspaceRepo: WorkspaceRepositoryService,
     private readonly workspaceFactory: WorkspaceFactoryService,
     private readonly destroy: WorkspaceDestroyService
@@ -32,10 +30,6 @@ export class WorkspacesService extends Service {
 
   get getProfile() {
     return this.profileRepo.getProfile;
-  }
-
-  get transformLocalToCloud() {
-    return this.transform.transformLocalToCloud;
   }
 
   get open() {

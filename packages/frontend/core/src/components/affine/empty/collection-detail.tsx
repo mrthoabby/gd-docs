@@ -28,11 +28,7 @@ export const EmptyCollectionDetail = ({
       illustrationDark={collectionDetailDark}
       title={t['com.affine.empty.collection-detail.title']()}
       description={t['com.affine.empty.collection-detail.description']()}
-      action={
-        BUILD_CONFIG.isMobileEdition ? null : (
-          <Actions collection={collection} />
-        )
-      }
+      action={<Actions collection={collection} />}
       {...props}
     />
   );

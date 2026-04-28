@@ -82,7 +82,6 @@ export class AtMenuConfigService extends Service {
   getConfig(): Partial<LinkedWidgetConfig> {
     return {
       getMenus: this.getMenusFn(),
-      mobile: this.getMobileConfig(),
       autoFocusedItemKey: this.autoFocusedItemKey,
     };
   }
@@ -666,16 +665,4 @@ export class AtMenuConfigService extends Service {
     };
   }
 
-  private getMobileConfig(): Partial<LinkedWidgetConfig['mobile']> {
-    return {
-      scrollContainer: window,
-      scrollTopOffset: () => {
-        const header = document.querySelector('header');
-        if (!header) return 0;
-
-        const { y, height } = header.getBoundingClientRect();
-        return y + height;
-      },
-    };
-  }
 }

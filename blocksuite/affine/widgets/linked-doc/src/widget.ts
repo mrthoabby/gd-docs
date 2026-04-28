@@ -3,9 +3,7 @@ import {
   getRangeRects,
   type SelectionRect,
 } from '@blocksuite/affine-shared/commands';
-import { FeatureFlagService } from '@blocksuite/affine-shared/services';
 import { getViewportElement } from '@blocksuite/affine-shared/utils';
-import { IS_MOBILE } from '@blocksuite/global/env';
 import type { BlockComponent } from '@blocksuite/std';
 import {
   BLOCK_ID_ATTR,
@@ -20,7 +18,6 @@ import {
 } from '@blocksuite/std/inline';
 import { signal } from '@preact/signals-core';
 import { html, nothing } from 'lit';
-import { choose } from 'lit/directives/choose.js';
 import { repeat } from 'lit/directives/repeat.js';
 import { styleMap } from 'lit/directives/style-map.js';
 import { literal, unsafeStatic } from 'lit/static-html.js';
@@ -41,7 +38,7 @@ export class AffineLinkedDocWidget extends WidgetComponent<RootBlockModel> {
 
   private readonly _inputRects$ = signal<SelectionRect[]>([]);
 
-  private readonly _mode$ = signal<'desktop' | 'mobile' | 'none'>('none');
+  private readonly _open$ = signal(false);
 
   private _addTriggerKey(inlineEditor: InlineEditor, triggerKey: string) {
     const inlineRange = inlineEditor.getInlineRange();
@@ -84,15 +81,6 @@ export class AffineLinkedDocWidget extends WidgetComponent<RootBlockModel> {
     return currentInlineRange.index === inlineEditor.yTextLength;
   }
 
-  private readonly _renderLinkedDocMenu = () => {
-    if (!this.block?.rootComponent) return nothing;
-
-    return html`<affine-mobile-linked-doc-menu
-      .context=${this._context}
-      .rootComponent=${this.block.rootComponent}
-    ></affine-mobile-linked-doc-menu>`;
-  };
-
   private readonly _renderLinkedDocPopover = () => {
     return html`<affine-linked-doc-popover
       .context=${this._context}
@@ -122,7 +110,7 @@ export class AffineLinkedDocWidget extends WidgetComponent<RootBlockModel> {
 
   private _watchInput() {
     this.handleEvent('beforeInput', ctx => {
-      if (this._mode$.peek() !== 'none') return;
+      if (this._open$.peek()) return;
 
       const event = ctx.get('defaultState').event;
       if (!(event instanceof InputEvent)) return;
@@ -202,7 +190,7 @@ export class AffineLinkedDocWidget extends WidgetComponent<RootBlockModel> {
           this.show({
             inlineEditor,
             primaryTriggerKey,
-            mode: IS_MOBILE ? 'mobile' : 'desktop',
+            mode: 'desktop',
           });
         })
         .catch(console.error);
@@ -226,10 +214,6 @@ export class AffineLinkedDocWidget extends WidgetComponent<RootBlockModel> {
         'edgeless-text-editor, edgeless-shape-text-editor, edgeless-group-title-editor, edgeless-frame-title-editor, edgeless-connector-label-editor',
       convertTriggerKey: true,
       getMenus,
-      mobile: {
-        scrollContainer: getViewportElement(this.std.host) ?? window,
-        scrollTopOffset: 46,
-      },
       ...this.std.getOptional(LinkedWidgetConfigExtension.identifier),
     };
   }
@@ -244,7 +228,7 @@ export class AffineLinkedDocWidget extends WidgetComponent<RootBlockModel> {
   show(props?: {
     inlineEditor?: InlineEditor;
     primaryTriggerKey?: string;
-    mode?: 'desktop' | 'mobile';
+    mode?: 'desktop';
     addTriggerKey?: boolean;
   }) {
     const host = this.host;
@@ -300,33 +284,23 @@ export class AffineLinkedDocWidget extends WidgetComponent<RootBlockModel> {
       close: () => {
         disposable.unsubscribe();
         this._inputRects$.value = [];
-        this._mode$.value = 'none';
+        this._open$.value = false;
         this._context = null;
       },
     };
 
     this._updateInputRects();
 
-    const enableMobile = this.store
-      .get(FeatureFlagService)
-      .getFlag('enable_mobile_linked_doc_menu');
-    this._mode$.value = enableMobile ? mode : 'desktop';
+    this._open$.value = mode === 'desktop';
   }
 
   override render() {
-    if (this._mode$.value === 'none') return nothing;
+    if (!this._open$.value) return nothing;
 
     return html`${this._renderInputMask()}
       <blocksuite-portal
         .shadowDom=${false}
-        .template=${choose(
-          this._mode$.value,
-          [
-            ['desktop', this._renderLinkedDocPopover],
-            ['mobile', this._renderLinkedDocMenu],
-          ],
-          () => html`${nothing}`
-        )}
+        .template=${this._renderLinkedDocPopover}
       ></blocksuite-portal>`;
   }
 }

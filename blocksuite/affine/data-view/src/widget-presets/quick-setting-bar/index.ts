@@ -1,5 +1,4 @@
 import { unsafeCSSVarV2 } from '@blocksuite/affine-shared/theme';
-import { IS_MOBILE } from '@blocksuite/global/env';
 import { html, nothing } from 'lit';
 
 import {
@@ -19,18 +18,16 @@ export const widgetQuickSettingBar = defineUniComponent(
     const barList = [renderSortBar(props), renderFilterBar(props)].filter(
       Boolean
     );
-    if (!IS_MOBILE) {
-      if (
-        !view.serviceGetOrCreate(
-          ShowQuickSettingBarKey,
-          createDefaultShowQuickSettingBar
-        ).value[view.id]
-      ) {
-        return html``;
-      }
-      if (!barList.length) {
-        return html``;
-      }
+    if (
+      !view.serviceGetOrCreate(
+        ShowQuickSettingBarKey,
+        createDefaultShowQuickSettingBar
+      ).value[view.id]
+    ) {
+      return html``;
+    }
+    if (!barList.length) {
+      return html``;
     }
     return html` <div
       style="display: flex;margin-top: 8px;align-items: center;width: 100%;gap:8px"

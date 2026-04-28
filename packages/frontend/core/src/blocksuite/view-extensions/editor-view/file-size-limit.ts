@@ -1,5 +1,3 @@
-import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
-import track from '@affine/track';
 import type { Container } from '@blocksuite/affine/global/di';
 import {
   FileSizeLimitProvider,
@@ -9,7 +7,7 @@ import { Extension } from '@blocksuite/affine/store';
 import type { FrameworkProvider } from '@toeverything/infra';
 
 export function patchFileSizeLimitExtension(framework: FrameworkProvider) {
-  const workspaceDialogService = framework.get(WorkspaceDialogService);
+  void framework;
 
   class AffineFileSizeLimitService
     extends Extension
@@ -19,11 +17,7 @@ export function patchFileSizeLimitExtension(framework: FrameworkProvider) {
     maxFileSize = 2 * 1024 * 1024 * 1024;
 
     onOverFileSize() {
-      workspaceDialogService.open('setting', {
-        activeTab: 'plans',
-        scrollAnchor: 'cloudPricingPlan',
-      });
-      track.$.paywall.storage.viewPlans();
+      return;
     }
 
     static override setup(di: Container) {

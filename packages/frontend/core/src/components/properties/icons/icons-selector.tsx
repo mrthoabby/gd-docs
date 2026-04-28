@@ -78,11 +78,7 @@ export const WorkspacePropertyIconSelector = ({
   return (
     <Menu
       items={
-        <div
-          style={{
-            padding: BUILD_CONFIG.isMobileEdition ? '0 20px' : undefined,
-          }}
-        >
+        <div>
           <IconsSelectorPanel
             selectedIcon={propertyInfo.icon}
             onSelectedChange={onSelectedChange}

@@ -1,6 +1,5 @@
 import type { SettingTab } from '@affine/core/modules/dialogs/constant';
 import { toDocSearchParams } from '@affine/core/modules/navigation';
-import { getOpenUrlInDesktopAppLink } from '@affine/core/modules/open-in-app';
 import type { DocMode } from '@blocksuite/affine/model';
 import { nanoid } from 'nanoid';
 import { createContext, useCallback, useContext, useMemo } from 'react';
@@ -239,29 +238,6 @@ export function useNavigateHelper() {
     [navigate]
   );
 
-  const jumpToOpenInApp = useCallback(
-    (url: string, newTab = true) => {
-      const deeplink = getOpenUrlInDesktopAppLink(url, newTab);
-
-      if (!deeplink) {
-        return;
-      }
-
-      const encodedUrl = encodeURIComponent(deeplink);
-      return navigate(`/open-app/url?url=${encodedUrl}`);
-    },
-    [navigate]
-  );
-
-  const jumpToImportTemplate = useCallback(
-    (name: string, snapshotUrl: string) => {
-      return navigate(
-        `/template/import?name=${encodeURIComponent(name)}&snapshotUrl=${encodeURIComponent(snapshotUrl)}`
-      );
-    },
-    [navigate]
-  );
-
   const jumpToWorkspaceSettings = useCallback(
     (
       workspaceId: string,
@@ -292,8 +268,6 @@ export function useNavigateHelper() {
       jumpToCollections,
       jumpToTags,
       jumpToTag,
-      jumpToOpenInApp,
-      jumpToImportTemplate,
       jumpToWorkspaceSettings,
     }),
     [
@@ -309,8 +283,6 @@ export function useNavigateHelper() {
       jumpToCollections,
       jumpToTags,
       jumpToTag,
-      jumpToOpenInApp,
-      jumpToImportTemplate,
       jumpToWorkspaceSettings,
     ]
   );

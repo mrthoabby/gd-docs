@@ -10,8 +10,6 @@ import { nanoid } from 'nanoid';
 
 import type { WorkspacePropertyType } from '../../workspace-property';
 
-const integrationType = f.enum('readwise');
-
 export const AFFiNE_WORKSPACE_DB_SCHEMA = {
   folders: {
     id: f.string().primaryKey().optional().default(nanoid),
@@ -28,7 +26,6 @@ export const AFFiNE_WORKSPACE_DB_SCHEMA = {
     journal: f.string().optional(),
     pageWidth: f.string().optional(),
     isTemplate: f.boolean().optional(),
-    integrationType: integrationType.optional(),
     createdBy: f.string().optional(),
     updatedBy: f.string().optional(),
   }),
@@ -71,20 +68,6 @@ export const AFFiNE_WORKSPACE_USERDATA_DB_SCHEMA = {
     key: f.string().primaryKey(),
     value: f.json(),
   },
-  docIntegrationRef: {
-    // docId as primary key
-    id: f.string().primaryKey(),
-    type: integrationType,
-    /**
-     * Identify **affine user** and **integration type** and **integration account**
-     * Used to quickly find user's all integrations
-     */
-    integrationId: f.string(),
-    refMeta: f.json(),
-  },
 } as const satisfies DBSchemaBuilder;
 export type AFFiNEWorkspaceUserdataDbSchema =
   typeof AFFiNE_WORKSPACE_USERDATA_DB_SCHEMA;
-export type DocIntegrationRef = ORMEntity<
-  AFFiNEWorkspaceUserdataDbSchema['docIntegrationRef']
->;

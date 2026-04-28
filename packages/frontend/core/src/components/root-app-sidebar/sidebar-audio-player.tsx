@@ -32,12 +32,7 @@ export const SidebarAudioPlayer = () => {
     return;
   }, [playbackStats, audioAttachmentService]);
 
-  const isSameTab = useMemo(() => {
-    if (BUILD_CONFIG.isElectron) {
-      return playbackStats?.tabId === audioMediaManagerService.currentTabId;
-    }
-    return true;
-  }, [playbackStats, audioMediaManagerService.currentTabId]);
+  const isSameTab = true;
 
   const shouldShow = useLiveData(
     useMemo(() => {

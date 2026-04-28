@@ -5,7 +5,6 @@ import {
   SettingWrapper,
 } from '@affine/component/setting-components';
 import { Upload } from '@affine/core/components/pure/file-upload';
-import { EnableCloudPanel } from '@affine/core/desktop/dialogs/setting/workspace-setting/preference/enable-cloud';
 import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
 import { UserFriendlyError } from '@affine/error';
 import { ServerFeature } from '@affine/graphql';
@@ -24,10 +23,6 @@ import EmbeddingProgress from './embedding-progress';
 import { IgnoredDocs } from './ignored-docs';
 
 interface EmbeddingSettingsProps {}
-
-const EmbeddingLocal: React.FC<{}> = () => {
-  return <EnableCloudPanel />;
-};
 
 const EmbeddingCloud: React.FC<{ disabled: boolean }> = ({ disabled }) => {
   const t = useI18n();
@@ -283,7 +278,6 @@ const EmbeddingCloud: React.FC<{ disabled: boolean }> = ({ disabled }) => {
 export const EmbeddingSettings: React.FC<EmbeddingSettingsProps> = () => {
   const workspaceService = useService(WorkspaceService);
   const serverService = useService(ServerService);
-  const isLocal = workspaceService.workspace.flavour === 'local';
   const serverConfig = useLiveData(serverService.server.config$);
   const isEmbeddingEnabled = serverConfig?.features.includes(
     ServerFeature.CopilotEmbedding
@@ -312,11 +306,7 @@ export const EmbeddingSettings: React.FC<EmbeddingSettingsProps> = () => {
         />
       </Tooltip>
 
-      {isLocal ? (
-        <EmbeddingLocal />
-      ) : (
-        <EmbeddingCloud disabled={!isEmbeddingEnabled} />
-      )}
+      <EmbeddingCloud disabled={!isEmbeddingEnabled} />
     </>
   );
 };

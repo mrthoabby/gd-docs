@@ -6,7 +6,7 @@ const DEFAULT_MIDDLEWARE_BY_TYPE: Record<
   ProviderMiddlewareConfig
 > = {
   [CopilotProviderType.OpenAI]: {
-    rust: {
+    native: {
       request: ['normalize_messages'],
       stream: ['stream_event_normalize', 'citation_indexing'],
     },
@@ -15,7 +15,7 @@ const DEFAULT_MIDDLEWARE_BY_TYPE: Record<
     },
   },
   [CopilotProviderType.CloudflareWorkersAi]: {
-    rust: {
+    native: {
       request: ['normalize_messages'],
       stream: ['stream_event_normalize', 'citation_indexing'],
     },
@@ -24,7 +24,7 @@ const DEFAULT_MIDDLEWARE_BY_TYPE: Record<
     },
   },
   [CopilotProviderType.Anthropic]: {
-    rust: {
+    native: {
       request: ['normalize_messages', 'tool_schema_rewrite'],
       stream: ['stream_event_normalize', 'citation_indexing'],
     },
@@ -33,7 +33,7 @@ const DEFAULT_MIDDLEWARE_BY_TYPE: Record<
     },
   },
   [CopilotProviderType.AnthropicVertex]: {
-    rust: {
+    native: {
       request: ['normalize_messages', 'tool_schema_rewrite'],
       stream: ['stream_event_normalize', 'citation_indexing'],
     },
@@ -42,7 +42,7 @@ const DEFAULT_MIDDLEWARE_BY_TYPE: Record<
     },
   },
   [CopilotProviderType.Morph]: {
-    rust: {
+    native: {
       request: ['clamp_max_tokens'],
       stream: ['stream_event_normalize', 'citation_indexing'],
     },
@@ -51,7 +51,7 @@ const DEFAULT_MIDDLEWARE_BY_TYPE: Record<
     },
   },
   [CopilotProviderType.Perplexity]: {
-    rust: {
+    native: {
       request: ['clamp_max_tokens'],
       stream: ['stream_event_normalize', 'citation_indexing'],
     },
@@ -60,7 +60,7 @@ const DEFAULT_MIDDLEWARE_BY_TYPE: Record<
     },
   },
   [CopilotProviderType.Gemini]: {
-    rust: {
+    native: {
       request: ['normalize_messages', 'tool_schema_rewrite'],
       stream: ['stream_event_normalize', 'citation_indexing'],
     },
@@ -69,7 +69,7 @@ const DEFAULT_MIDDLEWARE_BY_TYPE: Record<
     },
   },
   [CopilotProviderType.GeminiVertex]: {
-    rust: {
+    native: {
       request: ['normalize_messages', 'tool_schema_rewrite'],
       stream: ['stream_event_normalize', 'citation_indexing'],
     },
@@ -96,9 +96,9 @@ export function mergeProviderMiddleware(
   override?: ProviderMiddlewareConfig
 ): ProviderMiddlewareConfig {
   return {
-    rust: {
-      request: mergeArray(defaults.rust?.request, override?.rust?.request),
-      stream: mergeArray(defaults.rust?.stream, override?.rust?.stream),
+    native: {
+      request: mergeArray(defaults.native?.request, override?.native?.request),
+      stream: mergeArray(defaults.native?.stream, override?.native?.stream),
     },
     node: {
       text: mergeArray(defaults.node?.text, override?.node?.text),

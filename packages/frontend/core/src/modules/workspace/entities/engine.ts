@@ -63,10 +63,7 @@ export class WorkspaceEngine extends Entity<{
         `workspace:${this.workspaceService.workspace.flavour}:${this.workspaceService.workspace.id}`,
       this.props.engineWorkerInitOptions
     );
-    if (
-      this.featureFlagService.flags.enable_battery_save_mode.value &&
-      this.workspaceService.workspace.flavour !== 'local'
-    ) {
+    if (this.featureFlagService.flags.enable_battery_save_mode.value) {
       store.enableBatterySaveMode().catch(err => {
         console.error('error enabling battery save mode', err);
       });

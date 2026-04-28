@@ -7,27 +7,15 @@ import * as styles from './share-header.css';
 
 export function ShareHeader({
   publishMode,
-  isTemplate,
-  templateName,
-  snapshotUrl,
 }: {
-  pageId: string;
   publishMode: DocMode;
-  isTemplate?: boolean;
-  templateName?: string;
-  snapshotUrl?: string;
 }) {
   return (
     <div className={styles.header}>
       <EditorModeSwitch />
       <BlocksuiteHeaderTitle />
       <div className={styles.spacer} />
-      <ShareHeaderRightItem
-        publishMode={publishMode}
-        isTemplate={isTemplate}
-        snapshotUrl={snapshotUrl}
-        templateName={templateName}
-      />
+      <ShareHeaderRightItem publishMode={publishMode} />
     </div>
   );
 }

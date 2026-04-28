@@ -5,7 +5,6 @@ import { AIProvider } from '@affine/core/blocksuite/ai';
 import type { AffineEditorContainer } from '@affine/core/blocksuite/block-suite-editor';
 import { EditorOutlineViewer } from '@affine/core/blocksuite/outline-viewer';
 import { AffineErrorBoundary } from '@affine/core/components/affine/affine-error-boundary';
-// import { PageAIOnboarding } from '@affine/core/components/affine/ai-onboarding';
 import { GlobalPageHistoryModal } from '@affine/core/components/affine/page-history-modal';
 import { CommentSidebar } from '@affine/core/components/comment/sidebar';
 import { useGuard } from '@affine/core/components/guard';
@@ -33,7 +32,6 @@ import {
   ViewSidebarTab,
   WorkbenchService,
 } from '@affine/core/modules/workbench';
-import { WorkspaceService } from '@affine/core/modules/workspace';
 import { isNewTabTrigger } from '@affine/core/utils';
 import { ServerFeature } from '@affine/graphql';
 import track from '@affine/track';
@@ -80,20 +78,17 @@ const DetailPageImpl = memo(function DetailPageImpl() {
     viewService,
     editorService,
     docService,
-    workspaceService,
     globalContextService,
   } = useServices({
     WorkbenchService,
     ViewService,
     EditorService,
     DocService,
-    WorkspaceService,
     GlobalContextService,
   });
   const workbench = workbenchService.workbench;
   const editor = editorService.editor;
   const view = viewService.view;
-  const workspace = workspaceService.workspace;
   const globalContext = globalContextService.globalContext;
   const doc = docService.doc;
 
@@ -126,9 +121,7 @@ const DetailPageImpl = memo(function DetailPageImpl() {
   const serverConfig = useLiveData(serverService.server.config$);
 
   // comment may not be supported by the server
-  const enableComment =
-    workspace.flavour !== 'local' &&
-    serverConfig.features.includes(ServerFeature.Comment);
+  const enableComment = serverConfig.features.includes(ServerFeature.Comment);
 
   useEffect(() => {
     if (isActiveView) {
@@ -428,7 +421,7 @@ const DetailPageImpl = memo(function DetailPageImpl() {
         </ViewSidebarTab>
       )}
 
-      {workspace.flavour !== 'local' && enableComment && (
+      {enableComment && (
         <ViewSidebarTab tabId="comment" icon={<CommentIcon />}>
           <Scrollable.Root className={styles.sidebarScrollArea}>
             <Scrollable.Viewport>
@@ -439,7 +432,7 @@ const DetailPageImpl = memo(function DetailPageImpl() {
         </ViewSidebarTab>
       )}
 
-      {workspace.flavour === 'affine-cloud' && enableViewAnalyticsPanel && (
+      {enableViewAnalyticsPanel && (
         <ViewSidebarTab tabId="analytics" icon={<ChartPanelIcon />}>
           <Scrollable.Root className={styles.sidebarScrollArea}>
             <Scrollable.Viewport>

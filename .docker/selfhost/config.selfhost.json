@@ -1,10 +1,8 @@
 {
   "$schema": "https://github.com/mrthoabby/gd-docs/releases/latest/download/config.schema.json",
-
   "server": {
     "name": "GD docs Server"
   },
-
   "auth": {
     "allowSignup": true,
     "allowSignupForOauth": true,
@@ -17,21 +15,6 @@
     "session.ttl": 2592000,
     "session.ttr": 604800
   },
-
-  "flags": {
-    "allowGuestDemoWorkspace": true
-  },
-
-  "telemetry": {
-    "allowedOrigin": ["localhost", "127.0.0.1"],
-    "ga4.measurementId": "",
-    "ga4.apiSecret": ""
-  },
-
-  "metrics": {
-    "enabled": false
-  },
-
   "storages": {
     "blob.storage": {
       "provider": "aws-s3",
@@ -62,7 +45,6 @@
       }
     }
   },
-
   "copilot": {
     "storage": {
       "provider": "aws-s3",

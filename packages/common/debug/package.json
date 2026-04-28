@@ -9,8 +9,7 @@
     "debug": "^4.4.0"
   },
   "devDependencies": {
-    "@types/debug": "^4.1.12",
-    "vitest": "^4.0.18"
+    "@types/debug": "^4.1.12"
   },
   "version": "0.26.3"
 }

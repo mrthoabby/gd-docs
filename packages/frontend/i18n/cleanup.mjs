@@ -40,10 +40,7 @@ const enjson = JSON.parse(
   )
 );
 
-const keys = Object.keys(enjson).filter(
-  // exceptions
-  key => !key.startsWith('com.affine.payment.modal.')
-);
+const keys = Object.keys(enjson);
 
 const unusedKeys = keys.filter(key => {
   const regex1 = new RegExp(`[\`'"]${key.replace('.', '\\.')}[\`'"]`, 'g');

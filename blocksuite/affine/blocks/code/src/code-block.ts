@@ -11,7 +11,7 @@ import {
   NotificationProvider,
 } from '@blocksuite/affine-shared/services';
 import { getViewportElement } from '@blocksuite/affine-shared/utils';
-import { IS_MAC, IS_MOBILE } from '@blocksuite/global/env';
+import { IS_MAC } from '@blocksuite/global/env';
 import { noop } from '@blocksuite/global/utils';
 import type { BlockComponent } from '@blocksuite/std';
 import { BlockSelection, TextSelection } from '@blocksuite/std';
@@ -423,7 +423,6 @@ export class CodeBlockComponent extends CaptionedBlockComponent<CodeBlockModel> 
         class=${classMap({
           'affine-code-block-container': true,
           'highlight-comment': this.isCommentHighlighted,
-          mobile: IS_MOBILE,
           wrap: this.model.props.wrap,
           'disable-line-numbers': !showLineNumbers,
         })}

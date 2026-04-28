@@ -45,17 +45,6 @@ const optionsSchema = z.object({
       )
       .returns(z.string().nullable())
   ),
-
-  mobile: z
-    .object({
-      scrollContainer: z.optional(
-        z.union([z.string(), z.instanceof(HTMLElement), z.custom<Window>()])
-      ),
-      scrollTopOffset: z.optional(
-        z.union([z.number(), z.function().returns(z.number())])
-      ),
-    })
-    .optional(),
 });
 
 export type LinkedDocViewExtensionOptions = z.infer<typeof optionsSchema>;

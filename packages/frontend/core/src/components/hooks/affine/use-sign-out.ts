@@ -3,11 +3,10 @@ import {
   notify,
   useConfirmModal,
 } from '@affine/component';
-import { AuthService, DefaultServerService } from '@affine/core/modules/cloud';
+import { AuthService } from '@affine/core/modules/cloud';
 import { UserFriendlyError } from '@affine/error';
-import { ServerFeature } from '@affine/graphql';
 import { useI18n } from '@affine/i18n';
-import { useService, useServices } from '@toeverything/infra';
+import { useService } from '@toeverything/infra';
 import { useCallback } from 'react';
 
 import { useNavigateHelper } from '../use-navigate-helper';
@@ -26,32 +25,22 @@ export const useSignOut = ({
 }: ConfirmModalProps = {}) => {
   const t = useI18n();
   const { openConfirmModal } = useConfirmModal();
-  const { jumpToSignIn, jumpToIndex } = useNavigateHelper();
+  const { jumpToSignIn } = useNavigateHelper();
 
   const authService = useService(AuthService);
-  const { defaultServerService } = useServices({ DefaultServerService });
 
   const signOut = useCallback(async () => {
     onConfirm?.()?.catch(console.error);
-    const enableLocalWorkspace =
-      BUILD_CONFIG.isNative ||
-      defaultServerService.server.config$.value.features.includes(
-        ServerFeature.LocalWorkspace
-      );
 
     try {
       await authService.signOut();
-      if (enableLocalWorkspace) {
-        jumpToIndex();
-      } else {
-        jumpToSignIn();
-      }
+      jumpToSignIn();
     } catch (err) {
       console.error(err);
       const error = UserFriendlyError.fromAny(err);
       notify.error(error);
     }
-  }, [authService, jumpToIndex, jumpToSignIn, defaultServerService, onConfirm]);
+  }, [authService, jumpToSignIn, onConfirm]);
 
   const getDefaultText = useCallback(
     (key: SignOutConfirmModalI18NKeys) => {

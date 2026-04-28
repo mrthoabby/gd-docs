@@ -2,10 +2,6 @@ import { z } from 'zod';
 
 import { defineModuleConfig } from '../../base';
 
-export interface ServerFlags {
-  allowGuestDemoWorkspace: boolean;
-}
-
 declare global {
   interface AppConfigSchema {
     server: {
@@ -18,7 +14,6 @@ declare global {
       path: string;
       name?: string;
     };
-    flags: ServerFlags;
   }
 }
 
@@ -71,12 +66,5 @@ defineModuleConfig('server', {
     desc: 'Subruta donde está desplegado el servidor, si aplica. Ej: /docs',
     default: '',
     env: 'AFFINE_SERVER_SUB_PATH',
-  },
-});
-
-defineModuleConfig('flags', {
-  allowGuestDemoWorkspace: {
-    desc: 'Whether allow guest users to create demo workspaces.',
-    default: true,
   },
 });

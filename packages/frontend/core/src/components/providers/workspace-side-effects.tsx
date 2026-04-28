@@ -8,7 +8,6 @@ import {
   CopilotClient,
   setupAIProvider,
 } from '@affine/core/blocksuite/ai';
-import { useRegisterFindInPageCommands } from '@affine/core/components/hooks/affine/use-register-find-in-page-commands';
 import { useRegisterWorkspaceCommands } from '@affine/core/components/hooks/use-register-workspace-commands';
 import { OverCapacityNotification } from '@affine/core/components/over-capacity';
 import {
@@ -120,13 +119,6 @@ export const WorkspaceSideEffects = () => {
 
   const globalDialogService = useService(GlobalDialogService);
 
-  useEffect(() => {
-    const disposable = AIProvider.slots.requestUpgradePlan.subscribe(() => {});
-    return () => {
-      disposable.unsubscribe();
-    };
-  }, []);
-
   const graphqlService = useService(GraphQLService);
   const eventSourceService = useService(EventSourceService);
   const authService = useService(AuthService);
@@ -149,7 +141,6 @@ export const WorkspaceSideEffects = () => {
 
   useRegisterWorkspaceCommands();
   useRegisterNavigationCommands();
-  useRegisterFindInPageCommands();
 
   return (
     <>

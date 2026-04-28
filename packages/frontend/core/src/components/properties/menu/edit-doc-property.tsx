@@ -135,11 +135,7 @@ export const EditWorkspacePropertyMenuItems = ({
   return (
     <>
       <div
-        className={
-          BUILD_CONFIG.isMobileEdition
-            ? styles.mobilePropertyRowNamePopupRow
-            : styles.propertyRowNamePopupRow
-        }
+        className={styles.propertyRowNamePopupRow}
         data-testid="edit-property-menu-item"
       >
         <WorkspacePropertyIconSelector
@@ -162,11 +158,7 @@ export const EditWorkspacePropertyMenuItems = ({
         )}
       </div>
       <div
-        className={
-          BUILD_CONFIG.isMobileEdition
-            ? styles.mobilePropertyRowTypeItem
-            : styles.propertyRowTypeItem
-        }
+        className={styles.propertyRowTypeItem}
       >
         {t['com.affine.page-properties.create-property.menu.header']()}
         <div className={styles.propertyTypeName}>

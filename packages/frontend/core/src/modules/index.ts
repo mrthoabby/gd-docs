@@ -41,7 +41,6 @@ import { configureMediaModule } from './media';
 import { configureNavigationModule } from './navigation';
 import { configureNavigationPanelModule } from './navigation-panel';
 import { configureNotificationModule } from './notification';
-import { configureOpenInApp } from './open-in-app';
 import { configureOrganizeModule } from './organize';
 import { configurePDFModule } from './pdf';
 import { configurePeekViewModule } from './peek-view';
@@ -56,7 +55,6 @@ import {
 } from './storage';
 import { configureSystemFontFamilyModule } from './system-font-family';
 import { configureTagModule } from './tag';
-import { configureTemplateDocModule } from './template-doc';
 import { configureAppThemeModule } from './theme';
 import { configureThemeEditorModule } from './theme-editor';
 import { configureUrlModule } from './url';
@@ -104,7 +102,6 @@ export function configureCommonModules(framework: Framework) {
   configureAppThemeModule(framework);
   configureDialogModule(framework);
   configureDocInfoModule(framework);
-  configureOpenInApp(framework);
   configAtMenuConfigModule(framework);
   configSearchMenuModule(framework);
   configureDndModule(framework);
@@ -115,7 +112,6 @@ export function configureCommonModules(framework: Framework) {
   configureAIDraftModule(framework);
   configureAIToolsConfigModule(framework);
   configureAIModelModule(framework);
-  configureTemplateDocModule(framework);
   configureBlobManagementModule(framework);
   configureMediaModule(framework);
   configureImportClipperModule(framework);

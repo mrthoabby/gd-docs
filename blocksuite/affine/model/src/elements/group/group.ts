@@ -120,7 +120,7 @@ export class GroupElementModel extends GfxGroupLikeElementModel<GroupElementProp
   }
 
   @observe(
-    // use `GroupElementModel` type in decorator will cause playwright error
+    // Keep this structural so the decorator does not depend on the class type.
     (_, instance: GfxGroupLikeElementModel<GroupElementProps>, transaction) => {
       if (instance.children.doc) {
         instance.setChildIds(

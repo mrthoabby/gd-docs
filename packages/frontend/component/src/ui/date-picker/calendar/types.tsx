@@ -90,9 +90,9 @@ export type SelectMode = 'day' | 'month' | 'year';
 export const defaultDatePickerProps = {
   format: 'YYYY-MM-DD',
   gapX: 8,
-  gapY: BUILD_CONFIG.isMobileEdition ? 16 : 8,
-  cellFontSize: BUILD_CONFIG.isMobileEdition ? 17 : 14,
-  cellSize: BUILD_CONFIG.isMobileEdition ? 34 : 28,
+  gapY: 8,
+  cellFontSize: 14,
+  cellSize: 28,
   weekDays: ['Su', 'Mo', 'Tu', 'We', 'Th', 'Fr', 'Sa'].join(','),
   monthNames: [
     'Jan',

@@ -15,7 +15,6 @@ import {
   NumberIcon,
   PropertyIcon,
   TagIcon,
-  TemplateIcon,
   TextIcon,
   TodayIcon,
 } from '@blocksuite/icons/rc';
@@ -88,12 +87,6 @@ import {
   TagsGroupHeader,
   TagsValue,
 } from './tags';
-import {
-  TemplateDocListProperty,
-  TemplateFilterValue,
-  TemplateGroupHeader,
-  TemplateValue,
-} from './template';
 import {
   TextDocListProperty,
   TextFilterValue,
@@ -349,24 +342,6 @@ export const WorkspacePropertyTypes = {
     },
     filterValue: PageWidthFilterValue,
     defaultFilter: { method: 'is', value: 'fullWidth' },
-  },
-  template: {
-    icon: TemplateIcon,
-    value: TemplateValue,
-    name: 'com.affine.page-properties.property.template',
-    renameable: true,
-    description: 'com.affine.page-properties.property.template.tooltips',
-    showInDocList: 'stack',
-    allowInGroupBy: true,
-    allowInOrderBy: true,
-    docListProperty: TemplateDocListProperty,
-    groupHeader: TemplateGroupHeader,
-    filterMethod: {
-      is: 'com.affine.editCollection.rules.include.is',
-      'is-not': 'com.affine.editCollection.rules.include.is-not',
-    },
-    filterValue: TemplateFilterValue,
-    defaultFilter: { method: 'is', value: 'true' },
   },
   unknown: {
     icon: PropertyIcon,

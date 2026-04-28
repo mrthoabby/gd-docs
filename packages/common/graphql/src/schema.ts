@@ -2891,7 +2891,6 @@ export interface ServerConfigType {
   /** server base url */
   baseUrl: Scalars['String']['output'];
   calendarCalDAVProviders: Array<CalendarCalDavProviderPresetObjectType>;
-  calendarProviders: Array<CalendarProviderType>;
   /** credentials requirement */
   credentialsRequirement: CredentialsRequirementType;
   /** enabled server features */
@@ -2918,9 +2917,7 @@ export enum ServerFeature {
   Copilot = 'Copilot',
   CopilotEmbedding = 'CopilotEmbedding',
   Indexer = 'Indexer',
-  LocalWorkspace = 'LocalWorkspace',
   OAuth = 'OAuth',
-  Payment = 'Payment',
 }
 
 export interface SpaceAccessDeniedDataType {
@@ -3389,7 +3386,6 @@ export interface WorkspacePermissions {
   Workspace_CreateDoc: Scalars['Boolean']['output'];
   Workspace_Delete: Scalars['Boolean']['output'];
   Workspace_Organize_Read: Scalars['Boolean']['output'];
-  Workspace_Payment_Manage: Scalars['Boolean']['output'];
   Workspace_Properties_Create: Scalars['Boolean']['output'];
   Workspace_Properties_Delete: Scalars['Boolean']['output'];
   Workspace_Properties_Read: Scalars['Boolean']['output'];
@@ -4266,7 +4262,6 @@ export type CalendarProvidersQuery = {
   __typename?: 'Query';
   serverConfig: {
     __typename?: 'ServerConfigType';
-    calendarProviders: Array<CalendarProviderType>;
     calendarCalDAVProviders: Array<{
       __typename?: 'CalendarCalDAVProviderPresetObjectType';
       id: string;
@@ -6657,7 +6652,6 @@ export type GetWorkspaceInfoQuery = {
       Workspace_CreateDoc: boolean;
       Workspace_Delete: boolean;
       Workspace_Organize_Read: boolean;
-      Workspace_Payment_Manage: boolean;
       Workspace_Properties_Create: boolean;
       Workspace_Properties_Delete: boolean;
       Workspace_Properties_Read: boolean;
@@ -7290,7 +7284,6 @@ export type ServerConfigQuery = {
     features: Array<ServerFeature>;
     type: ServerDeploymentType;
     initialized: boolean;
-    calendarProviders: Array<CalendarProviderType>;
     credentialsRequirement: {
       __typename?: 'CredentialsRequirementType';
       password: {
@@ -7653,7 +7646,6 @@ export type GetWorkspaceRolePermissionsQuery = {
       Workspace_CreateDoc: boolean;
       Workspace_Delete: boolean;
       Workspace_Organize_Read: boolean;
-      Workspace_Payment_Manage: boolean;
       Workspace_Properties_Create: boolean;
       Workspace_Properties_Delete: boolean;
       Workspace_Properties_Read: boolean;

@@ -14,7 +14,6 @@ import { tap } from 'rxjs';
 import type { DocService, DocsService } from '../../doc';
 import type { DocsSearchService } from '../../docs-search';
 import type { FeatureFlagService } from '../../feature-flag';
-import type { WorkspaceService } from '../../workspace';
 
 export interface Backlink {
   docId: string;
@@ -32,8 +31,7 @@ export class DocBacklinks extends Entity {
     private readonly docsSearchService: DocsSearchService,
     private readonly docService: DocService,
     private readonly docsService: DocsService,
-    private readonly featureFlagService: FeatureFlagService,
-    private readonly workspaceService: WorkspaceService
+    private readonly featureFlagService: FeatureFlagService
   ) {
     super();
   }
@@ -47,8 +45,7 @@ export class DocBacklinks extends Entity {
     exhaustMapWithTrailing(() =>
       fromPromise(async () => {
         const searchFromCloud =
-          this.featureFlagService.flags.enable_battery_save_mode &&
-          this.workspaceService.workspace.flavour !== 'local';
+          this.featureFlagService.flags.enable_battery_save_mode.value;
         const { buckets } = await this.docsSearchService.indexer.aggregate(
           'block',
           {

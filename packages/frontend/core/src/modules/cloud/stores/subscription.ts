@@ -1,215 +1,75 @@
-import type {
-  CreateCheckoutSessionInput,
-  SubscriptionRecurring,
-} from '@affine/graphql';
-import {
-  cancelSubscriptionMutation,
-  createCheckoutSessionMutation,
-  getWorkspaceSubscriptionQuery,
-  pricesQuery,
-  resumeSubscriptionMutation,
-  SubscriptionPlan,
-  subscriptionQuery,
-  updateSubscriptionMutation,
-} from '@affine/graphql';
 import { Store } from '@toeverything/infra';
 
-import type { GlobalCache } from '../../storage';
-import type { UrlService } from '../../url';
-import type { SubscriptionType } from '../entities/subscription';
-import type { GraphQLService } from '../services/graphql';
-import type { ServerService } from '../services/server';
-const SUBSCRIPTION_CACHE_KEY = 'subscription:';
-
-const getDefaultSubscriptionSuccessCallbackLink = (
-  baseUrl: string,
-  plan?: SubscriptionPlan | null,
-  scheme?: string
-) => {
-  const path =
-    plan === SubscriptionPlan.Team
-      ? '/upgrade-success/team'
-      : plan === SubscriptionPlan.AI
-        ? '/ai-upgrade-success'
-        : '/upgrade-success';
-  const urlString = baseUrl + path;
-  const url = new URL(urlString);
-  if (scheme) {
-    url.searchParams.set('scheme', scheme);
-  }
-  return url.toString();
-};
+import {
+  SubscriptionPlan,
+  type SubscriptionRecurring,
+  type SubscriptionType,
+} from '../entities/subscription';
 
 export class SubscriptionStore extends Store {
-  constructor(
-    private readonly gqlService: GraphQLService,
-    private readonly globalCache: GlobalCache,
-    private readonly urlService: UrlService,
-    private readonly serverService: ServerService
-  ) {
-    super();
-  }
-
-  async fetchSubscriptions(abortSignal?: AbortSignal) {
-    const data = await this.gqlService.gql({
-      query: subscriptionQuery,
-      context: {
-        signal: abortSignal,
-      },
-    });
-
-    if (!data.currentUser) {
-      throw new Error('No logged in');
-    }
-
+  async fetchSubscriptions(_abortSignal?: AbortSignal) {
     return {
-      userId: data.currentUser?.id,
-      subscriptions: data.currentUser?.subscriptions,
+      userId: '',
+      subscriptions: [] as SubscriptionType[],
     };
   }
 
   async fetchWorkspaceSubscriptions(
     workspaceId: string,
-    abortSignal?: AbortSignal
+    _abortSignal?: AbortSignal
   ) {
-    const data = await this.gqlService.gql({
-      query: getWorkspaceSubscriptionQuery,
-      variables: {
-        workspaceId,
-      },
-      context: {
-        signal: abortSignal,
-      },
-    });
-
-    if (!data.workspace) {
-      throw new Error('No workspace');
-    }
-
     return {
-      workspaceId: data.workspace.subscription?.id,
-      subscription: data.workspace.subscription,
+      workspaceId,
+      subscription: null as SubscriptionType | null,
     };
   }
 
   async mutateResumeSubscription(
-    idempotencyKey: string,
-    plan?: SubscriptionPlan,
-    abortSignal?: AbortSignal,
-    workspaceId?: string
+    _idempotencyKey: string,
+    _plan: SubscriptionPlan = SubscriptionPlan.Free,
+    _abortSignal?: AbortSignal,
+    _workspaceId?: string
   ) {
-    const data = await this.gqlService.gql({
-      query: resumeSubscriptionMutation,
-      variables: {
-        plan,
-        workspaceId,
-      },
-      context: {
-        signal: abortSignal,
-        headers: {
-          'Idempotency-Key': idempotencyKey,
-        },
-      },
-    });
-    return data.resumeSubscription;
+    return null;
   }
 
   async mutateCancelSubscription(
-    idempotencyKey: string,
-    plan?: SubscriptionPlan,
-    abortSignal?: AbortSignal,
-    workspaceId?: string
+    _idempotencyKey: string,
+    _plan: SubscriptionPlan = SubscriptionPlan.Free,
+    _abortSignal?: AbortSignal,
+    _workspaceId?: string
   ) {
-    const data = await this.gqlService.gql({
-      query: cancelSubscriptionMutation,
-      variables: {
-        plan,
-        workspaceId,
-      },
-      context: {
-        signal: abortSignal,
-        headers: {
-          'Idempotency-Key': idempotencyKey,
-        },
-      },
-    });
-    return data.cancelSubscription;
+    return null;
   }
 
-  getCachedSubscriptions(userId: string) {
-    return this.globalCache.get<SubscriptionType[]>(
-      SUBSCRIPTION_CACHE_KEY + userId
-    );
+  getCachedSubscriptions(_userId: string) {
+    return [] as SubscriptionType[];
   }
 
-  setCachedSubscriptions(userId: string, subscriptions: SubscriptionType[]) {
-    return this.globalCache.set(SUBSCRIPTION_CACHE_KEY + userId, subscriptions);
-  }
+  setCachedSubscriptions(
+    _userId: string,
+    _subscriptions: SubscriptionType[]
+  ) {}
 
-  getCachedWorkspaceSubscription(workspaceId: string) {
-    return this.globalCache.get<SubscriptionType>(
-      SUBSCRIPTION_CACHE_KEY + workspaceId
-    );
+  getCachedWorkspaceSubscription(_workspaceId: string) {
+    return null as SubscriptionType | null;
   }
 
   setCachedWorkspaceSubscription(
-    workspaceId: string,
-    subscription: SubscriptionType
+    _workspaceId: string,
+    _subscription: SubscriptionType
+  ) {}
+
+  async setSubscriptionRecurring(
+    _idempotencyKey: string,
+    _recurring: SubscriptionRecurring,
+    _plan: SubscriptionPlan = SubscriptionPlan.Free,
+    _workspaceId?: string
   ) {
-    return this.globalCache.set(
-      SUBSCRIPTION_CACHE_KEY + workspaceId,
-      subscription
-    );
+    return null;
   }
 
-  setSubscriptionRecurring(
-    idempotencyKey: string,
-    recurring: SubscriptionRecurring,
-    plan?: SubscriptionPlan,
-    workspaceId?: string
-  ) {
-    return this.gqlService.gql({
-      query: updateSubscriptionMutation,
-      variables: {
-        plan,
-        recurring,
-        workspaceId,
-      },
-      context: {
-        headers: {
-          'Idempotency-Key': idempotencyKey,
-        },
-      },
-    });
-  }
-
-  async createCheckoutSession(input: CreateCheckoutSessionInput) {
-    const data = await this.gqlService.gql({
-      query: createCheckoutSessionMutation,
-      variables: {
-        input: {
-          ...input,
-          successCallbackLink:
-            input.successCallbackLink ||
-            getDefaultSubscriptionSuccessCallbackLink(
-              this.serverService.server.baseUrl,
-              input.plan,
-              this.urlService.getClientScheme()
-            ),
-        },
-      },
-    });
-    return data.createCheckoutSession;
-  }
-
-  async fetchSubscriptionPrices(abortSignal?: AbortSignal) {
-    const data = await this.gqlService.gql({
-      query: pricesQuery,
-      context: {
-        signal: abortSignal,
-      },
-    });
-
-    return data.prices;
+  async fetchSubscriptionPrices(_abortSignal?: AbortSignal) {
+    return [];
   }
 }

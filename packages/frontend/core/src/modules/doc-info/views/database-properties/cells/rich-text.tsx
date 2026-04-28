@@ -1,12 +1,10 @@
 import { PropertyValue } from '@affine/component';
-import { ConfigModal } from '@affine/core/components/mobile';
 import { DefaultInlineManagerExtension } from '@blocksuite/affine/inlines/preset';
 import { RichText } from '@blocksuite/affine/rich-text';
 import type { BlockStdScope } from '@blocksuite/affine/std';
 import type { Store } from '@blocksuite/affine/store';
-import { TextIcon } from '@blocksuite/icons/rc';
 import { type LiveData, useLiveData } from '@toeverything/infra';
-import { type CSSProperties, useEffect, useRef, useState } from 'react';
+import { type CSSProperties, useEffect, useRef } from 'react';
 import type * as Y from 'yjs';
 
 import type { DatabaseCellRendererProps } from '../../../types';
@@ -87,48 +85,4 @@ const DesktopRichTextCell = ({
   );
 };
 
-const MobileRichTextCell = ({
-  cell,
-  dataSource,
-  onChange,
-  rowId,
-}: DatabaseCellRendererProps) => {
-  const [open, setOpen] = useState(false);
-  const name = useLiveData(cell.property.name$);
-  return (
-    <>
-      <PropertyValue onClick={() => setOpen(true)}></PropertyValue>
-      <ConfigModal
-        onBack={() => setOpen(false)}
-        open={open}
-        onOpenChange={setOpen}
-        title={
-          <>
-            <TextIcon />
-            {name}
-          </>
-        }
-      >
-        <ConfigModal.RowGroup>
-          <RichTextInput
-            cell={cell}
-            dataSource={dataSource}
-            onChange={onChange}
-            rowId={rowId}
-            style={{ padding: 12 }}
-          />
-        </ConfigModal.RowGroup>
-      </ConfigModal>
-      <RichTextInput
-        cell={cell}
-        dataSource={dataSource}
-        onChange={onChange}
-        rowId={rowId}
-      />
-    </>
-  );
-};
-
-export const RichTextCell = BUILD_CONFIG.isMobileEdition
-  ? MobileRichTextCell
-  : DesktopRichTextCell;
+export const RichTextCell = DesktopRichTextCell;

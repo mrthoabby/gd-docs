@@ -62,7 +62,6 @@ export const Component = () => {
   const selectedWorkspace =
     rawSelectedWorkspace ??
     workspaces.find(w => w.id === lastOpenedWorkspaceId) ??
-    workspaces.find(w => w.flavour !== 'local') ??
     workspaces.at(0);
   const selectedWorkspaceName = useWorkspaceName(selectedWorkspace);
 

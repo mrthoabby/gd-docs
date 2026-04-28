@@ -103,10 +103,7 @@ export class ChatSession implements AsyncDisposable {
     return this.state.messages.findLast(m => m.role === 'user');
   }
 
-  async resolveModel(
-    _hasPayment: boolean,
-    requestedModelId?: string
-  ): Promise<string> {
+  async resolveModel(requestedModelId?: string): Promise<string> {
     const config = this.moduleRef.get(Config, { strict: false });
     const registry = config
       ? buildProviderRegistry(config.copilot.providers)

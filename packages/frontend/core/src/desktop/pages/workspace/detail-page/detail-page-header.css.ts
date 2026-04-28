@@ -58,21 +58,3 @@ export const dragPreview = style({
   backgroundColor: cssVarV2('layer/background/primary'),
   borderRadius: '12px',
 });
-
-export const templateMark = style({
-  backgroundColor: cssVarV2.button.templateLabelBackground,
-  color: cssVarV2.button.primary,
-  borderRadius: 4,
-  padding: '2px 8px',
-  fontSize: 12,
-  fontWeight: 500,
-  lineHeight: '20px',
-});
-
-export const journalTemplateMark = style({
-  '@container': {
-    '(width <= 400px)': {
-      display: 'none',
-    },
-  },
-});

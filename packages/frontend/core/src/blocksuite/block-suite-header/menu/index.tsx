@@ -8,14 +8,12 @@ import {
 import { PageHistoryModal } from '@affine/core/components/affine/page-history-modal';
 import { useGuard } from '@affine/core/components/guard';
 import { useBlockSuiteMetaHelper } from '@affine/core/components/hooks/affine/use-block-suite-meta-helper';
-import { useEnableCloud } from '@affine/core/components/hooks/affine/use-enable-cloud';
 import { useExportPage } from '@affine/core/components/hooks/affine/use-export-page';
 import { Export, MoveToTrash } from '@affine/core/components/page-list';
 import { IsFavoriteIcon } from '@affine/core/components/pure/icons';
 import { useDetailPageHeaderResponsive } from '@affine/core/desktop/pages/workspace/detail-page/use-header-responsive';
 import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
 import { EditorService } from '@affine/core/modules/editor';
-import { OpenInAppService } from '@affine/core/modules/open-in-app/services';
 import { GuardService } from '@affine/core/modules/permissions';
 import { ShareMenuContent } from '@affine/core/modules/share-menu';
 import { WorkbenchService } from '@affine/core/modules/workbench';
@@ -32,23 +30,19 @@ import {
   HistoryIcon,
   ImportIcon,
   InformationIcon,
-  LocalWorkspaceIcon,
   OpenInNewIcon,
   PageIcon,
   ShareIcon,
-  SplitViewIcon,
   TocIcon,
 } from '@blocksuite/icons/rc';
 import {
   useLiveData,
   useService,
-  useServiceOptional,
 } from '@toeverything/infra';
 import { useCallback, useState } from 'react';
 
 import { HeaderDropDownButton } from '../../../components/pure/header-drop-down-button';
 import { useFavorite } from '../favorite';
-import { HistoryTipsModal } from './history-tips-modal';
 import { shareMenu } from './style.css';
 
 type PageMenuProps = {
@@ -71,7 +65,6 @@ export const PageHeaderMenuButton = ({
   );
 
   const [historyModalOpen, setHistoryModalOpen] = useState(false);
-  const [openHistoryTipsModal, setOpenHistoryTipsModal] = useState(false);
 
   const handleMenuOpenChange = useCallback((open: boolean) => {
     if (open) {
@@ -81,11 +74,8 @@ export const PageHeaderMenuButton = ({
 
   const openHistoryModal = useCallback(() => {
     track.$.header.history.open();
-    if (workspace.flavour !== 'local') {
-      return setHistoryModalOpen(true);
-    }
-    return setOpenHistoryTipsModal(true);
-  }, [setOpenHistoryTipsModal, workspace.flavour]);
+    setHistoryModalOpen(true);
+  }, []);
 
   if (isInTrash) {
     return null;
@@ -112,17 +102,11 @@ export const PageHeaderMenuButton = ({
       >
         <HeaderDropDownButton />
       </Menu>
-      {workspace.flavour !== 'local' ? (
-        <PageHistoryModal
-          docCollection={workspace.docCollection}
-          open={historyModalOpen}
-          pageId={page.id}
-          onOpenChange={setHistoryModalOpen}
-        />
-      ) : null}
-      <HistoryTipsModal
-        open={openHistoryTipsModal}
-        setOpen={setOpenHistoryTipsModal}
+      <PageHistoryModal
+        docCollection={workspace.docCollection}
+        open={historyModalOpen}
+        pageId={page.id}
+        onOpenChange={setHistoryModalOpen}
       />
     </>
   );
@@ -141,7 +125,6 @@ const PageHeaderMenuItem = ({
   const pageId = page?.id;
   const t = useI18n();
   const { hideShare } = useDetailPageHeaderResponsive(containerWidth);
-  const confirmEnableCloud = useEnableCloud();
 
   const workspace = useService(WorkspaceService).workspace;
   const guardService = useService(GuardService);
@@ -150,8 +133,6 @@ const PageHeaderMenuItem = ({
   const primaryMode = useLiveData(editorService.editor.doc.primaryMode$);
 
   const workbench = useService(WorkbenchService).workbench;
-  const openInAppService = useServiceOptional(OpenInAppService);
-
   const { favorite, toggleFavorite } = useFavorite(pageId);
 
   const { duplicate } = useBlockSuiteMetaHelper();
@@ -183,12 +164,6 @@ const PageHeaderMenuItem = ({
   const handleOpenInNewTab = useCallback(() => {
     workbench.openDoc(pageId, {
       at: 'new-tab',
-    });
-  }, [pageId, workbench]);
-
-  const handleOpenInSplitView = useCallback(() => {
-    workbench.openDoc(pageId, {
-      at: 'tail',
     });
   }, [pageId, workbench]);
 
@@ -312,11 +287,6 @@ const PageHeaderMenuItem = ({
               <ShareMenuContent
                 workspaceMetadata={workspace.meta}
                 currentPage={page}
-                onEnableAffineCloud={() =>
-                  confirmEnableCloud(workspace, {
-                    openPageId: page.id,
-                  })
-                }
               />
             </div>
           }
@@ -333,10 +303,6 @@ const PageHeaderMenuItem = ({
       <MenuSeparator />
     </>
   );
-
-  const onOpenInDesktop = useCallback(() => {
-    openInAppService?.showOpenInAppPage();
-  }, [openInAppService]);
 
   const canEdit = useGuard('Doc_Update', pageId);
   const canMoveToTrash = useGuard('Doc_Trash', pageId);
@@ -381,16 +347,6 @@ const PageHeaderMenuItem = ({
       >
         {t['com.affine.workbench.tab.page-menu-open']()}
       </MenuItem>
-      {BUILD_CONFIG.isElectron && (
-        <MenuItem
-          prefixIcon={<SplitViewIcon />}
-          data-testid="editor-option-menu-open-in-split-new"
-          onSelect={handleOpenInSplitView}
-        >
-          {t['com.affine.workbench.split-view.page-menu-open']()}
-        </MenuItem>
-      )}
-
       <MenuSeparator />
       <MenuItem
         prefixIcon={<InformationIcon />}
@@ -447,15 +403,6 @@ const PageHeaderMenuItem = ({
         onSelect={handleOpenTrashModal}
         disabled={!canMoveToTrash}
       />
-      {BUILD_CONFIG.isWeb && workspace.flavour !== 'local' ? (
-        <MenuItem
-          prefixIcon={<LocalWorkspaceIcon />}
-          data-testid="editor-option-menu-link"
-          onSelect={onOpenInDesktop}
-        >
-          {t['com.affine.header.option.open-in-desktop']()}
-        </MenuItem>
-      ) : null}
     </>
   );
 };

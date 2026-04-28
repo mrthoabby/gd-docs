@@ -24,8 +24,7 @@ export const OverCapacityNotification = () => {
   const workspaceDialogService = useService(WorkspaceDialogService);
   const jumpToPricePlan = useCallback(() => {
     workspaceDialogService.open('setting', {
-      activeTab: 'plans',
-      scrollAnchor: 'cloudPricingPlan',
+      activeTab: 'workspace:storage',
     });
   }, [workspaceDialogService]);
 
@@ -40,22 +39,22 @@ export const OverCapacityNotification = () => {
           }
           if (isOwner) {
             notify.warning({
-              title: t['com.affine.payment.storage-limit.new-title'](),
+              title: t['com.affine.quota.storage-limit.new-title'](),
               message:
-                t['com.affine.payment.storage-limit.new-description.owner'](),
+                t['com.affine.quota.storage-limit.new-description.owner'](),
               actions: [
                 {
                   key: 'upgrade',
-                  label: t['com.affine.payment.upgrade'](),
+                  label: t['com.affine.quota.manage-storage'](),
                   onClick: jumpToPricePlan,
                 },
               ],
             });
           } else {
             notify.warning({
-              title: t['com.affine.payment.storage-limit.new-title'](),
+              title: t['com.affine.quota.storage-limit.new-title'](),
               message:
-                t['com.affine.payment.storage-limit.description.member'](),
+                t['com.affine.quota.storage-limit.description.member'](),
             });
           }
         })

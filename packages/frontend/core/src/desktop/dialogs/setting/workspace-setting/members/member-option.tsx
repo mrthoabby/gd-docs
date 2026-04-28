@@ -14,13 +14,11 @@ export const MemberOptions = ({
   isOwner,
   isAdmin,
   openAssignModal,
-  goToTeamBilling,
 }: {
   member: Member;
   isOwner: boolean;
   isAdmin: boolean;
   openAssignModal: () => void;
-  goToTeamBilling: () => void;
 }) => {
   const t = useI18n();
   const membersService = useService(WorkspaceMembersService);
@@ -31,12 +29,12 @@ export const MemberOptions = ({
   const openRemoveConfirmModal = useCallback(
     (successNotify: { title: string; message: string }) => {
       openConfirmModal({
-        title: t['com.affine.payment.member.team.remove.confirm.title'](),
+        title: t['com.affine.workspace.members.team.remove.confirm.title'](),
         description:
-          t['com.affine.payment.member.team.remove.confirm.description'](),
+          t['com.affine.workspace.members.team.remove.confirm.description'](),
         confirmText:
-          t['com.affine.payment.member.team.remove.confirm.confirm-button'](),
-        cancelText: t['com.affine.payment.member.team.remove.confirm.cancel'](),
+          t['com.affine.workspace.members.team.remove.confirm.confirm-button'](),
+        cancelText: t['com.affine.workspace.members.team.remove.confirm.cancel'](),
         confirmButtonOptions: {
           variant: 'error',
         },
@@ -69,8 +67,8 @@ export const MemberOptions = ({
 
   const handleRevoke = useCallback(() => {
     openRemoveConfirmModal({
-      title: t['com.affine.payment.member.team.revoke.notify.title'](),
-      message: t['com.affine.payment.member.team.revoke.notify.message']({
+      title: t['com.affine.workspace.members.team.revoke.notify.title'](),
+      message: t['com.affine.workspace.members.team.revoke.notify.message']({
         name: member.name || member.email || member.id,
       }),
     });
@@ -82,8 +80,8 @@ export const MemberOptions = ({
       .then(result => {
         if (result) {
           notify.success({
-            title: t['com.affine.payment.member.team.approve.notify.title'](),
-            message: t['com.affine.payment.member.team.approve.notify.message'](
+            title: t['com.affine.workspace.members.team.approve.notify.title'](),
+            message: t['com.affine.workspace.members.team.approve.notify.message'](
               {
                 name: member.name || member.email || member.id,
               }
@@ -102,8 +100,8 @@ export const MemberOptions = ({
 
   const handleDecline = useCallback(() => {
     openRemoveConfirmModal({
-      title: t['com.affine.payment.member.team.decline.notify.title'](),
-      message: t['com.affine.payment.member.team.decline.notify.message']({
+      title: t['com.affine.workspace.members.team.decline.notify.title'](),
+      message: t['com.affine.workspace.members.team.decline.notify.message']({
         name: member.name || member.email || member.id,
       }),
     });
@@ -111,8 +109,8 @@ export const MemberOptions = ({
 
   const handleRemove = useCallback(() => {
     openRemoveConfirmModal({
-      title: t['com.affine.payment.member.team.remove.notify.title'](),
-      message: t['com.affine.payment.member.team.remove.notify.message']({
+      title: t['com.affine.workspace.members.team.remove.notify.title'](),
+      message: t['com.affine.workspace.members.team.remove.notify.message']({
         name: member.name || member.email || member.id,
       }),
     });
@@ -124,9 +122,9 @@ export const MemberOptions = ({
       .then(result => {
         if (result) {
           notify.success({
-            title: t['com.affine.payment.member.team.change.notify.title'](),
+            title: t['com.affine.workspace.members.team.change.notify.title'](),
             message: t[
-              'com.affine.payment.member.team.change.admin.notify.message'
+              'com.affine.workspace.members.team.change.admin.notify.message'
             ]({
               name: member.name || member.email || member.id,
             }),
@@ -147,9 +145,9 @@ export const MemberOptions = ({
       .then(result => {
         if (result) {
           notify.success({
-            title: t['com.affine.payment.member.team.change.notify.title'](),
+            title: t['com.affine.workspace.members.team.change.notify.title'](),
             message: t[
-              'com.affine.payment.member.team.change.collaborator.notify.message'
+              'com.affine.workspace.members.team.change.collaborator.notify.message'
             ]({
               name: member.name || member.email || member.id,
             }),
@@ -165,51 +163,20 @@ export const MemberOptions = ({
       });
   }, [member, membersService, t]);
 
-  const handleRetryPayment = useCallback(() => {
-    openConfirmModal({
-      title: t['com.affine.payment.member.team.retry-payment.title'](),
-      description:
-        t[
-          `com.affine.payment.member.team.retry-payment.${isOwner ? 'owner' : 'admin'}.description`
-        ](),
-      confirmText:
-        t[
-          isOwner
-            ? 'com.affine.payment.member.team.retry-payment.update-payment'
-            : 'Got it'
-        ](),
-      confirmButtonOptions: {
-        variant: 'primary',
-      },
-      onConfirm: isOwner ? goToTeamBilling : undefined,
-      cancelText: t['Cancel'](),
-      cancelButtonOptions: {
-        style: {
-          visibility: isOwner ? 'visible' : 'hidden',
-        },
-      },
-    });
-  }, [goToTeamBilling, isOwner, openConfirmModal, t]);
-
   const operationButtonInfo = useMemo(() => {
     return [
       {
-        label: t['com.affine.payment.member.team.retry-payment'](),
-        onClick: handleRetryPayment,
-        show: member.status === WorkspaceMemberStatus.NeedMoreSeat,
-      },
-      {
-        label: t['com.affine.payment.member.team.approve'](),
+        label: t['com.affine.workspace.members.team.approve'](),
         onClick: handleApprove,
         show: member.status === WorkspaceMemberStatus.UnderReview,
       },
       {
-        label: t['com.affine.payment.member.team.approve'](),
-        onClick: handleRetryPayment,
+        label: t['com.affine.workspace.members.team.approve'](),
+        onClick: handleApprove,
         show: member.status === WorkspaceMemberStatus.NeedMoreSeatAndReview,
       },
       {
-        label: t['com.affine.payment.member.team.decline'](),
+        label: t['com.affine.workspace.members.team.decline'](),
         onClick: handleDecline,
         show:
           (isAdmin || isOwner) &&
@@ -217,7 +184,7 @@ export const MemberOptions = ({
             member.status === WorkspaceMemberStatus.NeedMoreSeatAndReview),
       },
       {
-        label: t['com.affine.payment.member.team.revoke'](),
+        label: t['com.affine.workspace.members.team.revoke'](),
         onClick: handleRevoke,
         show:
           (isAdmin || isOwner) &&
@@ -228,7 +195,7 @@ export const MemberOptions = ({
           ].includes(member.status),
       },
       {
-        label: t['com.affine.payment.member.team.remove'](),
+        label: t['com.affine.workspace.members.team.remove'](),
         onClick: handleRemove,
         show:
           (isOwner && member.status === WorkspaceMemberStatus.Accepted) ||
@@ -238,7 +205,7 @@ export const MemberOptions = ({
             member.permission !== Permission.Admin),
       },
       {
-        label: t['com.affine.payment.member.team.change.collaborator'](),
+        label: t['com.affine.workspace.members.team.change.collaborator'](),
         onClick: handleChangeToCollaborator,
         show:
           isOwner &&
@@ -246,7 +213,7 @@ export const MemberOptions = ({
           member.permission === Permission.Admin,
       },
       {
-        label: t['com.affine.payment.member.team.change.admin'](),
+        label: t['com.affine.workspace.members.team.change.admin'](),
         onClick: handleChangeToAdmin,
         show:
           isTeam &&
@@ -256,7 +223,7 @@ export const MemberOptions = ({
           member.status === WorkspaceMemberStatus.Accepted,
       },
       {
-        label: t['com.affine.payment.member.team.assign'](),
+        label: t['com.affine.workspace.members.team.assign'](),
         onClick: handleAssignOwner,
         show: isOwner && member.status === WorkspaceMemberStatus.Accepted,
       },
@@ -268,7 +235,6 @@ export const MemberOptions = ({
     handleChangeToCollaborator,
     handleDecline,
     handleRemove,
-    handleRetryPayment,
     handleRevoke,
     isAdmin,
     isOwner,

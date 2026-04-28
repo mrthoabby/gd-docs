@@ -3,19 +3,7 @@ import { OnOptions } from 'eventemitter2';
 import { PushMetadata, sliceMetadata } from '../nestjs/decorator';
 
 declare global {
-  /**
-   * Event definitions can be extended by
-   *
-   * @example
-   *
-   * declare global {
-   *   interface Events {
-   *     'user.subscription.created': {
-   *       userId: User['id'];
-   *     }
-   *   }
-   * }
-   */
+  /** Event definitions can be extended by feature modules. */
   interface Events {}
 }
 

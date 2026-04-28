@@ -4,11 +4,8 @@ import {
   Loading,
   Menu,
   MenuItem,
-  toast,
 } from '@affine/component';
 import { useQuery } from '@affine/core/components/hooks/use-query';
-import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
-import { WorkspacePermissionService } from '@affine/core/modules/permissions';
 import {
   getDocLastAccessedMembersQuery,
   getDocPageAnalyticsQuery,
@@ -17,11 +14,9 @@ import { i18nTime, useI18n } from '@affine/i18n';
 import {
   ArrowDownSmallIcon,
   CalendarPanelIcon,
-  LockIcon,
 } from '@blocksuite/icons/rc';
-import { useLiveData, useService } from '@toeverything/infra';
 import { cssVar } from '@toeverything/theme';
-import { useCallback, useEffect, useMemo, useState } from 'react';
+import { useEffect, useMemo, useState } from 'react';
 import {
   Area,
   CartesianGrid,
@@ -43,7 +38,6 @@ import {
   ensureMinimumChartPoints,
   getAvailableAnalyticsWindowOptions,
   INITIAL_MEMBERS_PAGE_SIZE,
-  isLockedAnalyticsWindowOption,
   MAX_MEMBERS_PAGE_SIZE,
 } from './analytics.utils';
 
@@ -115,10 +109,6 @@ export const EditorAnalyticsPanel = ({
   docId: string;
 }) => {
   const t = useI18n();
-  const permission = useService(WorkspacePermissionService).permission;
-  const workspaceDialogService = useService(WorkspaceDialogService);
-  const isTeam = useLiveData(permission.isTeam$);
-  const isTeamWorkspace = isTeam ?? false;
   const [windowDays, setWindowDays] = useState(DEFAULT_ANALYTICS_WINDOW_DAYS);
   const [membersPageSize, setMembersPageSize] = useState(
     INITIAL_MEMBERS_PAGE_SIZE
@@ -128,8 +118,8 @@ export const EditorAnalyticsPanel = ({
     []
   );
   const effectiveWindowDays = useMemo(
-    () => clampAnalyticsWindowDays(windowDays, isTeamWorkspace),
-    [isTeamWorkspace, windowDays]
+    () => clampAnalyticsWindowDays(windowDays, true),
+    [windowDays]
   );
   const timezone = useMemo(
     () => Intl.DateTimeFormat().resolvedOptions().timeZone || 'UTC',
@@ -139,10 +129,6 @@ export const EditorAnalyticsPanel = ({
   useEffect(() => {
     setMembersPageSize(INITIAL_MEMBERS_PAGE_SIZE);
   }, [docId]);
-
-  useEffect(() => {
-    permission.revalidate();
-  }, [permission, workspaceId]);
 
   useEffect(() => {
     if (windowDays !== effectiveWindowDays) {
@@ -218,16 +204,6 @@ export const EditorAnalyticsPanel = ({
   const hasMoreMembers =
     Boolean(membersConnection?.pageInfo.hasNextPage) &&
     membersPageSize < MAX_MEMBERS_PAGE_SIZE;
-  const openTeamPricing = useCallback(() => {
-    workspaceDialogService.open('setting', {
-      activeTab: 'plans',
-      scrollAnchor: 'cloudPricingPlan',
-    });
-  }, [workspaceDialogService]);
-  const showTeamPlanToast = useCallback(() => {
-    toast(t['com.affine.doc.analytics.paywall.toast']());
-  }, [t]);
-
   return (
     <div className={styles.root}>
       <section className={styles.section}>
@@ -247,38 +223,11 @@ export const EditorAnalyticsPanel = ({
             items={
               <>
                 {allowedWindowOptions.map(option => {
-                  const isLocked = isLockedAnalyticsWindowOption(
-                    option,
-                    isTeamWorkspace
-                  );
-
                   return (
                     <MenuItem
                       key={option}
                       selected={effectiveWindowDays === option}
-                      suffixIcon={
-                        isLocked ? (
-                          <button
-                            type="button"
-                            className={styles.lockButton}
-                            aria-label={t[
-                              'com.affine.doc.analytics.paywall.open-pricing'
-                            ]()}
-                            onClick={event => {
-                              event.preventDefault();
-                              event.stopPropagation();
-                              openTeamPricing();
-                            }}
-                          >
-                            <LockIcon />
-                          </button>
-                        ) : undefined
-                      }
                       onSelect={() => {
-                        if (isLocked) {
-                          showTeamPlanToast();
-                          return;
-                        }
                         setWindowDays(option);
                       }}
                     >
@@ -286,7 +235,7 @@ export const EditorAnalyticsPanel = ({
                         days: option,
                       })}
                       {isLocked
-                        ? ` (${t['com.affine.payment.cloud.team-workspace.name']()})`
+                        ? ` (${t['com.affine.workspace.team-workspace.name']()})`
                         : ''}
                     </MenuItem>
                   );

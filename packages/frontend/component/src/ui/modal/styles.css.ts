@@ -1,5 +1,4 @@
 import { cssVar } from '@toeverything/theme';
-import { cssVarV2 } from '@toeverything/theme/v2';
 import {
   createVar,
   generateIdentifier,
@@ -77,9 +76,6 @@ export const modalOverlay = style({
   selectors: {
     '&.anim-none': {
       animation: 'none',
-    },
-    '&.mobile': {
-      backgroundColor: cssVarV2('layer/background/mobile/modal'),
     },
   },
 });

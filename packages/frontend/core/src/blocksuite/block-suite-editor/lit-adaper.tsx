@@ -21,7 +21,6 @@ import { EditorSettingService } from '@affine/core/modules/editor-setting';
 import { FeatureFlagService } from '@affine/core/modules/feature-flag';
 import { JournalService } from '@affine/core/modules/journal';
 import { useInsidePeekView } from '@affine/core/modules/peek-view';
-import { WorkspaceService } from '@affine/core/modules/workspace';
 import { ServerFeature } from '@affine/graphql';
 import track from '@affine/track';
 import type { DocTitle } from '@blocksuite/affine/fragments/doc-title';
@@ -31,7 +30,6 @@ import {
   useFramework,
   useLiveData,
   useService,
-  useServices,
 } from '@toeverything/infra';
 import type React from 'react';
 import {
@@ -62,11 +60,7 @@ interface BlocksuiteEditorProps {
 
 const usePatchSpecs = (mode: DocMode, shared?: boolean) => {
   const [reactToLit, portals] = useLitPortalFactory();
-  const { workspaceService, featureFlagService } = useServices({
-    WorkspaceService,
-    FeatureFlagService,
-  });
-  const isCloud = workspaceService.workspace.flavour !== 'local';
+  const featureFlagService = useService(FeatureFlagService);
   const framework = useFramework();
 
   const confirmModal = useConfirmModal();
@@ -88,7 +82,7 @@ const usePatchSpecs = (mode: DocMode, shared?: boolean) => {
 
   // comment may not be supported by the server
   const enableComment =
-    isCloud && serverConfig.features.includes(ServerFeature.Comment) && !shared;
+    serverConfig.features.includes(ServerFeature.Comment) && !shared;
 
   const patchedSpecs = useMemo(() => {
     const manager = getViewManager()
@@ -102,7 +96,7 @@ const usePatchSpecs = (mode: DocMode, shared?: boolean) => {
         reactToLit,
         confirmModal,
       })
-      .cloud(framework, isCloud)
+      .cloud(framework, true)
       .turboRenderer(enableTurboRenderer)
       .pdf(enablePDFEmbedPreview, reactToLit)
       .edgelessBlockHeader({
@@ -113,22 +107,12 @@ const usePatchSpecs = (mode: DocMode, shared?: boolean) => {
       .database(framework)
       .linkedDoc(framework)
       .paragraph(enableAI)
-      .mobile(framework)
-      .electron(framework)
       .linkPreview(framework)
       .codeBlockPreview(framework)
       .iconPicker(framework)
       .comment(enableComment, framework).value;
 
-    if (BUILD_CONFIG.isMobileEdition) {
-      if (mode === 'page') {
-        return manager.get('mobile-page');
-      } else {
-        return manager.get('mobile-edgeless');
-      }
-    } else {
-      return manager.get(mode);
-    }
+    return manager.get(mode);
   }, [
     confirmModal,
     enableAI,
@@ -137,7 +121,6 @@ const usePatchSpecs = (mode: DocMode, shared?: boolean) => {
     enableComment,
     framework,
     isInPeekView,
-    isCloud,
     mode,
     reactToLit,
   ]);
@@ -256,9 +239,7 @@ export const BlocksuiteDocEditor = forwardRef<
   return (
     <>
       <div className={styles.affineDocViewport}>
-        {!BUILD_CONFIG.isMobileEdition ? (
-          <DocIconPicker docId={page.id} readonly={readonly || shared} />
-        ) : null}
+        <DocIconPicker docId={page.id} readonly={readonly || shared} />
         {!isJournal ? (
           <LitDocTitle doc={page} ref={onTitleRef} />
         ) : (
@@ -287,9 +268,7 @@ export const BlocksuiteDocEditor = forwardRef<
           data-testid="page-editor-blank"
           onClick={onClickBlank}
         ></div>
-        {!readonly && !BUILD_CONFIG.isMobileEdition && (
-          <StarterBar doc={page} />
-        )}
+        {!readonly && <StarterBar doc={page} />}
         {!shared && displayBiDirectionalLink ? (
           <BiDirectionalLinkPanel />
         ) : null}

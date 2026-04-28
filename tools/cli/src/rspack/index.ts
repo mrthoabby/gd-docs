@@ -64,13 +64,7 @@ export function createHTMLTargetConfig(
 
   const buildConfig = getBuildConfigFromEnv(pkg);
   const emitSourceMaps = shouldEmitSourceMaps(buildConfig.debug);
-  const codeBlockPreviewBackendFile =
-    buildConfig.distribution === 'desktop'
-      ? 'platform-backend.desktop.ts'
-      : buildConfig.distribution === 'ios' ||
-          buildConfig.distribution === 'android'
-        ? 'platform-backend.mobile.ts'
-        : 'platform-backend.ts';
+  const codeBlockPreviewBackendFile = 'platform-backend.ts';
   const codeBlockPreviewBackendAlias = ProjectRoot.join(
     'packages',
     'frontend',
@@ -160,16 +154,6 @@ export function createHTMLTargetConfig(
       //#region rules
       rules: [
         { test: /\.m?js?$/, resolve: { fullySpecified: false } },
-        ...(emitSourceMaps
-          ? [
-              {
-                test: /\.js$/,
-                enforce: 'pre' as const,
-                include: /@blocksuite/,
-                use: ['source-map-loader'],
-              },
-            ]
-          : []),
         {
           oneOf: [
             {
@@ -318,20 +302,6 @@ export function createHTMLTargetConfig(
             },
           ],
         }),
-      // sourcemap url like # sourceMappingURL=76-6370cd185962bc89.js.map wont load in electron
-      // this is because the default file:// protocol will be ignored by Chromium
-      // so we need to replace the sourceMappingURL to assets:// protocol
-      // for example:
-      // replace # sourceMappingURL=76-6370cd185962bc89.js.map
-      // to      # sourceMappingURL=assets://./{dir}/76-6370cd185962bc89.js.map
-      buildConfig.isElectron &&
-        emitSourceMaps &&
-        new rspack.SourceMapDevToolPlugin({
-          append: (pathData: { filename?: string }) => {
-            return `\n//# sourceMappingURL=assets://./${pathData.filename ?? ''}.map`;
-          },
-          filename: '[file].map',
-        }),
     ]),
     //#endregion
 
@@ -457,16 +427,6 @@ export function createWorkerTargetConfig(
       },
       rules: [
         { test: /\.m?js?$/, resolve: { fullySpecified: false } },
-        ...(emitSourceMaps
-          ? [
-              {
-                test: /\.js$/,
-                enforce: 'pre' as const,
-                include: /@blocksuite/,
-                use: ['source-map-loader'],
-              },
-            ]
-          : []),
         {
           oneOf: [
             {
@@ -606,16 +566,6 @@ export function createNodeTargetConfig(
         javascript: { url: false, importMeta: false, createRequire: false },
       },
       rules: [
-        ...(emitSourceMaps
-          ? [
-              {
-                test: /\.js$/,
-                enforce: 'pre' as const,
-                include: /@blocksuite/,
-                use: ['source-map-loader'],
-              },
-            ]
-          : []),
         {
           test: /\.node$/,
           loader: Path.dir(import.meta.url).join(

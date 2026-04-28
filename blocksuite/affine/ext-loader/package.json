@@ -14,9 +14,6 @@
     "@blocksuite/store": "workspace:*",
     "zod": "^3.25.76"
   },
-  "devDependencies": {
-    "vitest": "^4.0.18"
-  },
   "exports": {
     ".": "./src/index.ts"
   },

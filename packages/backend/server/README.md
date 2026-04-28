@@ -8,12 +8,6 @@
 yarn
 ```
 
-### Build Native binding
-
-```bash
-yarn affine @affine/server-native build
-```
-
 ### Run server
 
 ```bash

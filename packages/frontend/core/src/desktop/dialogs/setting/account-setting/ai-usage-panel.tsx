@@ -27,7 +27,7 @@ export const AIUsagePanel = () => {
     if (loadError) {
       return (
         <SettingRow
-          name={t['com.affine.payment.ai.usage-title']()}
+          name={t['com.affine.ai.usage-title']()}
           desc={''}
           spreadCol={false}
         >
@@ -38,7 +38,7 @@ export const AIUsagePanel = () => {
     }
     return (
       <SettingRow
-        name={t['com.affine.payment.ai.usage-title']()}
+        name={t['com.affine.ai.usage-title']()}
         desc={''}
         spreadCol={false}
       >
@@ -64,15 +64,15 @@ export const AIUsagePanel = () => {
     <SettingRow
       spreadCol={false}
       desc=""
-      name={t['com.affine.payment.ai.usage-title']()}
+      name={t['com.affine.ai.usage-title']()}
     >
       {copilotActionLimit === 'unlimited' ? (
         <div className={styles.storageProgressContainer}>
           <div className={styles.storageProgressWrapper}>
             <div className="storage-progress-desc">
-              <span>{t['com.affine.payment.ai.usage.used-caption']()}</span>
+              <span>{t['com.affine.ai.usage.used-caption']()}</span>
               <span>
-                {t['com.affine.payment.ai.usage.used-detail']({
+                {t['com.affine.ai.usage.used-detail']({
                   used: copilotActionUsed.toString(),
                   limit: copilotActionLimit,
                 })}
@@ -84,9 +84,9 @@ export const AIUsagePanel = () => {
         <div className={styles.storageProgressContainer}>
           <div className={styles.storageProgressWrapper}>
             <div className="storage-progress-desc">
-              <span>{t['com.affine.payment.ai.usage.used-caption']()}</span>
+              <span>{t['com.affine.ai.usage.used-caption']()}</span>
               <span>
-                {t['com.affine.payment.ai.usage.used-detail']({
+                {t['com.affine.ai.usage.used-detail']({
                   used: copilotActionUsed.toString(),
                   limit: copilotActionLimit.toString(),
                 })}

@@ -2,7 +2,6 @@ import { LiveData, Service } from '@toeverything/infra';
 import dayjs from 'dayjs';
 
 import type { DocsService } from '../../doc';
-import type { TemplateDocService } from '../../template-doc';
 import type { JournalStore } from '../store/journal';
 
 export type MaybeDate = Date | string | number;
@@ -12,8 +11,7 @@ export const JOURNAL_DATE_FORMAT = 'YYYY-MM-DD';
 export class JournalService extends Service {
   constructor(
     private readonly store: JournalStore,
-    private readonly docsService: DocsService,
-    private readonly templateDocService: TemplateDocService
+    private readonly docsService: DocsService
   ) {
     super();
   }
@@ -59,24 +57,6 @@ export class JournalService extends Service {
         .getTime(),
     });
 
-    const enablePageTemplate =
-      this.templateDocService.setting.enablePageTemplate$.value;
-    const pageTemplateDocId =
-      this.templateDocService.setting.pageTemplateDocId$.value;
-    const journalTemplateDocId =
-      this.templateDocService.setting.journalTemplateDocId$.value;
-    // if journal template configured
-    if (journalTemplateDocId) {
-      this.docsService
-        .duplicateFromTemplate(journalTemplateDocId, docRecord.id)
-        .catch(console.error);
-    }
-    // journal template not configured, use page template
-    else if (enablePageTemplate && pageTemplateDocId) {
-      this.docsService
-        .duplicateFromTemplate(pageTemplateDocId, docRecord.id)
-        .catch(console.error);
-    }
     this.setJournalDate(docRecord.id, title);
     return docRecord;
   }

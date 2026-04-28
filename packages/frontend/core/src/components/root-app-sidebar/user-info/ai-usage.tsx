@@ -1,7 +1,4 @@
-import {
-  SubscriptionService,
-  UserCopilotQuotaService,
-} from '@affine/core/modules/cloud';
+import { UserCopilotQuotaService } from '@affine/core/modules/cloud';
 import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
 import { useI18n } from '@affine/i18n';
 import { useLiveData, useService } from '@toeverything/infra';
@@ -15,12 +12,7 @@ import * as styles from './index.css';
 export const AIUsage = () => {
   const t = useI18n();
   const copilotQuotaService = useService(UserCopilotQuotaService);
-  const subscriptionService = useService(SubscriptionService);
 
-  useEffect(() => {
-    // revalidate latest subscription status
-    subscriptionService.subscription.revalidate();
-  }, [subscriptionService]);
   useEffect(() => {
     copilotQuotaService.copilotQuota.revalidate();
   }, [copilotQuotaService]);
@@ -38,8 +30,7 @@ export const AIUsage = () => {
 
   const goToAIPlanPage = useCallback(() => {
     workspaceDialogService.open('setting', {
-      activeTab: 'plans',
-      scrollAnchor: 'aiPricingPlan',
+      activeTab: 'account',
     });
   }, [workspaceDialogService]);
 
@@ -68,7 +59,7 @@ export const AIUsage = () => {
           </div>
         </div>
         <div className={styles.usageLabel}>
-          {t['com.affine.payment.ai.usage-description-purchased']()}
+          {t['com.affine.ai.usage-description-purchased']()}
         </div>
       </div>
     );

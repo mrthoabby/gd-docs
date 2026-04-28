@@ -1,4 +1,4 @@
-// [SELFHOST PATCH] El banner de "Enable AFFiNE Cloud" fue suprimido.
+// [SELFHOST PATCH] El banner de sincronizacion externa fue suprimido.
 // El componente se mantiene por compatibilidad de tipos pero no renderiza nada.
 
 type LocalDemoTipsProps = {

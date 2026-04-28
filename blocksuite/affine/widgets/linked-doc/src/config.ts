@@ -17,7 +17,6 @@ import {
   isFuzzyMatch,
   type Signal,
 } from '@blocksuite/affine-shared/utils';
-import { IS_MOBILE } from '@blocksuite/global/env';
 import {
   type BlockStdScope,
   ConfigExtensionFactory,
@@ -159,46 +158,42 @@ export function createNewDocMenuGroup(
     },
   ];
 
-  if (!IS_MOBILE) {
-    items.push({
-      key: 'import',
-      name: 'Import',
-      icon: ImportIcon,
-      action: () => {
-        abort();
-        const onSuccess = (
-          docIds: string[],
-          options: {
-            importedCount: number;
-          }
-        ) => {
-          toast(
-            editorHost,
-            `Successfully imported ${options.importedCount} Doc${options.importedCount > 1 ? 's' : ''}.`
-          );
-          for (const docId of docIds) {
-            insertLinkedNode({
-              inlineEditor,
-              docId,
-            });
-          }
-        };
-        const onFail = (message: string) => {
-          toast(editorHost, message);
-        };
-        const storeManager = editorHost.std.get(
-          StoreExtensionManagerIdentifier
+  items.push({
+    key: 'import',
+    name: 'Import',
+    icon: ImportIcon,
+    action: () => {
+      abort();
+      const onSuccess = (
+        docIds: string[],
+        options: {
+          importedCount: number;
+        }
+      ) => {
+        toast(
+          editorHost,
+          `Successfully imported ${options.importedCount} Doc${options.importedCount > 1 ? 's' : ''}.`
         );
-        showImportModal({
-          collection: doc.workspace,
-          schema: doc.schema,
-          extensions: storeManager.get('store'),
-          onSuccess,
-          onFail,
-        });
-      },
-    });
-  }
+        for (const docId of docIds) {
+          insertLinkedNode({
+            inlineEditor,
+            docId,
+          });
+        }
+      };
+      const onFail = (message: string) => {
+        toast(editorHost, message);
+      };
+      const storeManager = editorHost.std.get(StoreExtensionManagerIdentifier);
+      showImportModal({
+        collection: doc.workspace,
+        schema: doc.schema,
+        extensions: storeManager.get('store'),
+        onSuccess,
+        onFail,
+      });
+    },
+  });
 
   return {
     name: 'New Doc',

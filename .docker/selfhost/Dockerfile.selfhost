@@ -39,25 +39,23 @@ ENV HUSKY=0 \
     NPM_TOKEN=NONE \
     PERFSEE_TOKEN="" \
     AFFINE_ENABLE_PROD_SOURCEMAPS=false \
-    PLAYWRIGHT_SKIP_BROWSER_DOWNLOAD=1 \
-    ELECTRON_SKIP_BINARY_DOWNLOAD=1 \
-    SENTRYCLI_SKIP_DOWNLOAD=1 \
     GITHUB_SHA=selfhosted
 
 # Yarn runtime (capa raramente cambia — siempre cacheada)
 COPY .yarn/releases/ .yarn/releases/
 COPY .yarn/patches/  .yarn/patches/
-COPY .yarnrc.yml yarn.lock ./
+COPY .yarnrc.yml .npmrc yarn.lock ./
 
-# Manifiestos y código fuente
+# Manifiestos y configuración mínima: esta capa solo cambia si cambia el grafo
+# de dependencias/workspaces, no cuando cambia código de aplicación.
 COPY package.json ./
-COPY packages/    packages/
-COPY blocksuite/  blocksuite/
-COPY tools/       tools/
-
-# Config de TypeScript / linters (requerida por postinstall)
 COPY tsconfig.json tsconfig.node.json tsconfig.web.json tsconfig.eslint.json ./
 COPY .prettierrc .prettierignore .oxlintrc.json ./
+COPY tools/cli/   tools/cli/
+COPY tools/utils/ tools/utils/
+
+RUN --mount=type=bind,source=.,target=/src,readonly \
+    node -e "const fs=require('node:fs');const path=require('node:path');const copy=(rel)=>{const from=path.join('/src',rel);if(!fs.existsSync(from))return;const to=path.join('/repo',rel);fs.mkdirSync(path.dirname(to),{recursive:true});fs.copyFileSync(from,to);};const walk=(dir)=>{const full=path.join('/src',dir);if(!fs.existsSync(full))return;for(const entry of fs.readdirSync(full,{withFileTypes:true})){const rel=path.join(dir,entry.name);if(entry.isDirectory())walk(rel);else if(entry.name==='package.json'||entry.name==='tsconfig.json')copy(rel);}};walk('packages');walk('blocksuite');copy('packages/backend/server/schema.prisma');"
 
 # --mount=type=cache: yarn guarda los paquetes descargados en disco
 # del host entre builds. Si yarn.lock no cambió, la instalación es
@@ -65,6 +63,13 @@ COPY .prettierrc .prettierignore .oxlintrc.json ./
 RUN --mount=type=cache,target=/root/.yarn/cache \
     corepack enable && \
     yarn workspaces focus @affine/web @affine/admin @affine/server @affine-tools/cli @types/affine__env
+
+# Código fuente completo. Cambios aquí no invalidan la instalación de deps.
+COPY packages/    packages/
+COPY blocksuite/  blocksuite/
+COPY tools/       tools/
+
+RUN yarn affine init
 
 
 # ── Frontend: web + admin en SERIE ───────────────────────────
@@ -88,10 +93,7 @@ FROM base AS build-prod-deps
 RUN --mount=type=cache,target=/root/.yarn/cache \
     yarn workspaces focus @affine/server --production && \
     yarn workspace @affine/server prisma generate && \
-    mv /repo/node_modules /repo/packages/backend/server/node_modules && \
-    rm -rf /repo/packages/backend/server/node_modules/@affine/server-native && \
-    cp -r /repo/packages/backend/native \
-          /repo/packages/backend/server/node_modules/@affine/server-native
+    mv /repo/node_modules /repo/packages/backend/server/node_modules
 
 
 # ── Stage ensamblaje ─────────────────────────────────────────

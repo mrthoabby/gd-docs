@@ -62,7 +62,6 @@
     { "path": "../widgets/edgeless-toolbar" },
     { "path": "../widgets/edgeless-zoom-toolbar" },
     { "path": "../widgets/frame-title" },
-    { "path": "../widgets/keyboard-toolbar" },
     { "path": "../widgets/linked-doc" },
     { "path": "../widgets/note-slicer" },
     { "path": "../widgets/page-dragging-area" },

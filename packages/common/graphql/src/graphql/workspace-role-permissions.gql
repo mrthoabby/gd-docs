@@ -9,7 +9,6 @@ query getWorkspaceRolePermissions($id: String!) {
       Workspace_CreateDoc
       Workspace_Delete
       Workspace_Organize_Read
-      Workspace_Payment_Manage
       Workspace_Properties_Create
       Workspace_Properties_Delete
       Workspace_Properties_Read

@@ -7,7 +7,6 @@ import { assignInlineVars } from '@vanilla-extract/dynamic';
 import clsx from 'clsx';
 import { useEffect } from 'react';
 
-import { UserPlanButton } from '../../affine/auth/user-plan-button';
 import { useCatchEventCallback } from '../../hooks/use-catch-event-hook';
 import * as styles from './index.css';
 
@@ -19,8 +18,7 @@ export const CloudUsage = () => {
   const workspaceDialogService = useService(WorkspaceDialogService);
   const handleClick = useCatchEventCallback(() => {
     workspaceDialogService.open('setting', {
-      activeTab: 'plans',
-      scrollAnchor: 'cloudPricingPlan',
+      activeTab: 'workspace:storage',
     });
   }, [workspaceDialogService]);
 
@@ -47,6 +45,7 @@ export const CloudUsage = () => {
 
   return (
     <div
+      onClick={handleClick}
       className={clsx(styles.usageBlock, styles.cloudUsageBlock)}
       style={assignInlineVars({
         [styles.progressColorVar]: color,
@@ -61,7 +60,6 @@ export const CloudUsage = () => {
           <span>&nbsp;/&nbsp;</span>
           <span>{maxFormatted}</span>
         </div>
-        <UserPlanButton onClick={handleClick} />
       </div>
 
       <div className={styles.cloudUsageBar}>

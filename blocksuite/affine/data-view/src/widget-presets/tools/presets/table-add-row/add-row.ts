@@ -1,5 +1,4 @@
 import { unsafeCSSVarV2 } from '@blocksuite/affine-shared/theme';
-import { IS_MOBILE } from '@blocksuite/global/env';
 import { PlusIcon } from '@blocksuite/icons/lit';
 import { css, html } from 'lit';
 
@@ -36,9 +35,7 @@ export class DataViewHeaderToolsAddRow extends WidgetBase {
       class="affine-database-toolbar-item new-record"
       .onClick="${this.onAddNewRecord}"
       .icon="${PlusIcon()}"
-      .text="${IS_MOBILE
-        ? html`<span style="font-weight: 500">New</span>`
-        : html`<span style="font-weight: 500">New Record</span>`}"
+      .text="${html`<span style="font-weight: 500">New Record</span>`}"
     >
     </data-view-component-button>`;
   }

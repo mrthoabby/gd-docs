@@ -1,4 +1,3 @@
-import { IS_MOBILE } from '@blocksuite/global/env';
 import { computed, signal } from '@preact/signals-core';
 import type { TemplateResult } from 'lit';
 
@@ -69,9 +68,7 @@ export class Menu {
   }
 
   constructor(public options: MenuOptions) {
-    this.menuElement = IS_MOBILE
-      ? document.createElement('mobile-menu')
-      : document.createElement('affine-menu');
+    this.menuElement = document.createElement('affine-menu');
     this.menuElement.menu = this;
     if (this.options.testId) {
       this.menuElement.dataset.testid = this.options.testId;

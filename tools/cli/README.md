@@ -25,7 +25,7 @@ yarn dev -p i18n
 ### Clean
 
 ```bash
-yarn affine clean --dist --rust
+yarn affine clean --dist
 # clean node_modules
 yarn affine clean --node-modules
 ```

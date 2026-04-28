@@ -1,5 +1,4 @@
 import type { WorkspaceService } from '@affine/core/modules/workspace';
-import { logger } from '@sentry/react';
 import {
   catchErrorInto,
   effect,
@@ -14,6 +13,7 @@ import { EMPTY } from 'rxjs';
 import { exhaustMap, mergeMap } from 'rxjs/operators';
 
 import type { EmbeddingStore } from '../stores/embedding';
+import { logger } from '../utils';
 
 export class EmbeddingEnabled extends Entity {
   enabled$ = new LiveData<boolean | null>(null);

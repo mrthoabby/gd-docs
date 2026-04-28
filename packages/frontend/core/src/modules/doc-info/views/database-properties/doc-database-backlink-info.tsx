@@ -6,7 +6,6 @@ import {
 } from '@affine/component';
 import { AffinePageReference } from '@affine/core/components/affine/reference-link';
 import { DocService } from '@affine/core/modules/doc';
-import { TemplateDocService } from '@affine/core/modules/template-doc';
 import { useI18n } from '@affine/i18n';
 import type { DatabaseBlockDataSource } from '@blocksuite/affine/blocks/database';
 import { DatabaseTableViewIcon, PageIcon } from '@blocksuite/icons/rc';
@@ -106,16 +105,6 @@ const DatabaseBacklinkRow = ({
       });
   }, [row?.cells]);
   const t = useI18n();
-  const templateDocService = useService(TemplateDocService);
-
-  const isTemplateDoc = useLiveData(
-    useMemo(
-      () =>
-        row?.docId ? templateDocService.list.isTemplate$(row.docId) : undefined,
-      [row, templateDocService.list]
-    )
-  );
-
   const pageRefParams = useMemo(() => {
     const params = new URLSearchParams();
     if (row?.id) {
@@ -124,7 +113,7 @@ const DatabaseBacklinkRow = ({
     return params;
   }, [row]);
 
-  if (!row || !sortedCells || sortedCells.length === 0 || isTemplateDoc) {
+  if (!row || !sortedCells || sortedCells.length === 0) {
     return null;
   }
 
@@ -143,11 +132,7 @@ const DatabaseBacklinkRow = ({
         icon={<DatabaseTableViewIcon />}
         suffix={
           <AffinePageReference
-            className={
-              BUILD_CONFIG.isMobileEdition
-                ? styles.mobileDocRefLink
-                : styles.docRefLink
-            }
+            className={styles.docRefLink}
             pageId={row.docId}
             params={pageRefParams}
             Icon={PageIcon}

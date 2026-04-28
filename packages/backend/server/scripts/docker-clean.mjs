@@ -98,41 +98,6 @@ function normalizeTargetKey(arch, variant) {
   return `${arch}${variant ?? ''}`;
 }
 
-function serverNativeArch(targetKey) {
-  switch (targetKey) {
-    case 'amd64':
-      return 'x64';
-    case 'arm64':
-      return 'arm64';
-    case 'armv7':
-    case 'arm':
-      return 'armv7';
-    default:
-      return '';
-  }
-}
-
-async function pruneServerNative(distDir, keepArch) {
-  if (!keepArch) {
-    return;
-  }
-
-  const keepName = `server-native.${keepArch}.node`;
-  const entries = await safeReadDir(distDir);
-
-  await Promise.all(
-    entries.map(async name => {
-      if (
-        name.startsWith('server-native.') &&
-        name.endsWith('.node') &&
-        name !== keepName
-      ) {
-        await fs.rm(path.join(distDir, name), { force: true }).catch(() => {});
-      }
-    })
-  );
-}
-
 function cpuPruneRegexes(targetKey) {
   switch (targetKey) {
     case 'arm64':
@@ -329,9 +294,6 @@ const deletedNodeModulesMaps = await deleteFilesByExtension(
 
 debug(`deleted static maps: ${deletedStaticMaps}`);
 debug(`deleted node_modules maps: ${deletedNodeModulesMaps}`);
-
-const distDir = path.join(APP_ROOT, 'dist');
-await pruneServerNative(distDir, serverNativeArch(targetKey));
 
 await pruneOptionalNativeDeps(
   path.join(APP_ROOT, 'node_modules'),

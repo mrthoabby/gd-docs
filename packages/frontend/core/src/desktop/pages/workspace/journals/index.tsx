@@ -51,7 +51,7 @@ export const JournalPlaceholder = ({ dateString }: { dateString: string }) => {
   }, [dateString, journalService, redirecting, workbench]);
 
   return (
-    <div className={styles.body} data-mobile={BUILD_CONFIG.isMobileEdition}>
+    <div className={styles.body}>
       <div className={styles.content}>
         <BlocksuiteEditorJournalDocTitleUI
           date={dateString}

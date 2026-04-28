@@ -74,13 +74,11 @@ export class ServerConfigResolver {
     return {
       name:
         this.config.server.name ??
-        (env.selfhosted
-          ? 'AFFiNE SelfHosted Cloud'
-          : env.namespaces.canary
-            ? 'AFFiNE Canary Cloud'
-            : env.namespaces.beta
-              ? 'AFFiNE Beta Cloud'
-              : 'AFFiNE Cloud'),
+        (env.namespaces.canary
+          ? 'GD docs Canary'
+          : env.namespaces.beta
+            ? 'GD docs Beta'
+            : 'GD docs'),
       version: env.version,
       baseUrl: this.url.requestBaseUrl,
       type: env.DEPLOYMENT_TYPE,

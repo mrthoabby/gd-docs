@@ -5,10 +5,8 @@ import {
   DefaultServerService,
   ServersService,
 } from '@affine/core/modules/cloud';
-import { GlobalDialogService } from '@affine/core/modules/dialogs';
 import { DndService } from '@affine/core/modules/dnd/services';
 import { GlobalContextService } from '@affine/core/modules/global-context';
-import { OpenInAppGuard } from '@affine/core/modules/open-in-app';
 import {
   getAFFiNEWorkspaceSchema,
   type Workspace,
@@ -25,12 +23,7 @@ import {
 } from '@toeverything/infra';
 import type { PropsWithChildren, ReactElement } from 'react';
 import { useEffect, useLayoutEffect, useMemo, useRef, useState } from 'react';
-import {
-  matchPath,
-  useLocation,
-  useParams,
-  useSearchParams,
-} from 'react-router-dom';
+import { matchPath, useLocation, useParams } from 'react-router-dom';
 import { map } from 'rxjs';
 import * as _Y from 'yjs';
 
@@ -63,13 +56,11 @@ globalThis.Y = _Y;
 export const Component = (): ReactElement => {
   const {
     workspacesService,
-    globalDialogService,
     serversService,
     defaultServerService,
     globalContextService,
   } = useServices({
     WorkspacesService,
-    GlobalDialogService,
     ServersService,
     DefaultServerService,
     GlobalContextService,
@@ -77,7 +68,6 @@ export const Component = (): ReactElement => {
 
   const params = useParams();
   const location = useLocation();
-  const [searchParams] = useSearchParams();
 
   // check if we are in detail doc route, if so, maybe render share page
   const detailDocRoute = useMemo(() => {
@@ -141,19 +131,11 @@ export const Component = (): ReactElement => {
     return;
   }, [listLoading, meta, workspaceNotFound, workspacesService]);
 
-  // server search params
-  const serverFromSearchParams = useLiveData(
-    searchParams.has('server')
-      ? serversService.serverByBaseUrl$(searchParams.get('server') as string)
-      : undefined
-  );
   // server from workspace
   const serverFromWorkspace = useLiveData(
-    meta?.flavour && meta.flavour !== 'local'
-      ? serversService.server$(meta?.flavour)
-      : undefined
+    meta?.flavour ? serversService.server$(meta?.flavour) : undefined
   );
-  const server = serverFromWorkspace ?? serverFromSearchParams;
+  const server = serverFromWorkspace ?? defaultServerService.server;
 
   useEffect(() => {
     if (server) {
@@ -169,29 +151,6 @@ export const Component = (): ReactElement => {
     defaultServerService.server.id,
     globalContextService.globalContext.serverId,
     server,
-  ]);
-
-  // if server is not found, and we have server in search params, we should show add selfhosted dialog
-  const needAddSelfhosted = server === undefined && searchParams.has('server');
-  // use ref to avoid useEffect trigger twice
-  const addSelfhostedDialogOpened = useRef<boolean>(false);
-
-  useEffect(() => {
-    if (addSelfhostedDialogOpened.current) {
-      return;
-    }
-    addSelfhostedDialogOpened.current = true;
-    if (BUILD_CONFIG.isElectron && needAddSelfhosted) {
-      globalDialogService.open('sign-in', {
-        server: searchParams.get('server') as string,
-      });
-    }
-    return;
-  }, [
-    globalDialogService,
-    needAddSelfhosted,
-    searchParams,
-    serverFromSearchParams,
   ]);
 
   if (workspaceNotFound) {
@@ -335,9 +294,7 @@ const WorkspacePage = ({ meta }: { meta: WorkspaceMetadata }) => {
     return (
       <FrameworkScope scope={workspace.scope}>
         <DNDContextProvider>
-          <OpenInAppGuard>
-            <AppContainer fallback />
-          </OpenInAppGuard>
+          <AppContainer fallback />
         </DNDContextProvider>
       </FrameworkScope>
     );
@@ -346,13 +303,11 @@ const WorkspacePage = ({ meta }: { meta: WorkspaceMetadata }) => {
   return (
     <FrameworkScope scope={workspace.scope}>
       <DNDContextProvider>
-        <OpenInAppGuard>
-          <AffineErrorBoundary height="100vh">
-            <WorkspaceLayout>
-              <WorkbenchRoot />
-            </WorkspaceLayout>
-          </AffineErrorBoundary>
-        </OpenInAppGuard>
+        <AffineErrorBoundary height="100vh">
+          <WorkspaceLayout>
+            <WorkbenchRoot />
+          </WorkspaceLayout>
+        </AffineErrorBoundary>
       </DNDContextProvider>
     </FrameworkScope>
   );

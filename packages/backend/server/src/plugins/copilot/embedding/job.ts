@@ -533,7 +533,7 @@ export class CopilotEmbeddingJob {
       workspaceId
     );
     if (!snapshot) {
-      // maybe local workspace or empty workspace
+      // maybe empty workspace
       this.logger.verbose(`workspace root snapshot ${workspaceId} not found`);
       // mark last check time to avoid repeated checking
       await this.models.workspace.update(

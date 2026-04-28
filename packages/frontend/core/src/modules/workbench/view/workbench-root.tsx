@@ -14,17 +14,12 @@ import { type RouteObject, useLocation } from 'react-router-dom';
 import type { View } from '../entities/view';
 import { WorkbenchService } from '../services/workbench';
 import { useBindWorkbenchToBrowserRouter } from './browser-adapter';
-import { useBindWorkbenchToDesktopRouter } from './desktop-adapter';
 import { RouteContainer } from './route-container';
 import { SidebarContainer } from './sidebar/sidebar-container';
 import { SplitView } from './split-view/split-view';
 import { ViewIslandRegistryProvider } from './view-islands';
 import { ViewRoot } from './view-root';
 import * as styles from './workbench-root.css';
-
-const useAdapter = BUILD_CONFIG.isElectron
-  ? useBindWorkbenchToDesktopRouter
-  : useBindWorkbenchToBrowserRouter;
 
 const routes: RouteObject[] = [
   {
@@ -45,7 +40,7 @@ export const WorkbenchRoot = memo(() => {
   const location = useLocation();
   const basename = location.pathname.match(/\/workspace\/[^/]+/g)?.[0] ?? '/';
 
-  useAdapter(workbench, basename);
+  useBindWorkbenchToBrowserRouter(workbench, basename);
 
   const panelRenderer = useCallback((view: View) => {
     return <WorkbenchView view={view} />;

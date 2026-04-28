@@ -5,9 +5,7 @@ import {
   type PopupTarget,
   popupTargetFromElement,
 } from '@blocksuite/affine-components/context-menu';
-import { unsafeCSSVarV2 } from '@blocksuite/affine-shared/theme';
 import { rangeWrap } from '@blocksuite/affine-shared/utils';
-import { IS_MOBILE } from '@blocksuite/global/env';
 import { SignalWatcher, WithDisposable } from '@blocksuite/global/lit';
 import {
   CloseIcon,
@@ -479,121 +477,12 @@ declare global {
   }
 }
 
-const popMobileTagSelect = (target: PopupTarget, ops: TagSelectOptions) => {
-  const tagManager = new TagManager(ops);
-  const onInput = (e: InputEvent) => {
-    tagManager.text$.value = (e.target as HTMLInputElement).value;
-  };
-  const onKeydown = (e: KeyboardEvent) => {
-    e.stopPropagation();
-    const inputValue = (e.target as HTMLInputElement).value.trim();
-    if (e.key === 'Backspace' && inputValue === '') {
-      const values = tagManager.value$.value;
-      const lastId = values[values.length - 1];
-      if (lastId) {
-        e.preventDefault();
-        tagManager.deleteTag(lastId);
-      }
-    }
-  };
-  return popMenu(target, {
-    options: {
-      onClose: () => {
-        ops.onComplete?.();
-      },
-      title: {
-        text: ops.name,
-      },
-      items: [
-        () => {
-          return html`
-            <div
-              style="padding: 12px;border-radius: 12px;background-color: ${unsafeCSSVarV2(
-                'layer/background/primary'
-              )};display: flex;gap:8px 12px;"
-            >
-              ${ops.value.value.map(id => {
-                const option = ops.options.value.find(v => v.id === id);
-                if (!option) {
-                  return null;
-                }
-                const style = styleMap({
-                  backgroundColor: option.color,
-                  width: 'max-content',
-                });
-                return html` <div class="${tagContainerStyle}" style=${style}>
-                  <div class="${tagTextStyle}">${option.value}</div>
-                  <div
-                    class="${tagDeleteIconStyle}"
-                    @click="${(e: MouseEvent) => {
-                      e.stopPropagation();
-                      tagManager.deleteTag(id);
-                    }}"
-                  >
-                    ${CloseIcon()}
-                  </div>
-                </div>`;
-              })}
-              <input
-                .value="${tagManager.text$.value}"
-                @input="${onInput}"
-                @keydown="${onKeydown}"
-                placeholder="Type here..."
-                type="text"
-                style="outline: none;border: none;flex:1;min-width: 10px"
-              />
-            </div>
-          `;
-        },
-        menu.group({
-          items: [
-            menu.dynamic(() => {
-              const options = tagManager.filteredOptions$.value;
-              return options.map(option =>
-                menu.action({
-                  name: option.value,
-                  label: () => {
-                    const style = styleMap({
-                      backgroundColor: option.color,
-                      width: 'max-content',
-                    });
-                    return html`
-                      <div style="display: flex; align-items:center;">
-                        ${option.isCreate
-                          ? html` <div style="margin-right: 8px;">Create</div>`
-                          : ''}
-                        <div class="${tagContainerStyle}" style=${style}>
-                          <div class="${tagTextStyle}">${option.value}</div>
-                        </div>
-                      </div>
-                    `;
-                  },
-                  select: () => {
-                    option.select();
-                    return false;
-                  },
-                })
-              );
-            }),
-          ],
-        }),
-      ],
-    },
-  });
-};
-
 export type TagSelectOptions = {
   name: string;
   minWidth?: number;
   container?: HTMLElement;
 } & TagManagerOptions;
 export const popTagSelect = (target: PopupTarget, ops: TagSelectOptions) => {
-  if (IS_MOBILE) {
-    const handler = popMobileTagSelect(target, ops);
-    return () => {
-      handler.close();
-    };
-  }
   const component = new MultiTagSelect();
   if (ops.mode) {
     component.mode = ops.mode;

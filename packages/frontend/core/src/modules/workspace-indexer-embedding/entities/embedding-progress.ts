@@ -1,5 +1,4 @@
 import type { WorkspaceService } from '@affine/core/modules/workspace';
-import { logger } from '@sentry/react';
 import {
   catchErrorInto,
   effect,
@@ -15,6 +14,7 @@ import { exhaustMap, mergeMap, switchMap, takeUntil } from 'rxjs/operators';
 
 import type { EmbeddingStore } from '../stores/embedding';
 import type { LocalAttachmentFile } from '../types';
+import { logger } from '../utils';
 
 interface Progress {
   embedded: number;

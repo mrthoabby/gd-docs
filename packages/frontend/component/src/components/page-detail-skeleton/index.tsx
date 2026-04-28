@@ -50,16 +50,8 @@ export const EditorLoading = ({
           </div>
           <Button
             size="large"
-            className={clsx(
-              BUILD_CONFIG.isMobileEdition
-                ? styles.mobileActionButton
-                : styles.actionButton
-            )}
-            contentClassName={clsx(
-              BUILD_CONFIG.isMobileEdition
-                ? styles.mobileActionContent
-                : styles.actionContent
-            )}
+            className={clsx(styles.actionButton)}
+            contentClassName={clsx(styles.actionContent)}
             onClick={reloadPage}
             variant="primary"
           >

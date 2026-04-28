@@ -22,21 +22,9 @@ export function getBuildConfig(
       return {
         debug: buildFlags.mode === 'development',
         distribution,
-        isDesktopEdition: (
-          ['web', 'desktop', 'admin'] as BUILD_CONFIG_TYPE['distribution'][]
-        ).includes(distribution),
-        isMobileEdition: (
-          ['mobile', 'ios', 'android'] as BUILD_CONFIG_TYPE['distribution'][]
-        ).includes(distribution),
-        isElectron: distribution === 'desktop',
+        isDesktopEdition: true,
+        isElectron: false,
         isWeb: distribution === 'web',
-        isMobileWeb: distribution === 'mobile',
-        isIOS: distribution === 'ios',
-        isAndroid: distribution === 'android',
-        isNative:
-          distribution === 'desktop' ||
-          distribution === 'ios' ||
-          distribution === 'android',
         isAdmin: distribution === 'admin',
 
         appBuildType: 'stable' as const,

@@ -14,9 +14,9 @@ import { Button } from '../button';
 import Input, { type InputProps } from '../input';
 import type { ModalProps } from './modal';
 import { Modal } from './modal';
-import { desktopStyles, mobileStyles } from './prompt-modal.css';
+import { desktopStyles } from './prompt-modal.css';
 
-const styles = BUILD_CONFIG.isMobileEdition ? mobileStyles : desktopStyles;
+const styles = desktopStyles;
 
 export interface PromptModalProps extends ModalProps {
   confirmButtonOptions?: Omit<ButtonProps, 'children'>;

@@ -13,7 +13,6 @@ const ALLOWED_REDIRECT_PROTOCOLS = new Set(['http:', 'https:']);
 // [SELFHOST PATCH] Se eliminó 'affine.pro' de los dominios de redirect permitidos.
 const TRUSTED_REDIRECT_DOMAINS = [
   'google.com',
-  'stripe.com',
   'github.com',
   'twitter.com',
   'discord.gg',

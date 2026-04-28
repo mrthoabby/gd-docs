@@ -229,7 +229,7 @@ export class EdgelessToolbarShapeDraggable extends EdgelessToolbarToolMixin(
     this.edgeless.bindHotKey(
       {
         s: ctx => {
-          // `page.keyboard.press('Shift+s')` in playwright will also trigger this 's' key event
+          // Shift modifies shape creation, so plain "s" must ignore shifted input.
           if (ctx.get('keyboardState').raw.shiftKey) return;
 
           const locked = this.gfx.viewport.locked;

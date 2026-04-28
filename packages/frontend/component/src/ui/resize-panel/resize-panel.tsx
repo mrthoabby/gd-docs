@@ -18,7 +18,7 @@ export interface ResizePanelProps
 }
 
 /**
- * This component is used for debugging responsive layout in storybook
+ * This component is used for debugging responsive layout.
  * @internal
  */
 export const ResizePanel = ({

@@ -63,11 +63,7 @@ export class AuthService extends Service {
     redirectUrl?: string // url to redirect to after signed-in
   ) {
     track.$.$.auth.signIn({ method: 'magic-link' });
-    // Only native clients use `client_nonce` for magic-link/otp sign-in.
-    // Web needs to keep cross-device magic-link compatibility.
-    const magicLinkClientNonce = BUILD_CONFIG.isNative
-      ? this.setClientNonce()
-      : undefined;
+    const magicLinkClientNonce = undefined;
     try {
       const scheme = this.urlService.getClientScheme();
       const magicLinkUrlParams = new URLSearchParams();
@@ -168,32 +164,6 @@ export class AuthService extends Service {
       });
       throw e;
     }
-  }
-
-  async createOpenAppSignInCode() {
-    const res = await this.fetchService.fetch(
-      '/api/auth/open-app/sign-in-code',
-      {
-        method: 'POST',
-      }
-    );
-    const body = (await res.json()) as { code?: string };
-
-    if (!body.code) {
-      throw new Error('Missing open-app sign-in code');
-    }
-
-    return body.code;
-  }
-
-  async signInOpenAppSignInCode(code: string) {
-    await this.fetchService.fetch('/api/auth/open-app/sign-in', {
-      method: 'POST',
-      body: JSON.stringify({ code }),
-      headers: { 'content-type': 'application/json' },
-    });
-
-    this.session.revalidate();
   }
 
   async signInPassword(credential: {

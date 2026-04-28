@@ -1,5 +1,3 @@
-import type { SubscriptionQuery, SubscriptionRecurring } from '@affine/graphql';
-import { SubscriptionPlan } from '@affine/graphql';
 import {
   catchErrorInto,
   effect,
@@ -14,11 +12,12 @@ import {
 import { tap } from 'rxjs';
 
 import type { WorkspaceService } from '../../workspace';
-import type { WorkspaceServerService } from '../services/workspace-server';
+import {
+  SubscriptionPlan,
+  type SubscriptionRecurring,
+  type SubscriptionType,
+} from './subscription';
 import { SubscriptionStore } from '../stores/subscription';
-export type SubscriptionType = NonNullable<
-  SubscriptionQuery['currentUser']
->['subscriptions'][number];
 
 export class WorkspaceSubscription extends Entity {
   subscription$ = new LiveData<SubscriptionType | null | undefined>(null);
@@ -30,13 +29,11 @@ export class WorkspaceSubscription extends Entity {
   );
 
   constructor(
-    private readonly workspaceService: WorkspaceService,
-    private readonly workspaceServerService: WorkspaceServerService
+    private readonly workspaceService: WorkspaceService
   ) {
     super();
   }
-  server = this.workspaceServerService.server;
-  store = this.workspaceServerService.server?.scope.get(SubscriptionStore);
+  store = this.framework.get(SubscriptionStore);
 
   async resumeSubscription(idempotencyKey: string, plan?: SubscriptionPlan) {
     if (!this.store) {
@@ -92,34 +89,15 @@ export class WorkspaceSubscription extends Entity {
   revalidate = effect(
     exhaustMapWithTrailing(() => {
       return fromPromise(async signal => {
+        signal.throwIfAborted();
         const currentWorkspaceId = this.workspaceService.workspace.id;
-        if (!currentWorkspaceId || !this.server) {
+        if (!currentWorkspaceId) {
           return undefined; // no subscription if no user
         }
 
-        const serverConfig = await this.server.features$.waitForNonNull(signal);
-
-        if (!serverConfig.payment) {
-          // No payment feature, no subscription
-          return {
-            workspaceId: currentWorkspaceId,
-            subscription: null,
-          };
-        }
-        if (!this.store) {
-          return {
-            workspaceId: currentWorkspaceId,
-            subscription: null,
-          };
-        }
-        const { workspaceId, subscription } =
-          await this.store.fetchWorkspaceSubscriptions(
-            currentWorkspaceId,
-            signal
-          );
         return {
-          workspaceId: workspaceId,
-          subscription: subscription,
+          workspaceId: currentWorkspaceId,
+          subscription: null,
         };
       }).pipe(
         smartRetry(),

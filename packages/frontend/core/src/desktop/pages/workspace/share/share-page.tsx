@@ -79,34 +79,30 @@ export const SharePage = ({
 }) => {
   const location = useLocation();
 
-  const { mode, selector, isTemplate, templateName, templateSnapshotUrl } =
-    useMemo(() => {
-      const searchParams = new URLSearchParams(location.search);
-      const queryStringMode = searchParams.get('mode') as DocMode | null;
-      const blockIds = searchParams
-        .get('blockIds')
-        ?.split(',')
-        .filter(v => v.length);
-      const elementIds = searchParams
-        .get('elementIds')
-        ?.split(',')
-        .filter(v => v.length);
+  const { mode, selector } = useMemo(() => {
+    const searchParams = new URLSearchParams(location.search);
+    const queryStringMode = searchParams.get('mode') as DocMode | null;
+    const blockIds = searchParams
+      .get('blockIds')
+      ?.split(',')
+      .filter(v => v.length);
+    const elementIds = searchParams
+      .get('elementIds')
+      ?.split(',')
+      .filter(v => v.length);
 
-      return {
-        mode:
-          queryStringMode && DocModes.includes(queryStringMode)
-            ? queryStringMode
-            : null,
-        selector: {
-          blockIds,
-          elementIds,
-          refreshKey: searchParams.get('refreshKey') || undefined,
-        },
-        isTemplate: searchParams.has('isTemplate'),
-        templateName: searchParams.get('templateName') || '',
-        templateSnapshotUrl: searchParams.get('snapshotUrl') || '',
-      };
-    }, [location.search]);
+    return {
+      mode:
+        queryStringMode && DocModes.includes(queryStringMode)
+          ? queryStringMode
+          : null,
+      selector: {
+        blockIds,
+        elementIds,
+        refreshKey: searchParams.get('refreshKey') || undefined,
+      },
+    };
+  }, [location.search]);
 
   return (
     <AppContainer>
@@ -116,9 +112,6 @@ export const SharePage = ({
         key={workspaceId + ':' + docId}
         publishMode={mode ?? undefined}
         selector={selector}
-        isTemplate={isTemplate}
-        templateName={templateName}
-        templateSnapshotUrl={templateSnapshotUrl}
       />
     </AppContainer>
   );
@@ -129,17 +122,11 @@ const SharePageInner = ({
   docId,
   publishMode,
   selector,
-  isTemplate,
-  templateName,
-  templateSnapshotUrl,
 }: {
   workspaceId: string;
   docId: string;
   publishMode?: DocMode;
   selector?: EditorSelector;
-  isTemplate?: boolean;
-  templateName?: string;
-  templateSnapshotUrl?: string;
 }) => {
   const serverService = useService(ServerService);
   const workspacesService = useService(WorkspacesService);
@@ -355,13 +342,7 @@ const SharePageInner = ({
           <ViewTitle title={pageTitle ?? t['unnamed']()} />
           <div className={styles.root}>
             <div className={styles.mainContainer}>
-              <ShareHeader
-                pageId={page.id}
-                publishMode={currentPublishMode}
-                isTemplate={isTemplate}
-                templateName={templateName}
-                snapshotUrl={templateSnapshotUrl}
-              />
+              <ShareHeader publishMode={currentPublishMode} />
               <Scrollable.Root>
                 <Scrollable.Viewport
                   className={clsx(

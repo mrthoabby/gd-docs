@@ -65,7 +65,6 @@
     "@blocksuite/affine-widget-edgeless-toolbar": "workspace:*",
     "@blocksuite/affine-widget-edgeless-zoom-toolbar": "workspace:*",
     "@blocksuite/affine-widget-frame-title": "workspace:*",
-    "@blocksuite/affine-widget-keyboard-toolbar": "workspace:*",
     "@blocksuite/affine-widget-linked-doc": "workspace:*",
     "@blocksuite/affine-widget-note-slicer": "workspace:*",
     "@blocksuite/affine-widget-page-dragging-area": "workspace:*",
@@ -98,7 +97,6 @@
     "./global/disposable": "./src/global/disposable.ts",
     "./global/lit": "./src/global/lit.ts",
     "./store": "./src/store/index.ts",
-    "./store/test": "./src/store/test.ts",
     "./blocks/attachment": "./src/blocks/attachment/index.ts",
     "./blocks/attachment/store": "./src/blocks/attachment/store.ts",
     "./blocks/attachment/view": "./src/blocks/attachment/view.ts",
@@ -199,8 +197,6 @@
     "./widgets/slash-menu/view": "./src/widgets/slash-menu/view.ts",
     "./widgets/toolbar": "./src/widgets/toolbar/index.ts",
     "./widgets/toolbar/view": "./src/widgets/toolbar/view.ts",
-    "./widgets/keyboard-toolbar": "./src/widgets/keyboard-toolbar/index.ts",
-    "./widgets/keyboard-toolbar/view": "./src/widgets/keyboard-toolbar/view.ts",
     "./widgets/viewport-overlay": "./src/widgets/viewport-overlay/index.ts",
     "./widgets/viewport-overlay/view": "./src/widgets/viewport-overlay/view.ts",
     "./widgets/page-dragging-area": "./src/widgets/page-dragging-area/index.ts",
@@ -295,10 +291,5 @@
     "!src/__tests__",
     "!dist/__tests__"
   ],
-  "version": "0.26.3",
-  "devDependencies": {
-    "@vanilla-extract/vite-plugin": "^5.0.0",
-    "msw": "^2.13.2",
-    "vitest": "^4.0.18"
-  }
+  "version": "0.26.3"
 }

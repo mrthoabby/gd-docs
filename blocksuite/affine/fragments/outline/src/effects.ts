@@ -16,10 +16,6 @@ import {
   AFFINE_OUTLINE_NOTE_PREVIEW_SETTING_MENU,
   OutlineNotePreviewSettingMenu,
 } from './header/outline-setting-menu';
-import {
-  AFFINE_MOBILE_OUTLINE_MENU,
-  MobileOutlineMenu,
-} from './mobile-outline-panel';
 import { AFFINE_OUTLINE_PANEL, OutlinePanel } from './outline-panel';
 import { AFFINE_OUTLINE_VIEWER, OutlineViewer } from './outline-viewer';
 
@@ -33,7 +29,6 @@ export function effects() {
   customElements.define(AFFINE_OUTLINE_PANEL_HEADER, OutlinePanelHeader);
   customElements.define(AFFINE_OUTLINE_NOTE_CARD, OutlineNoteCard);
   customElements.define(AFFINE_OUTLINE_VIEWER, OutlineViewer);
-  customElements.define(AFFINE_MOBILE_OUTLINE_MENU, MobileOutlineMenu);
   customElements.define(AFFINE_OUTLINE_BLOCK_PREVIEW, OutlineBlockPreview);
   customElements.define(AFFINE_OUTLINE_PANEL_BODY, OutlinePanelBody);
 }

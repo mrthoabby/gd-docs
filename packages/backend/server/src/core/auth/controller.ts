@@ -52,10 +52,6 @@ interface MagicLinkCredential {
   client_nonce?: string;
 }
 
-interface OpenAppSignInCredential {
-  code: string;
-}
-
 @Throttle('strict')
 @Controller('/api/auth')
 export class AuthController {
@@ -285,49 +281,6 @@ export class AuthController {
     await this.auth.refreshCookies(res, session.sessionId);
 
     res.status(HttpStatus.OK).send({});
-  }
-
-  @Public()
-  @UseNamedGuard('version')
-  @Post('/open-app/sign-in-code')
-  async openAppSignInCode(@CurrentUser() user?: CurrentUser) {
-    if (!user) {
-      throw new ActionForbidden();
-    }
-
-    // short-lived one-time code for handing off the authenticated session
-    const code = await this.models.verificationToken.create(
-      TokenType.OpenAppSignIn,
-      user.id,
-      5 * 60
-    );
-
-    return { code };
-  }
-
-  @Public()
-  @UseNamedGuard('version')
-  @Post('/open-app/sign-in')
-  async openAppSignIn(
-    @Req() req: Request,
-    @Res() res: Response,
-    @Body() credential: OpenAppSignInCredential
-  ) {
-    if (!credential?.code) {
-      throw new InvalidAuthState();
-    }
-
-    const tokenRecord = await this.models.verificationToken.get(
-      TokenType.OpenAppSignIn,
-      credential.code
-    );
-
-    if (!tokenRecord?.credential) {
-      throw new InvalidAuthState();
-    }
-
-    await this.auth.setCookies(req, res, tokenRecord.credential);
-    res.send({ id: tokenRecord.credential });
   }
 
   @Public()
