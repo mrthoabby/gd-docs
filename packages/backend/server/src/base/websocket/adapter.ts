@@ -27,7 +27,6 @@ export class SocketIoAdapter extends IoAdapter {
       canActivate: (socket: Socket) => Promise<boolean>;
     };
     const url = this.app.get(URLHelper);
-    const allowedOrigins = buildCorsAllowedOrigins(url);
 
     const server: Server = super.createIOServer(port, {
       ...config,
@@ -39,7 +38,7 @@ export class SocketIoAdapter extends IoAdapter {
         ) => {
           corsOriginCallback(
             origin,
-            allowedOrigins,
+            buildCorsAllowedOrigins(url),
             blockedOrigin =>
               logger.warn(
                 `Blocked WebSocket CORS request from origin: ${blockedOrigin}`

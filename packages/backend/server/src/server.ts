@@ -39,8 +39,6 @@ export async function run() {
   const config = app.get(Config);
   const url = app.get(URLHelper);
 
-  const defaultAllowedOrigins = buildCorsAllowedOrigins(url);
-
   app.enableCors((req, callback) => {
     const requestPath = req.path ?? req.url ?? '';
 
@@ -48,7 +46,7 @@ export async function run() {
       origin: (origin, originCallback) => {
         corsOriginCallback(
           origin,
-          defaultAllowedOrigins,
+          buildCorsAllowedOrigins(url),
           blockedOrigin => {
             logger.warn(`Blocked CORS request from origin: ${blockedOrigin}`, {
               requestPath,
