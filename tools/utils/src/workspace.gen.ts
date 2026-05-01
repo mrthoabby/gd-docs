@@ -1063,9 +1063,7 @@ export const PackageList = [
   {
     "location": "packages/common/error",
     "name": "@affine/error",
-    "workspaceDependencies": [
-      "packages/common/graphql"
-    ]
+    "workspaceDependencies": []
   },
   {
     "location": "packages/common/graphql",
