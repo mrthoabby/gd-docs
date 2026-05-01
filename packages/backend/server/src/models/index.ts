@@ -12,6 +12,8 @@ import { BlobModel } from './blob';
 import { CommentModel } from './comment';
 import { CommentAttachmentModel } from './comment-attachment';
 import { AppConfigModel } from './config';
+import { ContainerModel } from './container';
+import { ContainerFileModel } from './container-file';
 import { CopilotContextModel } from './copilot-context';
 import { CopilotJobModel } from './copilot-job';
 import { CopilotSessionModel } from './copilot-session';
@@ -57,6 +59,8 @@ const MODELS = {
   appConfig: AppConfigModel,
   comment: CommentModel,
   commentAttachment: CommentAttachmentModel,
+  container: ContainerModel,
+  containerFile: ContainerFileModel,
   blob: BlobModel,
   accessToken: AccessTokenModel,
   workspaceAnalytics: WorkspaceAnalyticsModel,
@@ -115,6 +119,8 @@ export * from './blob';
 export * from './comment';
 export * from './comment-attachment';
 export * from './common';
+export * from './container';
+export * from './container-file';
 export * from './copilot-context';
 export * from './copilot-job';
 export * from './copilot-session';

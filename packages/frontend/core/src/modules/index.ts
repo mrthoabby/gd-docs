@@ -17,6 +17,7 @@ import { configureCodeBlockPreviewRendererModule } from './code-block-preview-re
 import { configureCollectionModule } from './collection';
 import { configureCollectionRulesModule } from './collection-rules';
 import { configureCommentModule } from './comment';
+import { configureContainerModule } from './container';
 import { configureWorkspaceDBModule } from './db';
 import { configureDialogModule } from './dialogs';
 import { configureDndModule } from './dnd';
@@ -77,6 +78,7 @@ export function configureCommonModules(framework: Framework) {
   configureNavigationModule(framework);
   configureTagModule(framework);
   configureCloudModule(framework);
+  configureContainerModule(framework);
   configureQuotaModule(framework);
   configurePermissionsModule(framework);
   configureShareDocsModule(framework);

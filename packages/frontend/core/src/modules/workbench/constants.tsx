@@ -15,6 +15,7 @@ import type { ReactNode } from 'react';
 export const iconNameToIcon = {
   allDocs: <AllDocsIcon />,
   collection: <ViewLayersIcon />,
+  container: <ViewLayersIcon />,
   doc: <PageIcon />,
   page: <PageIcon />,
   edgeless: <EdgelessIcon />,

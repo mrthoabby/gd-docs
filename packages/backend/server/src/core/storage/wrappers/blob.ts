@@ -96,8 +96,13 @@ export class WorkspaceBlobStorage {
     } as StorageProviderConfig;
   }
 
-  async put(workspaceId: string, key: string, blob: Buffer) {
-    const meta: PutObjectMetadata = autoMetadata(blob);
+  async put(
+    workspaceId: string,
+    key: string,
+    blob: Buffer,
+    metadata?: PutObjectMetadata
+  ) {
+    const meta: PutObjectMetadata = metadata ?? autoMetadata(blob);
 
     await this.provider.put(`${workspaceId}/${key}`, blob, meta);
     await this.upsert(workspaceId, key, {
@@ -192,7 +197,7 @@ export class WorkspaceBlobStorage {
   async complete(
     workspaceId: string,
     key: string,
-    expected: { size: number; mime: string }
+    expected: { size: number; mime: string; verifyChecksum?: boolean }
   ): Promise<BlobCompleteResult> {
     const metadata = await this.head(workspaceId, key);
     if (!metadata) {
@@ -207,32 +212,36 @@ export class WorkspaceBlobStorage {
       return { ok: false, reason: 'mime_mismatch' };
     }
 
-    const object = await this.provider.get(`${workspaceId}/${key}`);
-    if (!object.body) {
-      return { ok: false, reason: 'not_found' };
-    }
-
-    const checksum = createHash('sha256');
-    try {
-      for await (const chunk of object.body) {
-        checksum.update(chunk as Buffer);
+    if (expected.verifyChecksum !== false) {
+      const object = await this.provider.get(`${workspaceId}/${key}`);
+      if (!object.body) {
+        return { ok: false, reason: 'not_found' };
       }
-    } catch (e) {
-      this.logger.error('failed to read blob for checksum verification', e);
-      return { ok: false, reason: 'checksum_mismatch' };
-    }
 
-    const base64 = checksum.digest('base64');
-    const base64urlWithPadding = base64.replace(/\+/g, '-').replace(/\//g, '_');
-
-    if (base64urlWithPadding !== key) {
+      const checksum = createHash('sha256');
       try {
-        await this.provider.delete(`${workspaceId}/${key}`);
+        for await (const chunk of object.body) {
+          checksum.update(chunk as Buffer);
+        }
       } catch (e) {
-        // never throw
-        this.logger.error('failed to delete invalid blob', e);
+        this.logger.error('failed to read blob for checksum verification', e);
+        return { ok: false, reason: 'checksum_mismatch' };
       }
-      return { ok: false, reason: 'checksum_mismatch' };
+
+      const base64 = checksum.digest('base64');
+      const base64urlWithPadding = base64
+        .replace(/\+/g, '-')
+        .replace(/\//g, '_');
+
+      if (base64urlWithPadding !== key) {
+        try {
+          await this.provider.delete(`${workspaceId}/${key}`);
+        } catch (e) {
+          // never throw
+          this.logger.error('failed to delete invalid blob', e);
+        }
+        return { ok: false, reason: 'checksum_mismatch' };
+      }
     }
 
     await this.models.blob.upsert({

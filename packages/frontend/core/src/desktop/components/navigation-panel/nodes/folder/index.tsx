@@ -10,6 +10,7 @@ import {
   notify,
 } from '@affine/component';
 import { usePageHelper } from '@affine/core/blocksuite/block-suite-page-list/utils';
+import { ContainerService } from '@affine/core/modules/container';
 import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/favorite';
 import { FeatureFlagService } from '@affine/core/modules/feature-flag';
@@ -31,6 +32,7 @@ import {
   PlusThickIcon,
   RemoveFolderIcon,
   TagsIcon,
+  ViewLayersIcon,
 } from '@blocksuite/icons/rc';
 import { useLiveData, useService, useServices } from '@toeverything/infra';
 import { difference } from 'lodash-es';
@@ -43,6 +45,7 @@ import {
 import type { NavigationPanelTreeNodeIcon } from '../../tree/node';
 import type { NodeOperation } from '../../tree/types';
 import { NavigationPanelCollectionNode } from '../collection';
+import { NavigationPanelContainerNode } from '../container';
 import { NavigationPanelDocNode } from '../doc';
 import { NavigationPanelTagNode } from '../tag';
 import type { GenericNavigationPanelNode } from '../types';
@@ -154,6 +157,21 @@ export const NavigationPanelFolderNode = ({
         />
       )
     );
+  } else if (type === 'container') {
+    return (
+      data && (
+        <NavigationPanelContainerNode
+          containerId={data}
+          location={location}
+          onDrop={handleDrop}
+          canDrop={canDrop}
+          reorderable={reorderable}
+          dropEffect={dropEffect}
+          operations={additionalOperations}
+          parentPath={parentPath}
+        />
+      )
+    );
   }
 
   return;
@@ -189,17 +207,25 @@ const NavigationPanelFolderNodeFolder = ({
   node: FolderNode;
 } & GenericNavigationPanelNode) => {
   const t = useI18n();
-  const { workspaceService, featureFlagService, workspaceDialogService } =
-    useServices({
-      WorkspaceService,
-      CompatibleFavoriteItemsAdapter,
-      FeatureFlagService,
-      WorkspaceDialogService,
-    });
+  const {
+    workspaceService,
+    featureFlagService,
+    workspaceDialogService,
+    containerService,
+  } = useServices({
+    WorkspaceService,
+    CompatibleFavoriteItemsAdapter,
+    FeatureFlagService,
+    WorkspaceDialogService,
+    ContainerService,
+  });
   const navigationPanelService = useService(NavigationPanelService);
   const name = useLiveData(node.name$);
   const enableEmojiIcon = useLiveData(
     featureFlagService.flags.enable_emoji_folder_icon.$
+  );
+  const enableContainers = useLiveData(
+    featureFlagService.flags.enable_containers.$
   );
   const path = useMemo(
     () => [...(parentPath ?? []), `folder-${node.id}`],
@@ -217,7 +243,16 @@ const NavigationPanelFolderNodeFolder = ({
   const { createPage } = usePageHelper(
     workspaceService.workspace.docCollection
   );
-  const handleDelete = useCallback(() => {
+  const handleDelete = useCallback(async () => {
+    const containerIds = node.containerIdsInSubtree();
+    await Promise.allSettled(
+      containerIds.map(containerId =>
+        containerService.trashContainer(containerId, {
+          lastParentFolderNodeId: node.id,
+          lastIndex: null,
+        })
+      )
+    );
     node.delete();
     track.$.navigationPanel.organize.deleteOrganizeItem({
       type: 'folder',
@@ -228,7 +263,7 @@ const NavigationPanelFolderNodeFolder = ({
       }),
       message: t['com.affine.rootAppSidebar.organize.delete.notify-message'](),
     });
-  }, [name, node, t]);
+  }, [containerService, name, node, t]);
 
   const children = useLiveData(node.sortedChildren$);
 
@@ -277,7 +312,8 @@ const NavigationPanelFolderNodeFolder = ({
         } else if (
           data.source.data.entity?.type === 'collection' ||
           data.source.data.entity?.type === 'doc' ||
-          data.source.data.entity?.type === 'tag'
+          data.source.data.entity?.type === 'tag' ||
+          data.source.data.entity?.type === 'container'
         ) {
           if (
             data.source.data.from?.at ===
@@ -325,7 +361,8 @@ const NavigationPanelFolderNodeFolder = ({
         } else if (
           data.source.data.entity?.type === 'collection' ||
           data.source.data.entity?.type === 'doc' ||
-          data.source.data.entity?.type === 'tag'
+          data.source.data.entity?.type === 'tag' ||
+          data.source.data.entity?.type === 'container'
         ) {
           return 'link';
         }
@@ -356,7 +393,8 @@ const NavigationPanelFolderNodeFolder = ({
       } else if (
         data.source.data.entity?.type === 'collection' ||
         data.source.data.entity?.type === 'doc' ||
-        data.source.data.entity?.type === 'tag'
+        data.source.data.entity?.type === 'tag' ||
+        data.source.data.entity?.type === 'container'
       ) {
         if (
           data.source.data.from?.at === 'navigation-panel:organize:folder-node'
@@ -412,7 +450,8 @@ const NavigationPanelFolderNodeFolder = ({
         } else if (
           data.source.data.entity?.type === 'collection' ||
           data.source.data.entity?.type === 'doc' ||
-          data.source.data.entity?.type === 'tag'
+          data.source.data.entity?.type === 'tag' ||
+          data.source.data.entity?.type === 'container'
         ) {
           if (
             data.source.data.from?.at ===
@@ -489,7 +528,8 @@ const NavigationPanelFolderNodeFolder = ({
           } else if (
             data.source.data.entity?.type === 'collection' ||
             data.source.data.entity?.type === 'doc' ||
-            data.source.data.entity?.type === 'tag'
+            data.source.data.entity?.type === 'tag' ||
+            data.source.data.entity?.type === 'container'
           ) {
             return 'link';
           }
@@ -545,7 +585,8 @@ const NavigationPanelFolderNodeFolder = ({
       } else if (
         entityType === 'collection' ||
         entityType === 'doc' ||
-        entityType === 'tag'
+        entityType === 'tag' ||
+        entityType === 'container'
       ) {
         return true;
       }
@@ -575,7 +616,8 @@ const NavigationPanelFolderNodeFolder = ({
       } else if (
         entityType === 'collection' ||
         entityType === 'doc' ||
-        entityType === 'tag'
+        entityType === 'tag' ||
+        entityType === 'container'
       ) {
         return true;
       }
@@ -604,6 +646,32 @@ const NavigationPanelFolderNodeFolder = ({
     setCollapsed(false);
     setNewFolderId(newFolderId);
   }, [node, setCollapsed, t]);
+
+  const handleCreateContainer = useCallback(async () => {
+    if (!node.id) {
+      return;
+    }
+    const index = node.indexAt('before');
+    const container = await containerService.createContainer({
+      name: t['com.affine.container.new'](),
+      parentFolderNodeId: node.id,
+      index,
+    });
+
+    try {
+      node.createLink('container', container.id, index);
+      track.$.navigationPanel.organize.createOrganizeItem({
+        type: 'container',
+      });
+      setCollapsed(false);
+    } catch (error) {
+      await containerService.trashContainer(container.id, {
+        lastParentFolderNodeId: node.id,
+        lastIndex: index,
+      });
+      throw error;
+    }
+  }, [containerService, node, setCollapsed, t]);
 
   const handleAddToFolder = useCallback(
     (type: 'doc' | 'collection' | 'tag') => {
@@ -665,6 +733,17 @@ const NavigationPanelFolderNodeFolder = ({
             <PlusIcon />
           </IconButton>
         ),
+      },
+      {
+        index: 1,
+        view: enableContainers ? (
+          <MenuItem
+            prefixIcon={<ViewLayersIcon />}
+            onClick={handleCreateContainer}
+          >
+            {t['com.affine.container.new']()}
+          </MenuItem>
+        ) : null,
       },
       {
         index: 100,
@@ -740,9 +819,11 @@ const NavigationPanelFolderNodeFolder = ({
     ];
   }, [
     handleAddToFolder,
+    handleCreateContainer,
     handleCreateSubfolder,
     handleDelete,
     handleNewDoc,
+    enableContainers,
     node,
     t,
   ]);
@@ -756,7 +837,12 @@ const NavigationPanelFolderNodeFolder = ({
 
   const childrenOperations = useCallback(
     (type: string, node: FolderNode) => {
-      if (type === 'doc' || type === 'collection' || type === 'tag') {
+      if (
+        type === 'doc' ||
+        type === 'collection' ||
+        type === 'tag' ||
+        type === 'container'
+      ) {
         return [
           {
             index: 999,
@@ -766,7 +852,18 @@ const NavigationPanelFolderNodeFolder = ({
                 prefixIcon={<RemoveFolderIcon />}
                 data-event-props="$.navigationPanel.organize.deleteOrganizeItem"
                 data-event-args-type={node.type$.value}
-                onClick={() => node.delete()}
+                onClick={async () => {
+                  if (type === 'container') {
+                    const containerId = node.data$.value;
+                    if (containerId) {
+                      await containerService.trashContainer(containerId, {
+                        lastParentFolderNodeId: node.info$.value?.parentId,
+                        lastIndex: node.index$.value,
+                      });
+                    }
+                  }
+                  node.delete();
+                }}
               >
                 {t['com.affine.rootAppSidebar.organize.delete-from-folder']()}
               </MenuItem>
@@ -776,7 +873,7 @@ const NavigationPanelFolderNodeFolder = ({
       }
       return [];
     },
-    [t]
+    [containerService, t]
   );
 
   const handleCollapsedChange = useCallback(

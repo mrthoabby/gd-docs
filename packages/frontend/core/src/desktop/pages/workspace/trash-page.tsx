@@ -6,11 +6,16 @@ import {
 import { DocsExplorer } from '@affine/core/components/explorer/docs-view/docs-list';
 import { useBlockSuiteMetaHelper } from '@affine/core/components/hooks/affine/use-block-suite-meta-helper';
 import { Header } from '@affine/core/components/pure/header';
+import {
+  ContainerService,
+  type WorkspaceContainer,
+} from '@affine/core/modules/container';
 import { CollectionRulesService } from '@affine/core/modules/collection-rules';
 import { GlobalContextService } from '@affine/core/modules/global-context';
+import { OrganizeService } from '@affine/core/modules/organize';
 import { WorkspacePermissionService } from '@affine/core/modules/permissions';
 import { useI18n } from '@affine/i18n';
-import { DeleteIcon } from '@blocksuite/icons/rc';
+import { DeleteIcon, ViewLayersIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -41,7 +46,9 @@ const TrashHeader = () => {
 export const TrashPage = () => {
   const t = useI18n();
   const collectionRulesService = useService(CollectionRulesService);
+  const containerService = useService(ContainerService);
   const globalContextService = useService(GlobalContextService);
+  const organizeService = useService(OrganizeService);
   const permissionService = useService(WorkspacePermissionService);
 
   const { restoreFromTrash, permanentlyDeletePage } = useBlockSuiteMetaHelper();
@@ -66,13 +73,17 @@ export const TrashPage = () => {
       orderBy: undefined,
     })
   );
+  const [trashedContainers, setTrashedContainers] = useState<
+    WorkspaceContainer[]
+  >([]);
 
   const isAdmin = useLiveData(permissionService.permission.isAdmin$);
   const isOwner = useLiveData(permissionService.permission.isOwner$);
   const groups = useLiveData(explorerContextValue.groups$);
   const isEmpty =
-    groups.length === 0 ||
-    (groups.length > 0 && groups.every(group => !group.items?.length));
+    (groups.length === 0 ||
+      (groups.length > 0 && groups.every(group => !group.items?.length))) &&
+    trashedContainers.length === 0;
 
   const handleMultiRestore = useCallback(
     (ids: string[]) => {
@@ -156,6 +167,33 @@ export const TrashPage = () => {
   }, [collectionRulesService, explorerContextValue.groups$]);
 
   useEffect(() => {
+    void containerService
+      .revalidate('trashed')
+      .then(setTrashedContainers)
+      .catch(console.error);
+  }, [containerService]);
+
+  const handleRestoreContainer = useCallback(
+    async (containerId: string) => {
+      const container = await containerService.restoreContainer(containerId);
+      organizeService.restoreContainerLink(container.id, {
+        fallbackFolderName: t['com.affine.container.restore-folder'](),
+        index: container.lastIndex,
+        parentFolderNodeId: container.lastParentFolderNodeId,
+      });
+      setTrashedContainers(containers =>
+        containers.filter(container => container.id !== containerId)
+      );
+      toast(
+        t['com.affine.toastMessage.restored']({
+          title: t['com.affine.container.title'](),
+        })
+      );
+    },
+    [containerService, organizeService, t]
+  );
+
+  useEffect(() => {
     if (isActiveView) {
       globalContextService.globalContext.isTrash.set(true);
 
@@ -178,13 +216,36 @@ export const TrashPage = () => {
           {isEmpty ? (
             <EmptyPageList type="trash" />
           ) : (
-            <DocsExplorer
-              disableMultiDelete={!isAdmin && !isOwner}
-              onRestore={isAdmin || isOwner ? handleMultiRestore : undefined}
-              onDelete={
-                isAdmin || isOwner ? onConfirmPermanentlyDelete : undefined
-              }
-            />
+            <>
+              <DocsExplorer
+                disableMultiDelete={!isAdmin && !isOwner}
+                onRestore={isAdmin || isOwner ? handleMultiRestore : undefined}
+                onDelete={
+                  isAdmin || isOwner ? onConfirmPermanentlyDelete : undefined
+                }
+              />
+              {trashedContainers.length ? (
+                <section className={styles.containerTrash}>
+                  <div className={styles.containerTrashTitle}>
+                    {t['com.affine.container.title']()}
+                  </div>
+                  {trashedContainers.map(container => (
+                    <div className={styles.containerTrashRow} key={container.id}>
+                      <ViewLayersIcon />
+                      <div className={styles.containerTrashName}>
+                        {container.name}
+                      </div>
+                      <button
+                        className={styles.containerTrashButton}
+                        onClick={() => void handleRestoreContainer(container.id)}
+                      >
+                        {t['com.affine.trashOperation.restoreIt']()}
+                      </button>
+                    </div>
+                  ))}
+                </section>
+              ) : null}
+            </>
           )}
         </div>
       </ViewBody>

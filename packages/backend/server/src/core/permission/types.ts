@@ -40,6 +40,11 @@ export const Actions = {
       List: '',
       Write: '',
     },
+    Containers: {
+      Read: '',
+      Write: '',
+      Delete: '',
+    },
     Copilot: '',
   },
 
@@ -91,6 +96,9 @@ export const RoleActionsMap = {
         Action.Workspace.Settings.Read,
         Action.Workspace.Blobs.Write,
         Action.Workspace.Blobs.List,
+        Action.Workspace.Containers.Read,
+        Action.Workspace.Containers.Write,
+        Action.Workspace.Containers.Delete,
         Action.Workspace.Copilot,
       ];
     },

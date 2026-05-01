@@ -107,6 +107,15 @@ export const AFFINE_FLAGS = {
     configurable: true,
     defaultState: true,
   },
+  enable_containers: {
+    category: 'affine',
+    displayName:
+      'com.affine.settings.workspace.experimental-features.enable-containers.name',
+    description:
+      'com.affine.settings.workspace.experimental-features.enable-containers.description',
+    configurable: true,
+    defaultState: environment.isSelfHosted,
+  },
   enable_editor_settings: {
     category: 'affine',
     displayName:

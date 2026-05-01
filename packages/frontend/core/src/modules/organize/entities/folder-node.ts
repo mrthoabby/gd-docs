@@ -14,7 +14,7 @@ export class FolderNode extends Entity<{
 
   info$ = LiveData.from<{
     data: string;
-    type: (string & {}) | 'folder' | 'doc' | 'tag' | 'collection';
+    type: (string & {}) | 'folder' | 'doc' | 'tag' | 'collection' | 'container';
     index: string;
     id: string;
     parentId?: string | null;
@@ -93,7 +93,7 @@ export class FolderNode extends Entity<{
   }
 
   createLink(
-    type: 'doc' | 'tag' | 'collection',
+    type: 'doc' | 'tag' | 'collection' | 'container',
     targetId: string,
     index: string
   ) {
@@ -126,6 +126,13 @@ export class FolderNode extends Entity<{
       throw new Error('Cannot rename root node');
     }
     this.store.renameNode(this.id, name);
+  }
+
+  containerIdsInSubtree() {
+    if (!this.id || this.type$.value !== 'folder') {
+      return [];
+    }
+    return this.store.collectLinkedNodeData(this.id, 'container');
   }
 
   indexAt(at: 'before' | 'after', targetId?: string) {

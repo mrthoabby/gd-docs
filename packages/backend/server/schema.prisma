@@ -142,6 +142,8 @@ model Workspace {
   permissions                WorkspaceUserRole[]
   docPermissions             WorkspaceDocUserRole[]
   blobs                      Blob[]
+  containers                 WorkspaceContainer[]
+  containerFiles             WorkspaceContainerFile[]
   ignoredDocs                AiWorkspaceIgnoredDocs[]
   embedFiles                 AiWorkspaceFiles[]
   comments                   Comment[]
@@ -726,6 +728,23 @@ enum BlobStatus {
   completed
 }
 
+enum ContainerStatus {
+  active
+  trashed
+}
+
+enum ContainerFileKind {
+  image
+  text
+  pdf
+}
+
+enum ContainerFileStatus {
+  pending
+  active
+  deleted
+}
+
 // Blob table only exists for fast non-data queries.
 // like, total size of blobs in a workspace, or blob list for sync service.
 // it should only be a map of metadata of blobs stored anywhere else
@@ -745,6 +764,54 @@ model Blob {
   @@id([workspaceId, key])
   @@index([workspaceId, status, deletedAt])
   @@map("blobs")
+}
+
+model WorkspaceContainer {
+  id                     String          @id @default(uuid()) @db.VarChar
+  workspaceId            String          @map("workspace_id") @db.VarChar
+  name                   String          @db.VarChar
+  status                 ContainerStatus @default(active)
+  createdBy              String          @map("created_by") @db.VarChar
+  updatedBy              String?         @map("updated_by") @db.VarChar
+  deletedBy              String?         @map("deleted_by") @db.VarChar
+  lastParentFolderNodeId String?         @map("last_parent_folder_node_id") @db.VarChar
+  lastIndex              String?         @map("last_index") @db.VarChar
+  createdAt              DateTime        @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt              DateTime        @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt              DateTime?       @map("deleted_at") @db.Timestamptz(3)
+
+  workspace Workspace                @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  files     WorkspaceContainerFile[]
+
+  @@index([workspaceId, status, deletedAt])
+  @@index([workspaceId, name])
+  @@map("workspace_containers")
+}
+
+model WorkspaceContainerFile {
+  id          String              @id @default(uuid()) @db.VarChar
+  workspaceId String              @map("workspace_id") @db.VarChar
+  containerId String              @map("container_id") @db.VarChar
+  blobKey     String              @map("blob_key") @db.VarChar
+  name        String              @db.VarChar
+  kind        ContainerFileKind
+  mime        String              @db.VarChar
+  size        Int                 @db.Integer
+  revision    Int                 @default(1) @db.Integer
+  status      ContainerFileStatus @default(pending)
+  createdBy   String              @map("created_by") @db.VarChar
+  updatedBy   String?             @map("updated_by") @db.VarChar
+  deletedBy   String?             @map("deleted_by") @db.VarChar
+  createdAt   DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt   DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt   DateTime?           @map("deleted_at") @db.Timestamptz(3)
+
+  workspace Workspace          @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  container WorkspaceContainer @relation(fields: [containerId], references: [id], onDelete: Cascade)
+
+  @@index([containerId, status, updatedAt])
+  @@index([workspaceId, blobKey])
+  @@map("workspace_container_files")
 }
 
 enum NotificationType {

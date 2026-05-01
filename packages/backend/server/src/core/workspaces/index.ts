@@ -9,6 +9,7 @@ import { PermissionModule } from '../permission';
 import { QuotaModule } from '../quota';
 import { StorageModule } from '../storage';
 import { UserModule } from '../user';
+import { ContainerService, WorkspaceContainerResolver } from './container';
 import { WorkspacesController } from './controller';
 import { WorkspaceEvents } from './event';
 import {
@@ -43,14 +44,17 @@ import { WorkspaceStatsJob } from './stats.job';
     DocResolver,
     DocHistoryResolver,
     WorkspaceBlobResolver,
+    WorkspaceContainerResolver,
     WorkspaceService,
+    ContainerService,
     WorkspaceEvents,
     AdminWorkspaceResolver,
     WorkspaceStatsJob,
   ],
-  exports: [WorkspaceService],
+  exports: [WorkspaceService, ContainerService],
 })
 export class WorkspaceModule {}
 
+export { ContainerService } from './container';
 export { WorkspaceService } from './service';
 export { InvitationType, WorkspaceType } from './types';

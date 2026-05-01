@@ -2,6 +2,8 @@ import { Store } from '@toeverything/infra';
 
 import type { WorkspaceDBService } from '../../db';
 
+type FolderLinkType = 'doc' | 'tag' | 'collection' | 'container';
+
 export class FolderStore extends Store {
   constructor(private readonly dbService: WorkspaceDBService) {
     super();
@@ -19,6 +21,31 @@ export class FolderStore extends Store {
 
   watchIsLoading() {
     return this.dbService.db.folders.isLoading$;
+  }
+
+  getNode(nodeId: string) {
+    return this.dbService.db.folders.get(nodeId);
+  }
+
+  getRootFolders() {
+    return this.dbService.db.folders.find({
+      parentId: null,
+    });
+  }
+
+  findLink(type: FolderLinkType, targetId: string) {
+    return this.dbService.db.folders
+      .find({
+        type,
+        data: targetId,
+      })
+      .at(0);
+  }
+
+  findRootFolderByName(name: string) {
+    return this.getRootFolders().find(
+      node => node.type === 'folder' && node.data === name
+    );
   }
 
   isAncestor(childId: string, ancestorId: string): boolean {
@@ -46,7 +73,7 @@ export class FolderStore extends Store {
 
   createLink(
     parentId: string,
-    type: 'doc' | 'tag' | 'collection',
+    type: FolderLinkType,
     nodeId: string,
     index: string
   ) {
@@ -113,6 +140,28 @@ export class FolderStore extends Store {
         this.dbService.db.folders.delete(current.id);
       }
     }
+  }
+
+  collectLinkedNodeData(folderId: string, type: 'container') {
+    const info = this.dbService.db.folders.get(folderId);
+    if (info === null || info.type !== 'folder') {
+      throw new Error('Folder not found');
+    }
+
+    const ids: string[] = [];
+    const stack = [info];
+    while (stack.length > 0) {
+      const current = stack.pop();
+      if (!current) {
+        continue;
+      }
+      if (current.type === 'folder') {
+        stack.push(...this.dbService.db.folders.find({ parentId: current.id }));
+      } else if (current.type === type) {
+        ids.push(current.data);
+      }
+    }
+    return ids;
   }
 
   removeLink(linkId: string) {

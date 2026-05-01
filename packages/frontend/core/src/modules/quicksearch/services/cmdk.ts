@@ -5,6 +5,7 @@ import type { DocsService } from '../../doc';
 import type { WorkbenchService } from '../../workbench';
 import { CollectionsQuickSearchSession } from '../impls/collections';
 import { CommandsQuickSearchSession } from '../impls/commands';
+import { ContainersQuickSearchSession } from '../impls/containers';
 import { CreationQuickSearchSession } from '../impls/creation';
 import { DocsQuickSearchSession } from '../impls/docs';
 import { LinksQuickSearchSession } from '../impls/links';
@@ -29,6 +30,7 @@ export class CMDKQuickSearchService extends Service {
         [
           this.framework.createEntity(RecentDocsQuickSearchSession),
           this.framework.createEntity(CollectionsQuickSearchSession),
+          this.framework.createEntity(ContainersQuickSearchSession),
           this.framework.createEntity(CommandsQuickSearchSession),
           this.framework.createEntity(CreationQuickSearchSession),
           this.framework.createEntity(DocsQuickSearchSession),
@@ -87,6 +89,13 @@ export class CMDKQuickSearchService extends Service {
           if (result.source === 'collections') {
             this.workbenchService.workbench.openCollection(
               result.payload.collectionId
+            );
+            return;
+          }
+
+          if (result.source === 'containers') {
+            this.workbenchService.workbench.openContainer(
+              result.payload.containerId
             );
             return;
           }

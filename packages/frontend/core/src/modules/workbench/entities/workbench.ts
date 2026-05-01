@@ -214,6 +214,10 @@ export class Workbench extends Entity {
     this.open(`/collection/${collectionId}`, options);
   }
 
+  openContainer(containerId: string, options?: WorkbenchOpenOptions) {
+    this.open(`/container/${containerId}`, options);
+  }
+
   openAll(options?: WorkbenchOpenOptions) {
     this.open('/all', options);
   }

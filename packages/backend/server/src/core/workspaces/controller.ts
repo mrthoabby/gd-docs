@@ -32,6 +32,7 @@ import { DocReader } from '../doc/reader';
 import { AccessController, WorkspacePolicyService } from '../permission';
 import { CommentAttachmentStorage, WorkspaceBlobStorage } from '../storage';
 import { DocID } from '../utils/doc';
+import { ContainerService } from './container';
 
 @Controller('/api/workspaces')
 export class WorkspacesController {
@@ -43,7 +44,8 @@ export class WorkspacesController {
     private readonly workspacePolicy: WorkspacePolicyService,
     private readonly workspace: PgWorkspaceDocStorageAdapter,
     private readonly docReader: DocReader,
-    private readonly models: Models
+    private readonly models: Models,
+    private readonly containerService: ContainerService
   ) {}
 
   private buildVisitorId(req: Request, workspaceId: string, docId: string) {
@@ -51,6 +53,32 @@ export class WorkspacesController {
     return createHash('sha256')
       .update(`${workspaceId}:${docId}:${tracker}`)
       .digest('hex');
+  }
+
+  private setContainerFileHeaders(
+    res: Response,
+    file: { id: string; name: string; mime: string; revision: number },
+    metadata?: { contentType: string; contentLength: number; lastModified: Date }
+  ) {
+    const contentType = metadata?.contentType || file.mime;
+    res.setHeader('content-type', contentType);
+    res.setHeader('etag', `"${file.id}:${file.revision}"`);
+    res.setHeader('cache-control', 'private, max-age=0, must-revalidate');
+    res.setHeader('X-Content-Type-Options', 'nosniff');
+    if (metadata) {
+      res.setHeader('last-modified', metadata.lastModified.toUTCString());
+      res.setHeader('content-length', metadata.contentLength);
+    }
+
+    const safeName = file.name
+      .replace(/[\r\n]/g, '')
+      .replace(/[^\w\s.-]/g, '_');
+    res.setHeader(
+      'content-disposition',
+      `inline; filename="${encodeURIComponent(safeName)}"; filename*=UTF-8''${encodeURIComponent(
+        safeName
+      )}`
+    );
   }
 
   private async assertCanReadPublicDoc(
@@ -160,6 +188,68 @@ export class WorkspacesController {
     });
 
     res.setHeader('cache-control', 'public, max-age=2592000, immutable');
+    body.pipe(res);
+  }
+
+  @Public()
+  @Head('/:id/containers/:containerId/files/:fileId/content')
+  @CallMetric('controllers', 'workspace_head_container_file')
+  async headContainerFile(
+    @CurrentUser() user: CurrentUser | undefined,
+    @Param('id') workspaceId: string,
+    @Param('containerId') containerId: string,
+    @Param('fileId') fileId: string,
+    @Res() res: Response
+  ) {
+    const { file, container, metadata } =
+      await this.containerService.getFileContent(
+        user?.id ?? 'anonymous',
+        workspaceId,
+        fileId
+      );
+    if (container.id !== containerId) {
+      throw new BlobNotFound({ spaceId: workspaceId, blobId: fileId });
+    }
+    this.setContainerFileHeaders(res, file, metadata);
+    res.status(200).end();
+  }
+
+  @Public()
+  @Get('/:id/containers/:containerId/files/:fileId/content')
+  @CallMetric('controllers', 'workspace_get_container_file')
+  async containerFile(
+    @CurrentUser() user: CurrentUser | undefined,
+    @Param('id') workspaceId: string,
+    @Param('containerId') containerId: string,
+    @Param('fileId') fileId: string,
+    @Query('redirect') redirect: string | undefined,
+    @Res() res: Response
+  ) {
+    const { file, container, body, metadata, redirectUrl } =
+      await this.containerService.getFileContent(
+        user?.id ?? 'anonymous',
+        workspaceId,
+        fileId
+      );
+    if (container.id !== containerId) {
+      throw new BlobNotFound({ spaceId: workspaceId, blobId: fileId });
+    }
+
+    if (redirectUrl) {
+      if (redirect === 'manual') {
+        return res.send({ url: redirectUrl });
+      }
+      return res.redirect(redirectUrl);
+    }
+
+    if (!body) {
+      throw new BlobNotFound({
+        spaceId: workspaceId,
+        blobId: fileId,
+      });
+    }
+
+    this.setContainerFileHeaders(res, file, metadata);
     body.pipe(res);
   }
 

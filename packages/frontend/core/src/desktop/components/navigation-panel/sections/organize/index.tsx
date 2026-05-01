@@ -85,7 +85,14 @@ export const NavigationPanelOrganize = () => {
       const entity = data.source.data.entity;
       if (!entity) return;
       const { type, id } = entity;
-      if (type !== 'doc' && type !== 'tag' && type !== 'collection') return;
+      if (
+        type !== 'doc' &&
+        type !== 'tag' &&
+        type !== 'collection' &&
+        type !== 'container'
+      ) {
+        return;
+      }
 
       const folder = newFolder$.value;
       if (!folder) return;

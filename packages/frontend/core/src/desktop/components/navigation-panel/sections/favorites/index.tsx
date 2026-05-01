@@ -21,6 +21,7 @@ import { type MouseEventHandler, useCallback, useMemo } from 'react';
 
 import { CollapsibleSection } from '../../layouts/collapsible-section';
 import { NavigationPanelCollectionNode } from '../../nodes/collection';
+import { NavigationPanelContainerNode } from '../../nodes/container';
 import { NavigationPanelDocNode } from '../../nodes/doc';
 import { NavigationPanelFolderNode } from '../../nodes/folder';
 import { NavigationPanelTagNode } from '../../nodes/tag';
@@ -261,6 +262,16 @@ const NavigationPanelFavoriteNode = ({
     <NavigationPanelFolderNode
       key={favorite.id}
       nodeId={favorite.id}
+      location={childLocation}
+      onDrop={handleOnChildrenDrop}
+      dropEffect={favoriteChildrenDropEffect}
+      canDrop={favoriteChildrenCanDrop}
+      parentPath={parentPath}
+    />
+  ) : favorite.type === 'container' ? (
+    <NavigationPanelContainerNode
+      key={favorite.id}
+      containerId={favorite.id}
       location={childLocation}
       onDrop={handleOnChildrenDrop}
       dropEffect={favoriteChildrenDropEffect}

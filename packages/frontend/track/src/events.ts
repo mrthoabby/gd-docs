@@ -139,6 +139,14 @@ type AttachmentEvents =
   | 'openAttachmentInPeekView'
   | 'openAttachmentInSplitView'
   | 'openPDFRendererFail';
+
+type ContainerEvents =
+  | 'openContainer'
+  | 'uploadContainerFile'
+  | 'previewContainerFile'
+  | 'saveContainerTextFile'
+  | 'renameContainerFile'
+  | 'deleteContainerFile';
 // END SECTION
 
 // SECTION: template
@@ -222,6 +230,7 @@ type UserEvents =
   | AIEvents
   | CommentEvents
   | AttachmentEvents
+  | ContainerEvents
   | TemplateEvents
   | NotificationEvents
   | IntegrationEvents
@@ -503,6 +512,20 @@ interface PageEvents extends PageDivision {
       $: ['editCollection'];
     };
   };
+  container: {
+    $: {
+      $: ['openContainer'];
+    };
+    files: {
+      $: [
+        'uploadContainerFile',
+        'previewContainerFile',
+        'saveContainerTextFile',
+        'renameContainerFile',
+        'deleteContainerFile',
+      ];
+    };
+  };
   tag: {};
   trash: {};
   subscriptionLanding: {
@@ -541,7 +564,13 @@ interface PageEvents extends PageDivision {
   };
 }
 
-type OrganizeItemType = 'doc' | 'folder' | 'collection' | 'tag' | 'favorite';
+type OrganizeItemType =
+  | 'doc'
+  | 'folder'
+  | 'collection'
+  | 'tag'
+  | 'favorite'
+  | 'container';
 type OrganizeItemArgs =
   | {
       type: 'link';
@@ -553,6 +582,13 @@ type OrganizeItemArgs =
 
 type AttachmentEventArgs = {
   type: string; // file type
+};
+type ContainerFileKind = 'image' | 'text' | 'pdf';
+type ContainerFileResult = 'success' | 'failure';
+type ContainerFileEventArgs = {
+  kind?: ContainerFileKind;
+  result?: ContainerFileResult;
+  reason?: string;
 };
 
 type TabActionControlType =
@@ -658,6 +694,12 @@ export type EventArgs = {
   openAttachmentInNewTab: AttachmentEventArgs;
   openAttachmentInPeekView: AttachmentEventArgs;
   openAttachmentInSplitView: AttachmentEventArgs;
+  openContainer: {};
+  uploadContainerFile: ContainerFileEventArgs;
+  previewContainerFile: ContainerFileEventArgs;
+  saveContainerTextFile: ContainerFileEventArgs;
+  renameContainerFile: ContainerFileEventArgs;
+  deleteContainerFile: ContainerFileEventArgs;
   modifyUserDocRole: { role: string };
   modifyDocDefaultRole: { role: string };
   inviteUserDocRole: {
