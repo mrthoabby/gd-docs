@@ -13,6 +13,8 @@
 #  Uso:
 #    bash update.sh
 #    bash update.sh --skip-backup   (no hacer backup de BD)
+#    bash update.sh --no-cache      (rebuild limpio, más lento)
+#    bash update.sh --logs          (seguir logs al final)
 # ============================================================
 set -euo pipefail
 
@@ -25,6 +27,8 @@ REPO_ROOT="$(cd "$SCRIPT_DIR/../.." && pwd)"
 ENV_FILE="$SCRIPT_DIR/.env"
 IMAGE_NAME="gddocs:latest"
 SKIP_BACKUP=false
+NO_CACHE=false
+FOLLOW_LOGS=false
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
 info()    { echo -e "${CYAN}[INFO]${NC}  $*"; }
@@ -102,7 +106,22 @@ check_disk_space() {
 while [[ $# -gt 0 ]]; do
   case "$1" in
     --skip-backup) SKIP_BACKUP=true; shift ;;
-    *) shift ;;
+    --no-cache) NO_CACHE=true; shift ;;
+    --logs) FOLLOW_LOGS=true; shift ;;
+    -h|--help)
+      cat <<EOF
+Uso:
+  bash .docker/selfhost/update.sh [opciones]
+
+Opciones:
+  --skip-backup   No crear backup de PostgreSQL antes del update.
+  --no-cache      Reconstruir la imagen Docker sin cache.
+  --logs          Seguir logs del servicio gddocs al terminar.
+  -h, --help      Mostrar esta ayuda.
+EOF
+      exit 0
+      ;;
+    *) error "Opción desconocida: $1" ;;
   esac
 done
 
@@ -254,10 +273,15 @@ echo "╚═══════════════════════�
 echo ""
 
 check_disk_space
-DOCKER_BUILDKIT=1 docker build \
-  -f "$SCRIPT_DIR/Dockerfile.selfhost" \
-  -t "$IMAGE_NAME" \
+BUILD_ARGS=(
+  -f "$SCRIPT_DIR/Dockerfile.selfhost"
+  -t "$IMAGE_NAME"
   "$REPO_ROOT"
+)
+if [[ "$NO_CACHE" == true ]]; then
+  BUILD_ARGS=(--no-cache "${BUILD_ARGS[@]}")
+fi
+DOCKER_BUILDKIT=1 docker build "${BUILD_ARGS[@]}"
 
 success "Imagen reconstruida: ${IMAGE_NAME}"
 
@@ -274,8 +298,34 @@ info "Corriendo migraciones y reiniciando servicios..."
 # la imagen reconstruida. MinIO, Redis y Postgres siguen corriendo sin
 # interrupción — no tiene sentido reiniciarlos en cada update.
 # --wait bloquea hasta que gddocs pase su healthcheck y las migraciones terminen.
-docker compose -f "$SCRIPT_DIR/compose.yml" --env-file "$ENV_FILE" \
-  up -d --wait --force-recreate gddocs gddocs_migration
+COMPOSE=(docker compose -f "$SCRIPT_DIR/compose.yml" --env-file "$ENV_FILE")
+
+if "${COMPOSE[@]}" up --help 2>/dev/null | grep -q -- '--wait'; then
+  "${COMPOSE[@]}" up -d --wait --force-recreate gddocs gddocs_migration
+else
+  warn "Tu versión de docker compose no soporta --wait; se usará espera manual."
+  "${COMPOSE[@]}" up -d --force-recreate gddocs gddocs_migration
+
+  READY=false
+  for _ in $(seq 1 90); do
+    MIGRATION_STATE=$(docker inspect -f '{{.State.Status}}' gddocs_migration 2>/dev/null || true)
+    MIGRATION_EXIT=$(docker inspect -f '{{.State.ExitCode}}' gddocs_migration 2>/dev/null || true)
+    SERVER_STATE=$(docker inspect -f '{{.State.Status}}' gddocs_server 2>/dev/null || true)
+
+    if [[ "$MIGRATION_STATE" == "exited" && "$MIGRATION_EXIT" != "0" ]]; then
+      error "La migración falló. Revisá: docker logs gddocs_migration"
+    fi
+
+    if [[ "$MIGRATION_STATE" == "exited" && "$MIGRATION_EXIT" == "0" && "$SERVER_STATE" == "running" ]]; then
+      READY=true
+      break
+    fi
+
+    sleep 2
+  done
+
+  [[ "$READY" == true ]] || error "Los servicios no quedaron listos a tiempo. Revisá: docker compose -f $SCRIPT_DIR/compose.yml logs --tail=80"
+fi
 success "Servicios activos y migraciones completadas."
 
 # ---------- Limpieza de imágenes antiguas del storage fs ----------
@@ -319,3 +369,7 @@ echo ""
 echo "  📋  Ver logs:    docker compose -f $SCRIPT_DIR/compose.yml logs -f"
 echo "  🛑  Detener:     docker compose -f $SCRIPT_DIR/compose.yml down"
 echo ""
+
+if [[ "$FOLLOW_LOGS" == true ]]; then
+  "${COMPOSE[@]}" logs -f gddocs
+fi

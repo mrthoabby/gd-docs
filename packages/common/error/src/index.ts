@@ -1,11 +1,10 @@
-import type { ErrorDataUnion, ErrorNames } from '@affine/graphql';
 import { GraphQLError as BaseGraphQLError } from 'graphql';
 
 export type ErrorName =
-  | keyof typeof ErrorNames
   | 'NETWORK_ERROR'
   | 'CONTENT_TOO_LARGE'
-  | 'REQUEST_ABORTED';
+  | 'REQUEST_ABORTED'
+  | (string & {});
 
 export interface UserFriendlyErrorResponse {
   status: number;
@@ -27,16 +26,7 @@ function UnknownError(message: string) {
   });
 }
 
-type ToPascalCase<S extends string> = S extends `${infer A}_${infer B}`
-  ? `${Capitalize<Lowercase<A>>}${ToPascalCase<B>}`
-  : Capitalize<Lowercase<S>>;
-
-export type ErrorData = {
-  [K in ErrorNames]: Extract<
-    ErrorDataUnion,
-    { __typename?: `${ToPascalCase<K>}DataType` }
-  >;
-};
+export type ErrorData = Record<string, unknown>;
 
 export class GraphQLError extends BaseGraphQLError {
   // @ts-expect-error better to be a known type without any type casting

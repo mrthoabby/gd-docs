@@ -6,8 +6,7 @@
   "exports": {
     ".": "./src/index.ts"
   },
-  "peerDependencies": {
-    "@affine/graphql": "workspace:*",
+  "dependencies": {
     "graphql": "^16.9.0"
   }
 }
