@@ -49,20 +49,21 @@ function runPrismaMigrate() {
 
 function runCliRun() {
   console.log('running cli initialization (yarn cli run).');
+  const timeout = Number(process.env.SELFHOST_CLI_INIT_TIMEOUT_MS || 300_000);
   try {
-    const result = execSync('yarn cli run', {
+    execSync('yarn cli run', {
       encoding: 'utf-8',
       env: process.env,
-      stdio: 'pipe',
+      stdio: 'inherit',
+      timeout,
     });
-    console.log(result);
     console.log('cli initialization completed successfully.');
   } catch (err) {
     console.error('');
     console.error('=== CLI RUN FAILED ===');
-    if (err.stdout) console.error('[stdout]', err.stdout.slice(0, 4000));
-    if (err.stderr) console.error('[stderr]', err.stderr.slice(0, 4000));
+    if (err.signal) console.error('[signal]', err.signal);
     console.error('[exit code]', err.status);
+    console.error('[timeout ms]', timeout);
     console.error('=== END CLI RUN ERROR ===');
     console.warn(
       'WARNING: CLI initialization failed. The server will start, but some features (AI prompts, initial data) may be missing.'
