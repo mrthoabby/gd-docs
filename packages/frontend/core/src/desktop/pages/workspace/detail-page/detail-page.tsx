@@ -32,6 +32,7 @@ import {
   ViewSidebarTab,
   WorkbenchService,
 } from '@affine/core/modules/workbench';
+import { WorkspaceService } from '@affine/core/modules/workspace';
 import { isNewTabTrigger } from '@affine/core/utils';
 import { ServerFeature } from '@affine/graphql';
 import track from '@affine/track';
@@ -79,18 +80,21 @@ const DetailPageImpl = memo(function DetailPageImpl() {
     editorService,
     docService,
     globalContextService,
+    workspaceService,
   } = useServices({
     WorkbenchService,
     ViewService,
     EditorService,
     DocService,
     GlobalContextService,
+    WorkspaceService,
   });
   const workbench = workbenchService.workbench;
   const editor = editorService.editor;
   const view = viewService.view;
   const globalContext = globalContextService.globalContext;
   const doc = docService.doc;
+  const workspace = workspaceService.workspace;
 
   const mode = useLiveData(editor.mode$);
   const activeSidebarTab = useLiveData(view.activeSidebarTab$);
