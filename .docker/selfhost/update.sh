@@ -14,6 +14,7 @@
 #    bash update.sh
 #    bash update.sh --skip-backup   (no hacer backup de BD)
 #    bash update.sh --no-cache      (rebuild limpio, más lento)
+#    bash update.sh --skip-build    (usa la imagen local existente)
 #    bash update.sh --logs          (seguir logs al final)
 # ============================================================
 set -euo pipefail
@@ -28,6 +29,7 @@ ENV_FILE="$SCRIPT_DIR/.env"
 IMAGE_NAME="gddocs:latest"
 SKIP_BACKUP=false
 NO_CACHE=false
+SKIP_BUILD=false
 FOLLOW_LOGS=false
 
 RED='\033[0;31m'; GREEN='\033[0;32m'; YELLOW='\033[1;33m'; CYAN='\033[0;36m'; NC='\033[0m'
@@ -107,6 +109,7 @@ while [[ $# -gt 0 ]]; do
   case "$1" in
     --skip-backup) SKIP_BACKUP=true; shift ;;
     --no-cache) NO_CACHE=true; shift ;;
+    --skip-build) SKIP_BUILD=true; shift ;;
     --logs) FOLLOW_LOGS=true; shift ;;
     -h|--help)
       cat <<EOF
@@ -116,6 +119,7 @@ Uso:
 Opciones:
   --skip-backup   No crear backup de PostgreSQL antes del update.
   --no-cache      Reconstruir la imagen Docker sin cache.
+  --skip-build    Usar la imagen Docker local existente.
   --logs          Seguir logs del servicio gddocs al terminar.
   -h, --help      Mostrar esta ayuda.
 EOF
@@ -266,28 +270,34 @@ success "config.json actualizado: ${CONFIG_DST}"
 echo ""
 
 # ---------- 4. Reconstruir imagen ----------
-echo "╔══════════════════════════════════════════════════════════╗"
-echo "║  Reconstruyendo imagen Docker desde código fuente...    ║"
-echo "║  Esto tarda 5-15 minutos (usa cache de capas).         ║"
-echo "╚══════════════════════════════════════════════════════════╝"
-echo ""
+if [[ "$SKIP_BUILD" == true ]]; then
+  docker image inspect "$IMAGE_NAME" >/dev/null 2>&1 || \
+    error "No existe la imagen local ${IMAGE_NAME}. Ejecutá sin --skip-build al menos una vez."
+  info "Saltando build Docker; usando imagen local existente: ${IMAGE_NAME}"
+else
+  echo "╔══════════════════════════════════════════════════════════╗"
+  echo "║  Reconstruyendo imagen Docker desde código fuente...    ║"
+  echo "║  Esto tarda 5-15 minutos (usa cache de capas).         ║"
+  echo "╚══════════════════════════════════════════════════════════╝"
+  echo ""
 
-check_disk_space
-BUILD_ARGS=(
-  -f "$SCRIPT_DIR/Dockerfile.selfhost"
-  -t "$IMAGE_NAME"
-  "$REPO_ROOT"
-)
-if [[ "$NO_CACHE" == true ]]; then
-  BUILD_ARGS=(--no-cache "${BUILD_ARGS[@]}")
+  check_disk_space
+  BUILD_ARGS=(
+    -f "$SCRIPT_DIR/Dockerfile.selfhost"
+    -t "$IMAGE_NAME"
+    "$REPO_ROOT"
+  )
+  if [[ "$NO_CACHE" == true ]]; then
+    BUILD_ARGS=(--no-cache "${BUILD_ARGS[@]}")
+  fi
+  DOCKER_BUILDKIT=1 docker build "${BUILD_ARGS[@]}"
+
+  success "Imagen reconstruida: ${IMAGE_NAME}"
+
+  # Eliminar imágenes dangling (evita acumulación tras cada actualización)
+  docker image prune -f 2>/dev/null || true
+  echo ""
 fi
-DOCKER_BUILDKIT=1 docker build "${BUILD_ARGS[@]}"
-
-success "Imagen reconstruida: ${IMAGE_NAME}"
-
-# Eliminar imágenes dangling (evita acumulación tras cada actualización)
-docker image prune -f 2>/dev/null || true
-echo ""
 
 # Asegurar que el directorio de persistencia de Redis exista antes de levantar el contenedor
 mkdir -p "${REDIS_DATA_LOCATION:-${HOME}/.gddocs/redis}"
@@ -385,16 +395,13 @@ run_migration_with_logs() {
 }
 
 info "Preparando servicios base..."
-if compose_supports_wait; then
-  "${COMPOSE[@]}" up -d --wait postgres redis minio minio-init
-else
-  warn "Tu versión de docker compose no soporta --wait; se usará espera manual."
-  "${COMPOSE[@]}" up -d postgres redis minio minio-init
-  wait_container_healthy gddocs_postgres 180
-  wait_container_healthy gddocs_redis 180
-  wait_container_healthy gddocs_minio 180
-  wait_container_exited_zero gddocs_minio_init 180
-fi
+"${COMPOSE[@]}" up -d postgres redis minio
+wait_container_healthy gddocs_postgres 180
+wait_container_healthy gddocs_redis 180
+wait_container_healthy gddocs_minio 180
+
+"${COMPOSE[@]}" up -d --force-recreate minio-init
+wait_container_exited_zero gddocs_minio_init 180
 success "Servicios base listos."
 
 info "Corriendo migraciones..."

@@ -19,6 +19,7 @@ Opciones:
   --pull          Ejecuta git pull --ff-only antes del deploy.
   --skip-backup   No crea backup de PostgreSQL antes del update.
   --no-cache      Reconstruye la imagen Docker sin cache.
+  --skip-build    Usa la imagen Docker local existente.
   --logs          Sigue los logs de gddocs al terminar.
   -h, --help      Muestra esta ayuda.
 EOF
@@ -29,7 +30,7 @@ for arg in "$@"; do
     --pull)
       DO_PULL=true
       ;;
-    --skip-backup|--no-cache|--logs)
+    --skip-backup|--no-cache|--skip-build|--logs)
       ARGS+=("$arg")
       ;;
     -h|--help)
