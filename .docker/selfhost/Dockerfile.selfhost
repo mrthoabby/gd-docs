@@ -77,14 +77,14 @@ RUN yarn affine init
 # RAM simultáneamente. El build siguiente empieza solo cuando el
 # anterior termina, reduciendo el pico de memoria de ~18 GB a ~4 GB.
 FROM base AS build-frontend
-RUN yarn workspace @affine/web build && \
-    yarn workspace @affine/admin build
+RUN yarn affine bundle -p @affine/web && \
+    yarn affine bundle -p @affine/admin
 
 
 # ── Backend NestJS (paralelo con build-frontend) ──────────────
 # El build del servidor NestJS consume ~500 MB — seguro en paralelo.
 FROM base AS build-server
-RUN yarn affine @affine/server build
+RUN yarn affine bundle -p @affine/server
 
 
 # ── Deps de producción + Prisma (paralelo con build-frontend) ─

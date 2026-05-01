@@ -17,8 +17,8 @@
     "node": "<23.0.0"
   },
   "scripts": {
-    "affine": "r affine.ts",
-    "af": "r affine.ts",
+    "affine": "node tools/cli/bin/runner.js tools/cli/src/affine.ts",
+    "af": "yarn affine",
     "dev": "yarn affine dev",
     "build": "yarn affine build",
     "lint:eslint": "cross-env NODE_OPTIONS=\"--max-old-space-size=16384\" eslint --report-unused-disable-directives-severity=off . --cache",
