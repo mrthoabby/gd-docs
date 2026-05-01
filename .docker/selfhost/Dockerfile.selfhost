@@ -55,7 +55,7 @@ COPY tools/cli/   tools/cli/
 COPY tools/utils/ tools/utils/
 
 RUN --mount=type=bind,source=.,target=/src,readonly \
-    node -e "const fs=require('node:fs');const path=require('node:path');const copy=(rel)=>{const from=path.join('/src',rel);if(!fs.existsSync(from))return;const to=path.join('/repo',rel);fs.mkdirSync(path.dirname(to),{recursive:true});fs.copyFileSync(from,to);};const walk=(dir)=>{const full=path.join('/src',dir);if(!fs.existsSync(full))return;for(const entry of fs.readdirSync(full,{withFileTypes:true})){const rel=path.join(dir,entry.name);if(entry.isDirectory())walk(rel);else if(entry.name==='package.json'||entry.name==='tsconfig.json')copy(rel);}};walk('packages');walk('blocksuite');copy('packages/backend/server/schema.prisma');"
+    node -e "const fs=require('node:fs');const path=require('node:path');const copy=(rel)=>{const from=path.join('/src',rel);if(!fs.existsSync(from))return;const to=path.join('/repo',rel);fs.mkdirSync(path.dirname(to),{recursive:true});fs.copyFileSync(from,to);};const walk=(dir)=>{const full=path.join('/src',dir);if(!fs.existsSync(full))return;for(const entry of fs.readdirSync(full,{withFileTypes:true})){const rel=path.join(dir,entry.name);if(entry.isDirectory())walk(rel);else if(entry.name==='package.json'||entry.name==='tsconfig.json')copy(rel);}};walk('packages');walk('blocksuite');walk('tools/@types');copy('packages/backend/server/schema.prisma');"
 
 # --mount=type=cache: yarn guarda los paquetes descargados en disco
 # del host entre builds. Si yarn.lock no cambió, la instalación es
