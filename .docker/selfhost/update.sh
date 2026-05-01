@@ -293,40 +293,117 @@ echo ""
 mkdir -p "${REDIS_DATA_LOCATION:-${HOME}/.gddocs/redis}"
 
 # ---------- 5. Migraciones + reinicio ----------
-info "Corriendo migraciones y reiniciando servicios..."
-# Solo se recrean gddocs y gddocs_migration porque son los únicos que usan
-# la imagen reconstruida. MinIO, Redis y Postgres siguen corriendo sin
-# interrupción — no tiene sentido reiniciarlos en cada update.
-# --wait bloquea hasta que gddocs pase su healthcheck y las migraciones terminen.
 COMPOSE=(docker compose -f "$SCRIPT_DIR/compose.yml" --env-file "$ENV_FILE")
 
-if "${COMPOSE[@]}" up --help 2>/dev/null | grep -q -- '--wait'; then
-  "${COMPOSE[@]}" up -d --wait --force-recreate gddocs gddocs_migration
-else
-  warn "Tu versión de docker compose no soporta --wait; se usará espera manual."
-  "${COMPOSE[@]}" up -d --force-recreate gddocs gddocs_migration
+compose_supports_wait() {
+  "${COMPOSE[@]}" up --help 2>/dev/null | grep -q -- '--wait'
+}
 
-  READY=false
-  for _ in $(seq 1 90); do
-    MIGRATION_STATE=$(docker inspect -f '{{.State.Status}}' gddocs_migration 2>/dev/null || true)
-    MIGRATION_EXIT=$(docker inspect -f '{{.State.ExitCode}}' gddocs_migration 2>/dev/null || true)
-    SERVER_STATE=$(docker inspect -f '{{.State.Status}}' gddocs_server 2>/dev/null || true)
+wait_container_healthy() {
+  local name="$1"
+  local timeout="${2:-180}"
+  local state health
 
-    if [[ "$MIGRATION_STATE" == "exited" && "$MIGRATION_EXIT" != "0" ]]; then
-      error "La migración falló. Revisá: docker logs gddocs_migration"
+  for _ in $(seq 1 "$timeout"); do
+    state=$(docker inspect -f '{{.State.Status}}' "$name" 2>/dev/null || true)
+    health=$(docker inspect -f '{{if .State.Health}}{{.State.Health.Status}}{{else}}none{{end}}' "$name" 2>/dev/null || true)
+
+    if [[ "$state" == "running" && ( "$health" == "healthy" || "$health" == "none" ) ]]; then
+      return 0
     fi
 
-    if [[ "$MIGRATION_STATE" == "exited" && "$MIGRATION_EXIT" == "0" && "$SERVER_STATE" == "running" ]]; then
-      READY=true
-      break
+    if [[ "$state" == "exited" || "$state" == "dead" ]]; then
+      docker logs --tail=80 "$name" 2>&1 || true
+      error "El contenedor ${name} terminó antes de quedar listo."
     fi
 
-    sleep 2
+    sleep 1
   done
 
-  [[ "$READY" == true ]] || error "Los servicios no quedaron listos a tiempo. Revisá: docker compose -f $SCRIPT_DIR/compose.yml logs --tail=80"
+  docker logs --tail=80 "$name" 2>&1 || true
+  error "Timeout esperando a que ${name} quede saludable."
+}
+
+wait_container_exited_zero() {
+  local name="$1"
+  local timeout="${2:-180}"
+  local state exit_code
+
+  for _ in $(seq 1 "$timeout"); do
+    state=$(docker inspect -f '{{.State.Status}}' "$name" 2>/dev/null || true)
+    exit_code=$(docker inspect -f '{{.State.ExitCode}}' "$name" 2>/dev/null || true)
+
+    if [[ "$state" == "exited" ]]; then
+      if [[ "$exit_code" == "0" ]]; then
+        return 0
+      fi
+      docker logs --tail=80 "$name" 2>&1 || true
+      error "El contenedor ${name} falló con exit code ${exit_code}."
+    fi
+
+    sleep 1
+  done
+
+  docker logs --tail=80 "$name" 2>&1 || true
+  error "Timeout esperando a que ${name} termine correctamente."
+}
+
+run_migration_with_logs() {
+  local timeout="${MIGRATION_TIMEOUT_SECONDS:-900}"
+  local state exit_code log_pid
+
+  "${COMPOSE[@]}" up -d --force-recreate --no-deps gddocs_migration
+  echo ""
+  info "Logs de migración (gddocs_migration):"
+  docker logs -f --tail=80 gddocs_migration &
+  log_pid=$!
+
+  for _ in $(seq 1 "$timeout"); do
+    state=$(docker inspect -f '{{.State.Status}}' gddocs_migration 2>/dev/null || true)
+    exit_code=$(docker inspect -f '{{.State.ExitCode}}' gddocs_migration 2>/dev/null || true)
+
+    if [[ "$state" == "exited" ]]; then
+      kill "$log_pid" 2>/dev/null || true
+      wait "$log_pid" 2>/dev/null || true
+
+      if [[ "$exit_code" == "0" ]]; then
+        success "Migraciones completadas."
+        return 0
+      fi
+
+      docker logs --tail=120 gddocs_migration 2>&1 || true
+      error "La migración falló con exit code ${exit_code}."
+    fi
+
+    sleep 1
+  done
+
+  kill "$log_pid" 2>/dev/null || true
+  wait "$log_pid" 2>/dev/null || true
+  docker logs --tail=120 gddocs_migration 2>&1 || true
+  error "Timeout esperando migraciones tras ${timeout}s."
+}
+
+info "Preparando servicios base..."
+if compose_supports_wait; then
+  "${COMPOSE[@]}" up -d --wait postgres redis minio minio-init
+else
+  warn "Tu versión de docker compose no soporta --wait; se usará espera manual."
+  "${COMPOSE[@]}" up -d postgres redis minio minio-init
+  wait_container_healthy gddocs_postgres 180
+  wait_container_healthy gddocs_redis 180
+  wait_container_healthy gddocs_minio 180
+  wait_container_exited_zero gddocs_minio_init 180
 fi
-success "Servicios activos y migraciones completadas."
+success "Servicios base listos."
+
+info "Corriendo migraciones..."
+run_migration_with_logs
+
+info "Recreando servidor..."
+"${COMPOSE[@]}" up -d --force-recreate --no-deps gddocs
+wait_container_healthy gddocs_server 180
+success "Servidor activo y migraciones completadas."
 
 # ---------- Limpieza de imágenes antiguas del storage fs ----------
 # Antes de MinIO, GD docs guardaba blobs/avatares en disco en
