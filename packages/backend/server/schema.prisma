@@ -863,8 +863,8 @@ model WorkspaceKnowledgeBase {
   sources    WorkspaceKnowledgeBaseSource[]
   embeddings WorkspaceKnowledgeBaseEmbedding[]
 
-  @@index([workspaceId, status, deletedAt])
-  @@index([workspaceId, folderNodeId])
+  @@index([workspaceId, status, deletedAt], map: "wkb_workspace_status_deleted_idx")
+  @@index([workspaceId, folderNodeId], map: "wkb_workspace_folder_node_idx")
   @@map("workspace_knowledge_bases")
 }
 
@@ -887,9 +887,9 @@ model WorkspaceKnowledgeBaseSource {
   workspace     Workspace              @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
   knowledgeBase WorkspaceKnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
 
-  @@unique([knowledgeBaseId, sourceType, sourceId])
-  @@index([knowledgeBaseId, included, status])
-  @@index([workspaceId, sourceType, sourceId])
+  @@unique([knowledgeBaseId, sourceType, sourceId], map: "wkb_sources_kb_source_key")
+  @@index([knowledgeBaseId, included, status], map: "wkb_sources_kb_included_status_idx")
+  @@index([workspaceId, sourceType, sourceId], map: "wkb_sources_workspace_source_idx")
   @@map("workspace_knowledge_base_sources")
 }
 
@@ -907,8 +907,8 @@ model WorkspaceKnowledgeBaseEmbedding {
 
   knowledgeBase WorkspaceKnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
 
-  @@unique([knowledgeBaseId, sourceType, sourceId, chunk])
-  @@index([knowledgeBaseId, sourceType, sourceId])
+  @@unique([knowledgeBaseId, sourceType, sourceId, chunk], map: "wkb_embeddings_kb_source_chunk_key")
+  @@index([knowledgeBaseId, sourceType, sourceId], map: "wkb_embeddings_kb_source_idx")
   @@map("workspace_knowledge_base_embeddings")
 }
 

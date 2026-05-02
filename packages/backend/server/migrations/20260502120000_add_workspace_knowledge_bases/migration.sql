@@ -68,28 +68,28 @@ CREATE TABLE "workspace_knowledge_base_embeddings" (
 );
 
 -- CreateIndex
-CREATE INDEX "workspace_knowledge_bases_workspace_id_status_deleted_at_idx" ON "workspace_knowledge_bases"("workspace_id", "status", "deleted_at");
+CREATE INDEX "wkb_workspace_status_deleted_idx" ON "workspace_knowledge_bases"("workspace_id", "status", "deleted_at");
 
 -- CreateIndex
-CREATE INDEX "workspace_knowledge_bases_workspace_id_folder_node_id_idx" ON "workspace_knowledge_bases"("workspace_id", "folder_node_id");
+CREATE INDEX "wkb_workspace_folder_node_idx" ON "workspace_knowledge_bases"("workspace_id", "folder_node_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "workspace_knowledge_bases_active_folder_idx" ON "workspace_knowledge_bases"("workspace_id", "folder_node_id") WHERE "status" = 'active' AND "deleted_at" IS NULL;
+CREATE UNIQUE INDEX "wkb_active_folder_key" ON "workspace_knowledge_bases"("workspace_id", "folder_node_id") WHERE "status" = 'active' AND "deleted_at" IS NULL;
 
 -- CreateIndex
-CREATE UNIQUE INDEX "workspace_knowledge_base_sources_knowledge_base_id_source_type_source_id_key" ON "workspace_knowledge_base_sources"("knowledge_base_id", "source_type", "source_id");
+CREATE UNIQUE INDEX "wkb_sources_kb_source_key" ON "workspace_knowledge_base_sources"("knowledge_base_id", "source_type", "source_id");
 
 -- CreateIndex
-CREATE INDEX "workspace_knowledge_base_sources_knowledge_base_id_included_status_idx" ON "workspace_knowledge_base_sources"("knowledge_base_id", "included", "status");
+CREATE INDEX "wkb_sources_kb_included_status_idx" ON "workspace_knowledge_base_sources"("knowledge_base_id", "included", "status");
 
 -- CreateIndex
-CREATE INDEX "workspace_knowledge_base_sources_workspace_id_source_type_source_id_idx" ON "workspace_knowledge_base_sources"("workspace_id", "source_type", "source_id");
+CREATE INDEX "wkb_sources_workspace_source_idx" ON "workspace_knowledge_base_sources"("workspace_id", "source_type", "source_id");
 
 -- CreateIndex
-CREATE UNIQUE INDEX "workspace_knowledge_base_embeddings_knowledge_base_id_source_type_source_id_chunk_key" ON "workspace_knowledge_base_embeddings"("knowledge_base_id", "source_type", "source_id", "chunk");
+CREATE UNIQUE INDEX "wkb_embeddings_kb_source_chunk_key" ON "workspace_knowledge_base_embeddings"("knowledge_base_id", "source_type", "source_id", "chunk");
 
 -- CreateIndex
-CREATE INDEX "workspace_knowledge_base_embeddings_knowledge_base_id_source_type_source_id_idx" ON "workspace_knowledge_base_embeddings"("knowledge_base_id", "source_type", "source_id");
+CREATE INDEX "wkb_embeddings_kb_source_idx" ON "workspace_knowledge_base_embeddings"("knowledge_base_id", "source_type", "source_id");
 
 -- AddForeignKey
 ALTER TABLE "workspace_knowledge_bases" ADD CONSTRAINT "workspace_knowledge_bases_workspace_id_fkey" FOREIGN KEY ("workspace_id") REFERENCES "workspaces"("id") ON DELETE CASCADE ON UPDATE CASCADE;
