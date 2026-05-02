@@ -28,7 +28,7 @@ export type Prompt = Omit<
 
 export const Scenario = {
   audio_transcribing: ['Transcript audio'],
-  chat: ['Chat With AFFiNE AI'],
+  chat: ['Chat With AFFiNE AI', 'Chat With Knowledge Base'],
   // no prompt needed, just a placeholder
   embedding: [],
   image: [
@@ -2117,6 +2117,30 @@ const chat: Prompt[] = [
   {
     name: 'Chat With AFFiNE AI',
     ...CHAT_PROMPT,
+  },
+  {
+    name: 'Chat With Knowledge Base',
+    model: 'gemini-2.5-flash',
+    optionalModels: CHAT_PROMPT.optionalModels,
+    messages: [
+      {
+        role: 'system',
+        content: `You answer only from the retrieved sources that belong to the current Knowledge Base.
+
+Token and context rules:
+- Be concise by default.
+- Prefer the smallest set of high-confidence chunks that answers the question.
+- Use diverse sources when multiple sources are relevant.
+- Do not let one large document dominate the answer.
+- If the retrieved context is insufficient, say that the answer was not found in this Knowledge Base.
+- Do not use external knowledge, web knowledge, or general memory unless a future setting explicitly allows it.
+- Cite the sources you used.
+- Preserve source names and pending decisions when compressing chat history.
+- Remove repeated, conversational, or unrelated history during compression.
+
+The Knowledge Base is isolated by knowledgeBaseId. Never mix sources from another Knowledge Base.`,
+      },
+    ],
   },
 ];
 

@@ -2,6 +2,8 @@ import type { InlineHtmlAST } from '@blocksuite/affine-shared/adapters';
 import { InlineDeltaToHtmlAdapterExtension } from '@blocksuite/affine-shared/adapters';
 import { ThemeProvider } from '@blocksuite/affine-shared/services';
 
+import { getSelectedPillSelectOption } from '../../pill-select/utils';
+
 export const boldDeltaToHtmlAdapterMatcher = InlineDeltaToHtmlAdapterExtension({
   name: 'bold',
   match: delta => !!delta.attributes?.bold,
@@ -143,7 +145,39 @@ export const highlightColorDeltaToHtmlAdapterMatcher =
     },
   });
 
+export const pillSelectDeltaToHtmlAdapterMatcher =
+  InlineDeltaToHtmlAdapterExtension({
+    name: 'pillSelect',
+    match: delta => !!delta.attributes?.pillSelect,
+    toAST: delta => {
+      const pillSelect = delta.attributes?.pillSelect;
+      if (!pillSelect) {
+        return {
+          type: 'text',
+          value: typeof delta.insert === 'string' ? delta.insert : '',
+        };
+      }
+
+      const option = getSelectedPillSelectOption(pillSelect);
+      return {
+        type: 'element',
+        tagName: 'span',
+        properties: {
+          'data-affine-pill-select': pillSelect.id,
+          style: `border-radius:999px;padding:1px 8px;background:${option.color}24;`,
+        },
+        children: [
+          {
+            type: 'text',
+            value: option.label,
+          },
+        ],
+      };
+    },
+  });
+
 export const InlineDeltaToHtmlAdapterExtensions = [
+  pillSelectDeltaToHtmlAdapterMatcher,
   boldDeltaToHtmlAdapterMatcher,
   italicDeltaToHtmlAdapterMatcher,
   strikeDeltaToHtmlAdapterMatcher,

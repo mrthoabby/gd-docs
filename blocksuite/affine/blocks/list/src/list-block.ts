@@ -11,7 +11,10 @@ import {
   EDGELESS_TOP_CONTENTEDITABLE_SELECTOR,
 } from '@blocksuite/affine-shared/consts';
 import { DocModeProvider } from '@blocksuite/affine-shared/services';
-import { getViewportElement } from '@blocksuite/affine-shared/utils';
+import {
+  getViewportElement,
+  isOrderedListType,
+} from '@blocksuite/affine-shared/utils';
 import type { BlockComponent } from '@blocksuite/std';
 import { BlockSelection, TextSelection } from '@blocksuite/std';
 import {
@@ -119,12 +122,12 @@ export class ListBlockComponent extends CaptionedBlockComponent<ListBlockModel> 
       effect(() => {
         const type = this.model.props.type$.value;
         const order = this.model.props.order$.value;
-        // old numbered list has no order
-        if (type === 'numbered' && !Number.isInteger(order)) {
+        // old ordered lists may have no order
+        if (isOrderedListType(type) && !Number.isInteger(order)) {
           correctNumberedListsOrderToPrev(this.store, this.model, false);
         }
-        // if list is not numbered, order should be null
-        if (type !== 'numbered' && order !== null) {
+        // if list is not ordered, order should be null
+        if (!isOrderedListType(type) && order !== null) {
           this.model.props.order = null;
         }
       })
@@ -157,7 +160,10 @@ export class ListBlockComponent extends CaptionedBlockComponent<ListBlockModel> 
     const children = html`<div
       class="affine-block-children-container"
       style=${styleMap({
-        paddingLeft: `${BLOCK_CHILDREN_CONTAINER_PADDING_LEFT}px`,
+        paddingLeft:
+          this.model.props.type === 'phase'
+            ? '64px'
+            : `${BLOCK_CHILDREN_CONTAINER_PADDING_LEFT}px`,
         display: collapsed ? 'none' : undefined,
       })}
     >
@@ -165,12 +171,19 @@ export class ListBlockComponent extends CaptionedBlockComponent<ListBlockModel> 
     </div>`;
 
     return html`
-      <div class=${'affine-list-block-container'} style="${textAlignStyle}">
+      <div
+        class=${'affine-list-block-container'}
+        data-list-type=${this.model.props.type}
+        data-list-order=${this.model.props.order ?? ''}
+        data-collapsed=${collapsed}
+        style="${textAlignStyle}"
+      >
         <div
           class=${classMap({
             'affine-list-rich-text-wrapper': true,
             'affine-list--checked':
               this.model.props.type === 'todo' && this.model.props.checked,
+            'affine-list--phase': this.model.props.type === 'phase',
             [TOGGLE_BUTTON_PARENT_CLASS]: true,
           })}
         >

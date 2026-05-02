@@ -13,6 +13,10 @@ import { ContainerService, WorkspaceContainerResolver } from './container';
 import { WorkspacesController } from './controller';
 import { WorkspaceEvents } from './event';
 import {
+  KnowledgeBaseService,
+  WorkspaceKnowledgeBaseResolver,
+} from './knowledge-base';
+import {
   DocHistoryResolver,
   DocResolver,
   WorkspaceBlobResolver,
@@ -45,16 +49,19 @@ import { WorkspaceStatsJob } from './stats.job';
     DocHistoryResolver,
     WorkspaceBlobResolver,
     WorkspaceContainerResolver,
+    WorkspaceKnowledgeBaseResolver,
     WorkspaceService,
     ContainerService,
+    KnowledgeBaseService,
     WorkspaceEvents,
     AdminWorkspaceResolver,
     WorkspaceStatsJob,
   ],
-  exports: [WorkspaceService, ContainerService],
+  exports: [WorkspaceService, ContainerService, KnowledgeBaseService],
 })
 export class WorkspaceModule {}
 
 export { ContainerService } from './container';
+export { KnowledgeBaseService } from './knowledge-base';
 export { WorkspaceService } from './service';
 export { InvitationType, WorkspaceType } from './types';

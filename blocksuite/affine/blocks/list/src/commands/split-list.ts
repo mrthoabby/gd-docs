@@ -1,7 +1,8 @@
 import { ListBlockModel } from '@blocksuite/affine-model';
 import { focusTextModel } from '@blocksuite/affine-rich-text';
 import {
-  getNextContinuousNumberedLists,
+  getNextContinuousOrderedLists,
+  isOrderedListType,
   matchModels,
 } from '@blocksuite/affine-shared/utils';
 import type { Command, EditorHost } from '@blocksuite/std';
@@ -58,16 +59,19 @@ export const splitListCommand: Command<{
       });
 
       // reset next continuous numbered list's order
-      const nextContinuousNumberedLists = getNextContinuousNumberedLists(
-        doc,
-        paragraph.model
-      );
-      let base = 1;
-      nextContinuousNumberedLists.forEach(list => {
-        doc.transact(() => {
-          list.props.order = base;
+      (['numbered', 'phase'] as const).forEach(type => {
+        const nextContinuousOrderedLists = getNextContinuousOrderedLists(
+          doc,
+          paragraph.model,
+          type
+        );
+        let base = 1;
+        nextContinuousOrderedLists.forEach(list => {
+          doc.transact(() => {
+            list.props.order = base;
+          });
+          base += 1;
         });
-        base += 1;
       });
 
       host.updateComplete
@@ -135,7 +139,7 @@ export const splitListCommand: Command<{
           type: model.props.type,
           text: afterText,
           order:
-            model.props.type === 'numbered' && model.props.order !== null
+            isOrderedListType(model.props.type) && model.props.order !== null
               ? model.props.order + 1
               : null,
         },
@@ -147,10 +151,11 @@ export const splitListCommand: Command<{
       // move children to new list
       doc.moveBlocks(model.children, newList);
 
-      if (model.props.type === 'numbered' && model.props.order !== null) {
-        const nextContinuousNumberedLists = getNextContinuousNumberedLists(
+      if (isOrderedListType(model.props.type) && model.props.order !== null) {
+        const nextContinuousNumberedLists = getNextContinuousOrderedLists(
           doc,
-          newListId
+          newListId,
+          model.props.type
         );
         let base = model.props.order + 2;
         nextContinuousNumberedLists.forEach(list => {
@@ -178,16 +183,17 @@ export const splitListCommand: Command<{
         {
           type: model.props.type,
           text: afterText,
-          order: model.props.type === 'numbered' ? 1 : null,
+          order: isOrderedListType(model.props.type) ? 1 : null,
         },
         model,
         0
       );
 
-      if (model.props.type === 'numbered') {
-        const nextContinuousNumberedLists = getNextContinuousNumberedLists(
+      if (isOrderedListType(model.props.type)) {
+        const nextContinuousNumberedLists = getNextContinuousOrderedLists(
           doc,
-          newListId
+          newListId,
+          model.props.type
         );
         let base = 2;
         nextContinuousNumberedLists.forEach(list => {
@@ -229,7 +235,7 @@ export const splitListCommand: Command<{
       {
         type: model.props.type,
         text: afterText,
-        order: null,
+        order: isOrderedListType(model.props.type) ? 1 : null,
       },
       parent,
       modelIndex + 1

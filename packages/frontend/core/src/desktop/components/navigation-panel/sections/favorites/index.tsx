@@ -24,6 +24,7 @@ import { NavigationPanelCollectionNode } from '../../nodes/collection';
 import { NavigationPanelContainerNode } from '../../nodes/container';
 import { NavigationPanelDocNode } from '../../nodes/doc';
 import { NavigationPanelFolderNode } from '../../nodes/folder';
+import { NavigationPanelKnowledgeBaseNode } from '../../nodes/knowledge-base';
 import { NavigationPanelTagNode } from '../../nodes/tag';
 import { DropEffect, NavigationPanelTreeRoot } from '../../tree';
 import {
@@ -272,6 +273,16 @@ const NavigationPanelFavoriteNode = ({
     <NavigationPanelContainerNode
       key={favorite.id}
       containerId={favorite.id}
+      location={childLocation}
+      onDrop={handleOnChildrenDrop}
+      dropEffect={favoriteChildrenDropEffect}
+      canDrop={favoriteChildrenCanDrop}
+      parentPath={parentPath}
+    />
+  ) : favorite.type === 'knowledge-base' ? (
+    <NavigationPanelKnowledgeBaseNode
+      key={favorite.id}
+      knowledgeBaseId={favorite.id}
       location={childLocation}
       onDrop={handleOnChildrenDrop}
       dropEffect={favoriteChildrenDropEffect}

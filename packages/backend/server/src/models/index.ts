@@ -22,6 +22,8 @@ import { DocModel } from './doc';
 import { DocUserModel } from './doc-user';
 import { FeatureModel } from './feature';
 import { HistoryModel } from './history';
+import { KnowledgeBaseModel } from './knowledge-base';
+import { KnowledgeBaseSourceModel } from './knowledge-base-source';
 import { MagicLinkOtpModel } from './magic-link-otp';
 import { NotificationModel } from './notification';
 import { MODELS_SYMBOL } from './provider';
@@ -61,6 +63,8 @@ const MODELS = {
   commentAttachment: CommentAttachmentModel,
   container: ContainerModel,
   containerFile: ContainerFileModel,
+  knowledgeBase: KnowledgeBaseModel,
+  knowledgeBaseSource: KnowledgeBaseSourceModel,
   blob: BlobModel,
   accessToken: AccessTokenModel,
   workspaceAnalytics: WorkspaceAnalyticsModel,
@@ -129,6 +133,8 @@ export * from './doc';
 export * from './doc-user';
 export * from './feature';
 export * from './history';
+export * from './knowledge-base';
+export * from './knowledge-base-source';
 export * from './magic-link-otp';
 export * from './notification';
 export * from './session';

@@ -8,6 +8,7 @@ import { CommandsQuickSearchSession } from '../impls/commands';
 import { ContainersQuickSearchSession } from '../impls/containers';
 import { CreationQuickSearchSession } from '../impls/creation';
 import { DocsQuickSearchSession } from '../impls/docs';
+import { KnowledgeBasesQuickSearchSession } from '../impls/knowledge-bases';
 import { LinksQuickSearchSession } from '../impls/links';
 import { RecentDocsQuickSearchSession } from '../impls/recent-docs';
 import { TagsQuickSearchSession } from '../impls/tags';
@@ -31,6 +32,7 @@ export class CMDKQuickSearchService extends Service {
           this.framework.createEntity(RecentDocsQuickSearchSession),
           this.framework.createEntity(CollectionsQuickSearchSession),
           this.framework.createEntity(ContainersQuickSearchSession),
+          this.framework.createEntity(KnowledgeBasesQuickSearchSession),
           this.framework.createEntity(CommandsQuickSearchSession),
           this.framework.createEntity(CreationQuickSearchSession),
           this.framework.createEntity(DocsQuickSearchSession),
@@ -96,6 +98,13 @@ export class CMDKQuickSearchService extends Service {
           if (result.source === 'containers') {
             this.workbenchService.workbench.openContainer(
               result.payload.containerId
+            );
+            return;
+          }
+
+          if (result.source === 'knowledge-bases') {
+            this.workbenchService.workbench.openKnowledgeBase(
+              result.payload.knowledgeBaseId
             );
             return;
           }

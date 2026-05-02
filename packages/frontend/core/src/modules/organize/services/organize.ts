@@ -44,6 +44,56 @@ export class OrganizeService extends Service {
     return parentId;
   }
 
+  restoreKnowledgeBaseLink(
+    knowledgeBaseId: string,
+    options: {
+      fallbackFolderName: string;
+      index?: string | null;
+      parentFolderNodeId?: string | null;
+    }
+  ): string {
+    const existing = this.folderStore.findLink(
+      'knowledge-base',
+      knowledgeBaseId
+    );
+    if (existing) {
+      if (!existing.parentId) {
+        throw new Error('Knowledge Base link cannot live at root');
+      }
+      return existing.parentId;
+    }
+
+    let parentId = options.parentFolderNodeId ?? null;
+    const hasValidParent =
+      !!parentId && this.folderStore.getNode(parentId)?.type === 'folder';
+    const hasConflictingKnowledgeBase = parentId
+      ? hasValidParent &&
+        this.folderStore.hasChildLink(
+          parentId,
+          'knowledge-base',
+          knowledgeBaseId
+        )
+      : false;
+    if (!hasValidParent || hasConflictingKnowledgeBase) {
+      const fallbackFolder = this.createFallbackFolder(
+        options.fallbackFolderName
+      );
+      parentId = fallbackFolder.id;
+    }
+    if (!parentId) {
+      throw new Error('Failed to restore Knowledge Base folder');
+    }
+
+    this.folderStore.createLink(
+      parentId,
+      'knowledge-base',
+      knowledgeBaseId,
+      options.index || generateFractionalIndexingKeyBetween(null, null)
+    );
+
+    return parentId;
+  }
+
   private createFallbackFolder(name: string) {
     const rootFolders = this.folderStore
       .getRootFolders()

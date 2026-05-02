@@ -16,6 +16,7 @@ import {
   StrikeInlineSpecExtension,
   UnderlineInlineSpecExtension,
 } from './inline-spec';
+import { PillSelectInlineSpecExtension } from './pill-select/inline-spec';
 
 export const DefaultInlineManagerExtension =
   InlineManagerExtension<AffineTextAttributes>({
@@ -28,6 +29,7 @@ export const DefaultInlineManagerExtension =
       CodeInlineSpecExtension.identifier,
       BackgroundInlineSpecExtension.identifier,
       ColorInlineSpecExtension.identifier,
+      PillSelectInlineSpecExtension.identifier,
       LatexInlineSpecExtension.identifier,
       ReferenceInlineSpecExtension.identifier,
       LinkInlineSpecExtension.identifier,

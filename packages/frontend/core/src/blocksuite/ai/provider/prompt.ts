@@ -3,6 +3,7 @@
 export const promptKeys = [
   // text actions
   'Chat With AFFiNE AI',
+  'Chat With Knowledge Base',
   'Summary',
   'Summary as title',
   'Generate a caption',

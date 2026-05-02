@@ -7,6 +7,8 @@ import type { ExtensionType } from '@blocksuite/store';
 import { html } from 'lit';
 import { z } from 'zod';
 
+import { PillSelectInlineSpecExtension } from './pill-select/inline-spec';
+
 export type AffineInlineRootElement = InlineRootElement<AffineTextAttributes>;
 
 export const BoldInlineSpecExtension =
@@ -115,4 +117,5 @@ export const InlineSpecExtensions: ExtensionType[] = [
   CodeInlineSpecExtension,
   BackgroundInlineSpecExtension,
   ColorInlineSpecExtension,
+  PillSelectInlineSpecExtension,
 ];

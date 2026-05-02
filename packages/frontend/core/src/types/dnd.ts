@@ -22,6 +22,10 @@ export type AffineDNDEntity =
       id: string;
     }
   | {
+      type: 'knowledge-base';
+      id: string;
+    }
+  | {
       type: 'custom-property';
       id: string;
     };
@@ -132,6 +136,9 @@ export interface AffineDNDData extends DNDData {
       }
     | {
         at: 'navigation-panel:container';
+      }
+    | {
+        at: 'navigation-panel:knowledge-base';
       }
     | {
         at: 'app-header:tabs';

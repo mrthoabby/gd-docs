@@ -1,5 +1,6 @@
 import {
   formatBlockCommand,
+  insertInlinePillSelect,
   type TextFormatConfig,
   textFormatConfigs,
 } from '@blocksuite/affine-inline-preset';
@@ -21,6 +22,7 @@ import {
   type SlashMenuItem,
 } from '@blocksuite/affine-widget-slash-menu';
 import { BlockSelection } from '@blocksuite/std';
+import { html } from 'lit';
 
 import { updateBlockAlign, updateBlockType } from '../commands';
 import { tooltips } from './tooltips';
@@ -50,6 +52,27 @@ const noteSlashMenuConfig: SlashMenuConfig = {
               ),
           }) satisfies SlashMenuActionItem
       ),
+
+    {
+      name: 'Pill select',
+      group: '0_Basic@9',
+      description: 'Insert a selectable colored pill.',
+      icon: html`<span
+        style="display:inline-flex;align-items:center;justify-content:center;width:24px;height:24px;border-radius:6px;background:var(--affine-hover-color);font-size:12px;"
+      >
+        <span
+          style="width:8px;height:8px;border-radius:50%;background:#10b981;"
+        ></span>
+      </span>`,
+      searchAlias: ['select', 'status', 'pill', 'chip', 'dropdown'],
+      action: ({ std }) => {
+        std.command
+          .chain()
+          .pipe(getTextSelectionCommand)
+          .pipe(insertInlinePillSelect)
+          .run();
+      },
+    },
 
     ...textConversionConfigs
       .filter(i => i.flavour === 'affine:list')

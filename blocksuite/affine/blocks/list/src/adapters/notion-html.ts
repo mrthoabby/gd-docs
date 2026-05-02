@@ -26,18 +26,22 @@ export const listBlockNotionHtmlAdapterMatcher: BlockNotionHtmlAdapterMatcher =
           case 'ul':
           case 'ol': {
             walkerContext.setNodeContext('hast:list:type', 'bulleted');
-            if (o.node.tagName === 'ol') {
-              walkerContext.setNodeContext('hast:list:type', 'numbered');
-            } else if (Array.isArray(o.node.properties?.className)) {
+            if (Array.isArray(o.node.properties?.className)) {
               if (o.node.properties.className.includes('to-do-list')) {
                 walkerContext.setNodeContext('hast:list:type', 'todo');
+              } else if (o.node.properties.className.includes('phase-list')) {
+                walkerContext.setNodeContext('hast:list:type', 'phase');
               } else if (o.node.properties.className.includes('toggle')) {
                 walkerContext.setNodeContext('hast:list:type', 'toggle');
               } else if (
                 o.node.properties.className.includes('bulleted-list')
               ) {
                 walkerContext.setNodeContext('hast:list:type', 'bulleted');
+              } else if (o.node.tagName === 'ol') {
+                walkerContext.setNodeContext('hast:list:type', 'numbered');
               }
+            } else if (o.node.tagName === 'ol') {
+              walkerContext.setNodeContext('hast:list:type', 'numbered');
             }
             break;
           }

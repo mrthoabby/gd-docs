@@ -147,6 +147,15 @@ type ContainerEvents =
   | 'saveContainerTextFile'
   | 'renameContainerFile'
   | 'deleteContainerFile';
+
+type KnowledgeBaseEvents =
+  | 'openKnowledgeBase'
+  | 'askKnowledgeBase'
+  | 'syncKnowledgeBaseSources'
+  | 'reindexKnowledgeBase'
+  | 'updateKnowledgeBaseSettings'
+  | 'updateKnowledgeBaseSourceOverride'
+  | 'createDocFromKnowledgeBaseSelection';
 // END SECTION
 
 // SECTION: template
@@ -231,6 +240,7 @@ type UserEvents =
   | CommentEvents
   | AttachmentEvents
   | ContainerEvents
+  | KnowledgeBaseEvents
   | TemplateEvents
   | NotificationEvents
   | IntegrationEvents
@@ -526,6 +536,24 @@ interface PageEvents extends PageDivision {
       ];
     };
   };
+  knowledgeBase: {
+    $: {
+      $: ['openKnowledgeBase'];
+    };
+    chat: {
+      $: ['askKnowledgeBase', 'createDocFromKnowledgeBaseSelection'];
+    };
+    sources: {
+      $: [
+        'syncKnowledgeBaseSources',
+        'reindexKnowledgeBase',
+        'updateKnowledgeBaseSourceOverride',
+      ];
+    };
+    settings: {
+      $: ['updateKnowledgeBaseSettings'];
+    };
+  };
   tag: {};
   trash: {};
   subscriptionLanding: {
@@ -570,7 +598,8 @@ type OrganizeItemType =
   | 'collection'
   | 'tag'
   | 'favorite'
-  | 'container';
+  | 'container'
+  | 'knowledge-base';
 type OrganizeItemArgs =
   | {
       type: 'link';
@@ -589,6 +618,13 @@ type ContainerFileEventArgs = {
   kind?: ContainerFileKind;
   result?: ContainerFileResult;
   reason?: string;
+};
+type KnowledgeBaseResult = 'success' | 'failure';
+type KnowledgeBaseEventArgs = {
+  result?: KnowledgeBaseResult;
+  reason?: string;
+  sourceType?: string;
+  includeSubfolders?: boolean;
 };
 
 type TabActionControlType =
@@ -706,6 +742,13 @@ export type EventArgs = {
   saveContainerTextFile: ContainerFileEventArgs;
   renameContainerFile: ContainerFileEventArgs;
   deleteContainerFile: ContainerFileEventArgs;
+  openKnowledgeBase: {};
+  askKnowledgeBase: KnowledgeBaseEventArgs;
+  syncKnowledgeBaseSources: KnowledgeBaseEventArgs;
+  reindexKnowledgeBase: KnowledgeBaseEventArgs;
+  updateKnowledgeBaseSettings: KnowledgeBaseEventArgs;
+  updateKnowledgeBaseSourceOverride: KnowledgeBaseEventArgs;
+  createDocFromKnowledgeBaseSelection: KnowledgeBaseEventArgs;
   modifyUserDocRole: { role: string };
   modifyDocDefaultRole: { role: string };
   inviteUserDocRole: {

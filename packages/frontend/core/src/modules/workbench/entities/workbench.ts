@@ -218,6 +218,13 @@ export class Workbench extends Entity {
     this.open(`/container/${containerId}`, options);
   }
 
+  openKnowledgeBase(
+    knowledgeBaseId: string,
+    options?: WorkbenchOpenOptions
+  ) {
+    this.open(`/knowledge-base/${knowledgeBaseId}`, options);
+  }
+
   openAll(options?: WorkbenchOpenOptions) {
     this.open('/all', options);
   }

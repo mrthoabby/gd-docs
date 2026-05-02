@@ -12,10 +12,14 @@ import {
 } from '@affine/core/modules/container';
 import { CollectionRulesService } from '@affine/core/modules/collection-rules';
 import { GlobalContextService } from '@affine/core/modules/global-context';
+import {
+  KnowledgeBaseService,
+  type WorkspaceKnowledgeBase,
+} from '@affine/core/modules/knowledge-base';
 import { OrganizeService } from '@affine/core/modules/organize';
 import { WorkspacePermissionService } from '@affine/core/modules/permissions';
 import { useI18n } from '@affine/i18n';
-import { DeleteIcon, ViewLayersIcon } from '@blocksuite/icons/rc';
+import { AiIcon, DeleteIcon, ViewLayersIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import { useCallback, useEffect, useState } from 'react';
 
@@ -47,6 +51,7 @@ export const TrashPage = () => {
   const t = useI18n();
   const collectionRulesService = useService(CollectionRulesService);
   const containerService = useService(ContainerService);
+  const knowledgeBaseService = useService(KnowledgeBaseService);
   const globalContextService = useService(GlobalContextService);
   const organizeService = useService(OrganizeService);
   const permissionService = useService(WorkspacePermissionService);
@@ -76,6 +81,9 @@ export const TrashPage = () => {
   const [trashedContainers, setTrashedContainers] = useState<
     WorkspaceContainer[]
   >([]);
+  const [trashedKnowledgeBases, setTrashedKnowledgeBases] = useState<
+    WorkspaceKnowledgeBase[]
+  >([]);
 
   const isAdmin = useLiveData(permissionService.permission.isAdmin$);
   const isOwner = useLiveData(permissionService.permission.isOwner$);
@@ -83,7 +91,8 @@ export const TrashPage = () => {
   const isEmpty =
     (groups.length === 0 ||
       (groups.length > 0 && groups.every(group => !group.items?.length))) &&
-    trashedContainers.length === 0;
+    trashedContainers.length === 0 &&
+    trashedKnowledgeBases.length === 0;
 
   const handleMultiRestore = useCallback(
     (ids: string[]) => {
@@ -173,6 +182,13 @@ export const TrashPage = () => {
       .catch(console.error);
   }, [containerService]);
 
+  useEffect(() => {
+    void knowledgeBaseService
+      .revalidate('trashed')
+      .then(setTrashedKnowledgeBases)
+      .catch(console.error);
+  }, [knowledgeBaseService]);
+
   const handleRestoreContainer = useCallback(
     async (containerId: string) => {
       const container = await containerService.restoreContainer(containerId);
@@ -191,6 +207,40 @@ export const TrashPage = () => {
       );
     },
     [containerService, organizeService, t]
+  );
+
+  const handleRestoreKnowledgeBase = useCallback(
+    async (knowledgeBaseId: string) => {
+      try {
+        const knowledgeBase =
+          await knowledgeBaseService.restoreKnowledgeBase(knowledgeBaseId);
+        const parentFolderNodeId = organizeService.restoreKnowledgeBaseLink(
+          knowledgeBase.id,
+          {
+            fallbackFolderName: t['com.affine.knowledgeBase.restore-folder'](),
+            index: knowledgeBase.lastIndex,
+            parentFolderNodeId: knowledgeBase.lastParentFolderNodeId,
+          }
+        );
+        await knowledgeBaseService.moveKnowledgeBase(knowledgeBase.id, {
+          folderNodeId: parentFolderNodeId,
+          index: knowledgeBase.lastIndex,
+        });
+        setTrashedKnowledgeBases(knowledgeBases =>
+          knowledgeBases.filter(
+            knowledgeBase => knowledgeBase.id !== knowledgeBaseId
+          )
+        );
+        toast(
+          t['com.affine.toastMessage.restored']({
+            title: t['com.affine.knowledgeBase.title'](),
+          })
+        );
+      } catch (error) {
+        toast(error instanceof Error ? error.message : String(error));
+      }
+    },
+    [knowledgeBaseService, organizeService, t]
   );
 
   useEffect(() => {
@@ -238,6 +288,32 @@ export const TrashPage = () => {
                       <button
                         className={styles.containerTrashButton}
                         onClick={() => void handleRestoreContainer(container.id)}
+                      >
+                        {t['com.affine.trashOperation.restoreIt']()}
+                      </button>
+                    </div>
+                  ))}
+                </section>
+              ) : null}
+              {trashedKnowledgeBases.length ? (
+                <section className={styles.containerTrash}>
+                  <div className={styles.containerTrashTitle}>
+                    {t['com.affine.knowledgeBase.title']()}
+                  </div>
+                  {trashedKnowledgeBases.map(knowledgeBase => (
+                    <div
+                      className={styles.containerTrashRow}
+                      key={knowledgeBase.id}
+                    >
+                      <AiIcon />
+                      <div className={styles.containerTrashName}>
+                        {knowledgeBase.name}
+                      </div>
+                      <button
+                        className={styles.containerTrashButton}
+                        onClick={() =>
+                          void handleRestoreKnowledgeBase(knowledgeBase.id)
+                        }
                       >
                         {t['com.affine.trashOperation.restoreIt']()}
                       </button>

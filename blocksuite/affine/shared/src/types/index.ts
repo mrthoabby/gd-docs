@@ -45,6 +45,19 @@ export type AffineTextStyleAttributes = {
   background?: string | null;
 };
 
+export type PillSelectOption = {
+  id: string;
+  label: string;
+  color: string;
+};
+
+export type PillSelectData = {
+  id: string;
+  selectedOptionId: string;
+  options: PillSelectOption[];
+  mode?: 'copy' | 'reference';
+};
+
 export type AffineTextAttributes = AffineTextStyleAttributes & {
   link?: string | null;
   reference?:
@@ -58,6 +71,7 @@ export type AffineTextAttributes = AffineTextStyleAttributes & {
     member: string;
     notification?: string;
   } | null;
+  pillSelect?: PillSelectData | null;
   [key: `comment-${string}`]: boolean | null;
 };
 

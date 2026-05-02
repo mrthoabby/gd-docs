@@ -13,7 +13,7 @@ interface ListItemLayout {
   text: string;
   rects: TextRect[];
   fontSize: number;
-  type: 'bulleted' | 'numbered' | 'todo' | 'toggle';
+  type: 'bulleted' | 'numbered' | 'todo' | 'toggle' | 'phase';
   prefix?: string;
   checked?: boolean;
   collapsed?: boolean;

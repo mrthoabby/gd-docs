@@ -9,7 +9,7 @@ import type { TextAlign } from '../../consts';
 import type { BlockMeta } from '../../utils/types';
 
 // `toggle` type has been deprecated, do not use it
-export type ListType = 'bulleted' | 'numbered' | 'todo' | 'toggle';
+export type ListType = 'bulleted' | 'numbered' | 'todo' | 'toggle' | 'phase';
 
 export type ListProps = {
   type: ListType;

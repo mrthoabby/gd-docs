@@ -44,6 +44,14 @@ const LIST_ITEMS = [
   },
   {
     flavour: 'affine:list',
+    type: 'phase',
+    name: 'Phase List',
+    description: 'A numbered phase timeline.',
+    icon: NumberedListIcon,
+    tooltip: 'Drag/Click to insert Phase List',
+  },
+  {
+    flavour: 'affine:list',
     type: 'todo',
     name: 'To-do List',
     description: 'Track tasks with a to-do list.',

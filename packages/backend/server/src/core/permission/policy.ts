@@ -44,6 +44,8 @@ const READONLY_WORKSPACE_ACTIONS: WorkspaceAction[] = [
   'Workspace.Blobs.Write',
   'Workspace.Containers.Write',
   'Workspace.Containers.Delete',
+  'Workspace.KnowledgeBase.Write',
+  'Workspace.KnowledgeBase.Delete',
 ];
 
 const READONLY_DOC_ACTIONS: DocAction[] = [

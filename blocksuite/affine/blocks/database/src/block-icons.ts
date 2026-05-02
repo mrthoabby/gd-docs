@@ -25,6 +25,7 @@ const icons: Record<string, TemplateResult> = {
   h6: Heading6Icon(),
   bulleted: BulletedListIcon(),
   numbered: NumberedListIcon(),
+  phase: NumberedListIcon(),
   todo: CheckBoxCheckLinearIcon(),
 };
 export const getIcon = (

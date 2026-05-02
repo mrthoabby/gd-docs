@@ -144,6 +144,8 @@ model Workspace {
   blobs                      Blob[]
   containers                 WorkspaceContainer[]
   containerFiles             WorkspaceContainerFile[]
+  knowledgeBases             WorkspaceKnowledgeBase[]
+  knowledgeBaseSources       WorkspaceKnowledgeBaseSource[]
   ignoredDocs                AiWorkspaceIgnoredDocs[]
   embedFiles                 AiWorkspaceFiles[]
   comments                   Comment[]
@@ -747,6 +749,30 @@ enum ContainerFileStatus {
   deleted
 }
 
+enum KnowledgeBaseStatus {
+  active
+  trashed
+}
+
+enum KnowledgeBaseSourceType {
+  doc
+  container
+  containerFile
+  blob
+}
+
+enum KnowledgeBaseSourceStatus {
+  pending
+  indexed
+  stale
+  failed
+}
+
+enum KnowledgeBaseSourceOverride {
+  include
+  exclude
+}
+
 // Blob table only exists for fast non-data queries.
 // like, total size of blobs in a workspace, or blob list for sync service.
 // it should only be a map of metadata of blobs stored anywhere else
@@ -814,6 +840,76 @@ model WorkspaceContainerFile {
   @@index([containerId, status, updatedAt])
   @@index([workspaceId, blobKey])
   @@map("workspace_container_files")
+}
+
+model WorkspaceKnowledgeBase {
+  id                         String              @id @default(uuid()) @db.VarChar
+  workspaceId                String              @map("workspace_id") @db.VarChar
+  folderNodeId               String              @map("folder_node_id") @db.VarChar
+  name                       String              @db.VarChar
+  includeSubfolders          Boolean             @default(false) @map("include_subfolders")
+  selectionCreateDocMinLines Int                 @default(5) @map("selection_create_doc_min_lines") @db.Integer
+  status                     KnowledgeBaseStatus @default(active)
+  createdBy                  String              @map("created_by") @db.VarChar
+  updatedBy                  String?             @map("updated_by") @db.VarChar
+  deletedBy                  String?             @map("deleted_by") @db.VarChar
+  lastParentFolderNodeId     String?             @map("last_parent_folder_node_id") @db.VarChar
+  lastIndex                  String?             @map("last_index") @db.VarChar
+  createdAt                  DateTime            @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt                  DateTime            @updatedAt @map("updated_at") @db.Timestamptz(3)
+  deletedAt                  DateTime?           @map("deleted_at") @db.Timestamptz(3)
+
+  workspace  Workspace                         @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  sources    WorkspaceKnowledgeBaseSource[]
+  embeddings WorkspaceKnowledgeBaseEmbedding[]
+
+  @@index([workspaceId, status, deletedAt])
+  @@index([workspaceId, folderNodeId])
+  @@map("workspace_knowledge_bases")
+}
+
+model WorkspaceKnowledgeBaseSource {
+  id                 String                       @id @default(uuid()) @db.VarChar
+  workspaceId        String                       @map("workspace_id") @db.VarChar
+  knowledgeBaseId    String                       @map("knowledge_base_id") @db.VarChar
+  sourceType         KnowledgeBaseSourceType      @map("source_type")
+  sourceId           String                       @map("source_id") @db.VarChar
+  parentFolderNodeId String?                      @map("parent_folder_node_id") @db.VarChar
+  included           Boolean                      @default(true)
+  manualOverride     KnowledgeBaseSourceOverride? @map("manual_override")
+  status             KnowledgeBaseSourceStatus    @default(pending)
+  contentHash        String?                      @map("content_hash") @db.VarChar
+  indexedAt          DateTime?                    @map("indexed_at") @db.Timestamptz(3)
+  error              String?                      @db.Text
+  createdAt          DateTime                     @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt          DateTime                     @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  workspace     Workspace              @relation(fields: [workspaceId], references: [id], onDelete: Cascade)
+  knowledgeBase WorkspaceKnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+
+  @@unique([knowledgeBaseId, sourceType, sourceId])
+  @@index([knowledgeBaseId, included, status])
+  @@index([workspaceId, sourceType, sourceId])
+  @@map("workspace_knowledge_base_sources")
+}
+
+model WorkspaceKnowledgeBaseEmbedding {
+  id              String                  @id @default(uuid()) @db.VarChar
+  knowledgeBaseId String                  @map("knowledge_base_id") @db.VarChar
+  sourceType      KnowledgeBaseSourceType @map("source_type")
+  sourceId        String                  @map("source_id") @db.VarChar
+  chunk           Int                     @db.Integer
+  content         String                  @db.Text
+  contentHash     String                  @map("content_hash") @db.VarChar
+  embedding       Unsupported("vector(1024)")?
+  createdAt       DateTime                @default(now()) @map("created_at") @db.Timestamptz(3)
+  updatedAt       DateTime                @updatedAt @map("updated_at") @db.Timestamptz(3)
+
+  knowledgeBase WorkspaceKnowledgeBase @relation(fields: [knowledgeBaseId], references: [id], onDelete: Cascade)
+
+  @@unique([knowledgeBaseId, sourceType, sourceId, chunk])
+  @@index([knowledgeBaseId, sourceType, sourceId])
+  @@map("workspace_knowledge_base_embeddings")
 }
 
 enum NotificationType {

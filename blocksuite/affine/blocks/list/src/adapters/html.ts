@@ -9,6 +9,11 @@ import type { DeltaInsert } from '@blocksuite/store';
 import { nanoid } from '@blocksuite/store';
 import type { Element } from 'hast';
 
+const isOrderedListType = (type: unknown) =>
+  type === 'numbered' || type === 'phase';
+
+const listTagName = (type: unknown) => (isOrderedListType(type) ? 'ol' : 'ul');
+
 export const listBlockHtmlAdapterMatcher: BlockHtmlAdapterMatcher = {
   flavour: ListBlockSchema.model.flavour,
   toMatch: o => HastUtils.isElement(o.node) && o.node.tagName === 'li',
@@ -21,16 +26,20 @@ export const listBlockHtmlAdapterMatcher: BlockHtmlAdapterMatcher = {
 
       const parentList = o.parent?.node as Element;
       let listType = 'bulleted';
-      if (parentList.tagName === 'ol') {
-        listType = 'numbered';
-      } else if (Array.isArray(parentList.properties?.className)) {
+      if (Array.isArray(parentList.properties?.className)) {
         if (parentList.properties.className.includes('to-do-list')) {
           listType = 'todo';
+        } else if (parentList.properties.className.includes('phase-list')) {
+          listType = 'phase';
         } else if (parentList.properties.className.includes('toggle')) {
           listType = 'toggle';
         } else if (parentList.properties.className.includes('bulleted-list')) {
           listType = 'bulleted';
+        } else if (parentList.tagName === 'ol') {
+          listType = 'numbered';
         }
+      } else if (parentList.tagName === 'ol') {
+        listType = 'numbered';
       }
 
       const listNumber =
@@ -118,8 +127,11 @@ export const listBlockHtmlAdapterMatcher: BlockHtmlAdapterMatcher = {
       if (
         walkerContext.getNodeContext('affine:list:parent') === o.parent &&
         currentTNode.type === 'element' &&
-        currentTNode.tagName ===
-          (o.node.props.type === 'numbered' ? 'ol' : 'ul') &&
+        currentTNode.tagName === listTagName(o.node.props.type) &&
+        Array.isArray(currentTNode.properties.className) &&
+        currentTNode.properties.className.includes(
+          `${o.node.props.type}-list`
+        ) &&
         !(
           Array.isArray(currentTNode.properties.className) &&
           currentTNode.properties.className.includes('todo-list')
@@ -136,10 +148,10 @@ export const listBlockHtmlAdapterMatcher: BlockHtmlAdapterMatcher = {
         walkerContext.openNode(
           {
             type: 'element',
-            tagName: o.node.props.type === 'numbered' ? 'ol' : 'ul',
+            tagName: listTagName(o.node.props.type),
             properties: {
               style:
-                o.node.props.type === 'todo'
+                o.node.props.type === 'todo' || o.node.props.type === 'phase'
                   ? 'list-style-type: none; padding-inline-start: 18px;'
                   : null,
               className: [o.node.props.type + '-list'],
@@ -171,8 +183,11 @@ export const listBlockHtmlAdapterMatcher: BlockHtmlAdapterMatcher = {
         walkerContext.getPreviousNodeContext('affine:list:parent') ===
           o.parent &&
         currentTNode.tagName === 'li' &&
-        previousTNode.tagName ===
-          (o.node.props.type === 'numbered' ? 'ol' : 'ul') &&
+        previousTNode.tagName === listTagName(o.node.props.type) &&
+        Array.isArray(previousTNode.properties.className) &&
+        previousTNode.properties.className.includes(
+          `${o.node.props.type}-list`
+        ) &&
         !(
           Array.isArray(previousTNode.properties.className) &&
           previousTNode.properties.className.includes('todo-list')

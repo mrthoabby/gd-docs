@@ -9,6 +9,7 @@ export { deleteTextCommand } from './delete-text.js';
 export { formatBlockCommand } from './format-block.js';
 export { formatNativeCommand } from './format-native.js';
 export { formatTextCommand } from './format-text.js';
+export { insertInlinePillSelect } from '../pill-select/command.js';
 export {
   getTextAttributes,
   isTextAttributeActive,

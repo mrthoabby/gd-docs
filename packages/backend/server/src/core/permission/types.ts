@@ -45,6 +45,12 @@ export const Actions = {
       Write: '',
       Delete: '',
     },
+    KnowledgeBase: {
+      Read: '',
+      Write: '',
+      Delete: '',
+      Ask: '',
+    },
     Copilot: '',
   },
 
@@ -85,6 +91,7 @@ export const RoleActionsMap = {
         Action.Workspace.Organize.Read,
         Action.Workspace.Properties.Read,
         Action.Workspace.Blobs.Read,
+        Action.Workspace.KnowledgeBase.Read,
       ];
     },
     get [WorkspaceRole.Collaborator]() {
@@ -99,6 +106,9 @@ export const RoleActionsMap = {
         Action.Workspace.Containers.Read,
         Action.Workspace.Containers.Write,
         Action.Workspace.Containers.Delete,
+        Action.Workspace.KnowledgeBase.Write,
+        Action.Workspace.KnowledgeBase.Delete,
+        Action.Workspace.KnowledgeBase.Ask,
         Action.Workspace.Copilot,
       ];
     },

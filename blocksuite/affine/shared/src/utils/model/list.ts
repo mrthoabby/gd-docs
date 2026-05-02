@@ -4,13 +4,20 @@ import type { BlockModel, Store } from '@blocksuite/store';
 
 import { matchModels } from './checker.js';
 
+export type OrderedListType = 'numbered' | 'phase';
+
+export function isOrderedListType(type: unknown): type is OrderedListType {
+  return type === 'numbered' || type === 'phase';
+}
+
 /**
- * Pass in a list model, and this function will look forward to find continuous sibling numbered lists,
+ * Pass in a model, and this function will look forward to find continuous sibling ordered lists,
  * typically used for updating list numbers. The result not contains the list passed in.
  */
-export function getNextContinuousNumberedLists(
+export function getNextContinuousOrderedLists(
   doc: Store,
-  modelOrId: BlockModel | string
+  modelOrId: BlockModel | string,
+  type: OrderedListType = 'numbered'
 ): ListBlockModel[] {
   const model =
     typeof modelOrId === 'string' ? doc.getBlock(modelOrId)?.model : modelOrId;
@@ -23,7 +30,7 @@ export function getNextContinuousNumberedLists(
   const firstNotNumberedListIndex = parent.children.findIndex(
     (model, i) =>
       i > modelIndex &&
-      (!matchModels(model, [ListBlockModel]) || model.props.type !== 'numbered')
+      (!matchModels(model, [ListBlockModel]) || model.props.type !== type)
   );
   const newContinuousLists = parent.children.slice(
     modelIndex + 1,
@@ -31,8 +38,7 @@ export function getNextContinuousNumberedLists(
   );
   if (
     !newContinuousLists.every(
-      model =>
-        matchModels(model, [ListBlockModel]) && model.props.type === 'numbered'
+      model => matchModels(model, [ListBlockModel]) && model.props.type === type
     )
   )
     return [];
@@ -40,10 +46,18 @@ export function getNextContinuousNumberedLists(
   return newContinuousLists as ListBlockModel[];
 }
 
-export function toNumberedList(
+export function getNextContinuousNumberedLists(
+  doc: Store,
+  modelOrId: BlockModel | string
+): ListBlockModel[] {
+  return getNextContinuousOrderedLists(doc, modelOrId, 'numbered');
+}
+
+export function toOrderedList(
   std: BlockStdScope,
   model: BlockModel,
-  order: number
+  order: number,
+  type: OrderedListType
 ) {
   const { store: doc } = std;
   if (!model.text) return;
@@ -57,7 +71,7 @@ export function toNumberedList(
   if (
     prevSibling &&
     matchModels(prevSibling, [ListBlockModel]) &&
-    prevSibling.props.type === 'numbered'
+    prevSibling.props.type === type
   ) {
     doc.transact(() => {
       if (!prevSibling.props.order) prevSibling.props.order = 1;
@@ -69,7 +83,7 @@ export function toNumberedList(
   const newListId = doc.addBlock(
     'affine:list',
     {
-      type: 'numbered',
+      type,
       text: model.text.clone(),
       order: realOrder,
     },
@@ -87,9 +101,10 @@ export function toNumberedList(
   });
 
   // if there is a numbered list following, correct their order to keep them continuous
-  const nextContinuousNumberedLists = getNextContinuousNumberedLists(
+  const nextContinuousNumberedLists = getNextContinuousOrderedLists(
     doc,
-    newList
+    newList,
+    type
   );
   let base = realOrder + 1;
   nextContinuousNumberedLists.forEach(list => {
@@ -100,4 +115,12 @@ export function toNumberedList(
   });
 
   return newList.id;
+}
+
+export function toNumberedList(
+  std: BlockStdScope,
+  model: BlockModel,
+  order: number
+) {
+  return toOrderedList(std, model, order, 'numbered');
 }

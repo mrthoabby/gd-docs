@@ -11,6 +11,8 @@ import type { List } from 'mdast';
 
 const LIST_MDAST_TYPE = new Set(['list', 'listItem']);
 const isListMDASTType = (node: MarkdownAST) => LIST_MDAST_TYPE.has(node.type);
+const isOrderedListType = (type: unknown) =>
+  type === 'numbered' || type === 'phase';
 
 export const listBlockMarkdownAdapterMatcher: BlockMarkdownAdapterMatcher = {
   flavour: ListBlockSchema.model.flavour,
@@ -74,7 +76,7 @@ export const listBlockMarkdownAdapterMatcher: BlockMarkdownAdapterMatcher = {
       if (
         walkerContext.getNodeContext('affine:list:parent') === o.parent &&
         currentTNode.type === 'list' &&
-        currentTNode.ordered === (o.node.props.type === 'numbered') &&
+        currentTNode.ordered === isOrderedListType(o.node.props.type) &&
         AdapterTextUtils.isNullish(currentTNode.children[0].checked) ===
           AdapterTextUtils.isNullish(
             o.node.props.type === 'todo'
@@ -89,7 +91,7 @@ export const listBlockMarkdownAdapterMatcher: BlockMarkdownAdapterMatcher = {
           .openNode(
             {
               type: 'list',
-              ordered: o.node.props.type === 'numbered',
+              ordered: isOrderedListType(o.node.props.type),
               spread: false,
               children: [],
             },
@@ -128,7 +130,7 @@ export const listBlockMarkdownAdapterMatcher: BlockMarkdownAdapterMatcher = {
           o.parent &&
         currentTNode.type === 'listItem' &&
         previousTNode?.type === 'list' &&
-        previousTNode.ordered === (o.node.props.type === 'numbered') &&
+        previousTNode.ordered === isOrderedListType(o.node.props.type) &&
         AdapterTextUtils.isNullish(currentTNode.checked) ===
           AdapterTextUtils.isNullish(
             o.node.props.type === 'todo'

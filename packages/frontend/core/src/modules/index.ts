@@ -37,6 +37,7 @@ import { configureI18nModule } from './i18n';
 import { configureIconPickerModule } from './icon-picker';
 import { configureImportClipperModule } from './import-clipper';
 import { configureJournalModule } from './journal';
+import { configureKnowledgeBaseModule } from './knowledge-base';
 import { configureLifecycleModule } from './lifecycle';
 import { configureMediaModule } from './media';
 import { configureNavigationModule } from './navigation';
@@ -79,6 +80,7 @@ export function configureCommonModules(framework: Framework) {
   configureTagModule(framework);
   configureCloudModule(framework);
   configureContainerModule(framework);
+  configureKnowledgeBaseModule(framework);
   configureQuotaModule(framework);
   configurePermissionsModule(framework);
   configureShareDocsModule(framework);

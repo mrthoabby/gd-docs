@@ -1,6 +1,7 @@
 import { ListBlockModel } from '@blocksuite/affine-model';
 import {
-  getNextContinuousNumberedLists,
+  getNextContinuousOrderedLists,
+  isOrderedListType,
   matchModels,
 } from '@blocksuite/affine-shared/utils';
 import type { BlockModel, Store } from '@blocksuite/store';
@@ -21,10 +22,12 @@ export function correctNumberedListsOrderToPrev(
 
   if (!model) return;
 
-  if (
-    !matchModels(model, [ListBlockModel]) ||
-    model.props.type$.value !== 'numbered'
-  ) {
+  if (!matchModels(model, [ListBlockModel])) {
+    return;
+  }
+
+  const type = model.props.type;
+  if (!isOrderedListType(type)) {
     return;
   }
 
@@ -38,7 +41,7 @@ export function correctNumberedListsOrderToPrev(
     if (
       previousSibling &&
       matchModels(previousSibling, [ListBlockModel]) &&
-      previousSibling.props.type === 'numbered'
+      previousSibling.props.type === type
     ) {
       if (!previousSibling.props.order) previousSibling.props.order = 1;
       model.props.order = previousSibling.props.order + 1;
@@ -48,7 +51,11 @@ export function correctNumberedListsOrderToPrev(
 
     // step 2
     let base = model.props.order + 1;
-    const continuousNumberedLists = getNextContinuousNumberedLists(doc, model);
+    const continuousNumberedLists = getNextContinuousOrderedLists(
+      doc,
+      model,
+      type
+    );
     continuousNumberedLists.forEach(list => {
       list.props.order = base;
       base++;
@@ -64,11 +71,14 @@ export function correctNumberedListsOrderToPrev(
 
 export function correctListOrder(doc: Store, model: ListBlockModel) {
   // old numbered list has no order
-  if (model.props.type === 'numbered' && !Number.isInteger(model.props.order)) {
+  if (
+    isOrderedListType(model.props.type) &&
+    !Number.isInteger(model.props.order)
+  ) {
     correctNumberedListsOrderToPrev(doc, model, false);
   }
   // if list is not numbered, order should be null
-  if (model.props.type !== 'numbered') {
+  if (!isOrderedListType(model.props.type)) {
     model.props.order = null;
   }
 }

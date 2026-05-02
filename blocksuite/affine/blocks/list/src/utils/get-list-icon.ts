@@ -52,6 +52,16 @@ export function getListIcon(
       >
         ${model.props.order ? getNumberPrefix(model.props.order, deep) : '1.'}
       </div>`;
+    case 'phase':
+      return html`<div
+        contenteditable="false"
+        class="affine-list-block__prefix affine-list-block__phase"
+        @click=${onClick}
+      >
+        <span class="affine-list-block__phase-number"
+          >${model.props.order ?? 1}</span
+        >
+      </div>`;
     case 'todo':
       return html`<div
         contenteditable="false"

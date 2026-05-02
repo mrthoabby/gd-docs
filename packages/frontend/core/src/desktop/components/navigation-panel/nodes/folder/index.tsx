@@ -4,6 +4,7 @@ import {
   type DropTargetDropEvent,
   type DropTargetOptions,
   IconButton,
+  Menu,
   MenuItem,
   MenuSeparator,
   MenuSub,
@@ -14,6 +15,7 @@ import { ContainerService } from '@affine/core/modules/container';
 import { WorkspaceDialogService } from '@affine/core/modules/dialogs';
 import { CompatibleFavoriteItemsAdapter } from '@affine/core/modules/favorite';
 import { FeatureFlagService } from '@affine/core/modules/feature-flag';
+import { KnowledgeBaseService } from '@affine/core/modules/knowledge-base';
 import { NavigationPanelService } from '@affine/core/modules/navigation-panel';
 import {
   type FolderNode,
@@ -27,6 +29,7 @@ import { track } from '@affine/track';
 import {
   DeleteIcon,
   FolderIcon,
+  AiIcon,
   PageIcon,
   PlusIcon,
   PlusThickIcon,
@@ -47,6 +50,7 @@ import type { NodeOperation } from '../../tree/types';
 import { NavigationPanelCollectionNode } from '../collection';
 import { NavigationPanelContainerNode } from '../container';
 import { NavigationPanelDocNode } from '../doc';
+import { NavigationPanelKnowledgeBaseNode } from '../knowledge-base';
 import { NavigationPanelTagNode } from '../tag';
 import type { GenericNavigationPanelNode } from '../types';
 import { FolderEmpty } from './empty';
@@ -172,6 +176,21 @@ export const NavigationPanelFolderNode = ({
         />
       )
     );
+  } else if (type === 'knowledge-base') {
+    return (
+      data && (
+        <NavigationPanelKnowledgeBaseNode
+          knowledgeBaseId={data}
+          location={location}
+          onDrop={handleDrop}
+          canDrop={canDrop}
+          reorderable={reorderable}
+          dropEffect={dropEffect}
+          operations={additionalOperations}
+          parentPath={parentPath}
+        />
+      )
+    );
   }
 
   return;
@@ -212,12 +231,14 @@ const NavigationPanelFolderNodeFolder = ({
     featureFlagService,
     workspaceDialogService,
     containerService,
+    knowledgeBaseService,
   } = useServices({
     WorkspaceService,
     CompatibleFavoriteItemsAdapter,
     FeatureFlagService,
     WorkspaceDialogService,
     ContainerService,
+    KnowledgeBaseService,
   });
   const navigationPanelService = useService(NavigationPanelService);
   const name = useLiveData(node.name$);
@@ -226,6 +247,9 @@ const NavigationPanelFolderNodeFolder = ({
   );
   const enableContainers = useLiveData(
     featureFlagService.flags.enable_containers.$
+  );
+  const enableKnowledgeBase = useLiveData(
+    featureFlagService.flags.enable_knowledge_base.$
   );
   const path = useMemo(
     () => [...(parentPath ?? []), `folder-${node.id}`],
@@ -245,9 +269,18 @@ const NavigationPanelFolderNodeFolder = ({
   );
   const handleDelete = useCallback(async () => {
     const containerIds = node.containerIdsInSubtree();
+    const knowledgeBaseIds = node.knowledgeBaseIdsInSubtree();
     await Promise.allSettled(
       containerIds.map(containerId =>
         containerService.trashContainer(containerId, {
+          lastParentFolderNodeId: node.id,
+          lastIndex: null,
+        })
+      )
+    );
+    await Promise.allSettled(
+      knowledgeBaseIds.map(knowledgeBaseId =>
+        knowledgeBaseService.trashKnowledgeBase(knowledgeBaseId, {
           lastParentFolderNodeId: node.id,
           lastIndex: null,
         })
@@ -263,7 +296,7 @@ const NavigationPanelFolderNodeFolder = ({
       }),
       message: t['com.affine.rootAppSidebar.organize.delete.notify-message'](),
     });
-  }, [containerService, name, node, t]);
+  }, [containerService, knowledgeBaseService, name, node, t]);
 
   const children = useLiveData(node.sortedChildren$);
 
@@ -292,6 +325,48 @@ const NavigationPanelFolderNodeFolder = ({
     [node]
   );
 
+  const syncKnowledgeBaseLocation = useCallback(
+    (knowledgeBaseId: string, index: string) => {
+      if (!node.id) {
+        return;
+      }
+      void knowledgeBaseService
+        .moveKnowledgeBase(knowledgeBaseId, {
+          folderNodeId: node.id,
+          index,
+        })
+        .catch(error => {
+          notify.error({
+            title:
+              error instanceof Error
+                ? error.message
+                : t['com.affine.knowledgeBase.move.error'](),
+          });
+        });
+    },
+    [knowledgeBaseService, node.id, t]
+  );
+
+  const canAcceptKnowledgeBase = useCallback(
+    (knowledgeBaseId?: string) => {
+      if (!knowledgeBaseId) {
+        return false;
+      }
+      return !node.sortedChildren$.value.some(
+        child =>
+          child.type$.value === 'knowledge-base' &&
+          child.data$.value !== knowledgeBaseId
+      );
+    },
+    [node]
+  );
+
+  const notifyDuplicateKnowledgeBase = useCallback(() => {
+    notify.error({
+      title: t['com.affine.knowledgeBase.create.duplicate'](),
+    });
+  }, [t]);
+
   const handleDropOnFolder = useCallback(
     (data: DropTargetDropEvent<AffineDNDData>) => {
       if (data.source.data.entity?.type) {
@@ -313,23 +388,46 @@ const NavigationPanelFolderNodeFolder = ({
           data.source.data.entity?.type === 'collection' ||
           data.source.data.entity?.type === 'doc' ||
           data.source.data.entity?.type === 'tag' ||
-          data.source.data.entity?.type === 'container'
+          data.source.data.entity?.type === 'container' ||
+          data.source.data.entity?.type === 'knowledge-base'
         ) {
           if (
             data.source.data.from?.at ===
             'navigation-panel:organize:folder-node'
           ) {
-            node.moveHere(data.source.data.from.nodeId, node.indexAt('before'));
+            const index = node.indexAt('before');
+            if (
+              data.source.data.entity?.type === 'knowledge-base' &&
+              !canAcceptKnowledgeBase(data.source.data.entity.id)
+            ) {
+              notifyDuplicateKnowledgeBase();
+              return;
+            }
+            node.moveHere(data.source.data.from.nodeId, index);
+            if (data.source.data.entity?.type === 'knowledge-base') {
+              syncKnowledgeBaseLocation(data.source.data.entity.id, index);
+            }
             track.$.navigationPanel.organize.moveOrganizeItem({
               type: 'link',
               target: data.source.data.entity?.type,
             });
           } else {
+            const index = node.indexAt('before');
+            if (
+              data.source.data.entity?.type === 'knowledge-base' &&
+              !canAcceptKnowledgeBase(data.source.data.entity.id)
+            ) {
+              notifyDuplicateKnowledgeBase();
+              return;
+            }
             node.createLink(
               data.source.data.entity?.type,
               data.source.data.entity.id,
-              node.indexAt('before')
+              index
             );
+            if (data.source.data.entity?.type === 'knowledge-base') {
+              syncKnowledgeBaseLocation(data.source.data.entity.id, index);
+            }
             track.$.navigationPanel.organize.createOrganizeItem({
               type: 'link',
               target: data.source.data.entity?.type,
@@ -340,7 +438,13 @@ const NavigationPanelFolderNodeFolder = ({
         onDrop?.(data);
       }
     },
-    [node, onDrop]
+    [
+      canAcceptKnowledgeBase,
+      node,
+      notifyDuplicateKnowledgeBase,
+      onDrop,
+      syncKnowledgeBaseLocation,
+    ]
   );
 
   const handleDropEffect = useCallback<NavigationPanelTreeNodeDropEffect>(
@@ -357,13 +461,26 @@ const NavigationPanelFolderNodeFolder = ({
         } else if (
           data.source.data.from?.at === 'navigation-panel:organize:folder-node'
         ) {
+          if (
+            data.source.data.entity?.type === 'knowledge-base' &&
+            !canAcceptKnowledgeBase(data.source.data.entity.id)
+          ) {
+            return;
+          }
           return 'move';
         } else if (
           data.source.data.entity?.type === 'collection' ||
           data.source.data.entity?.type === 'doc' ||
           data.source.data.entity?.type === 'tag' ||
-          data.source.data.entity?.type === 'container'
+          data.source.data.entity?.type === 'container' ||
+          data.source.data.entity?.type === 'knowledge-base'
         ) {
+          if (
+            data.source.data.entity?.type === 'knowledge-base' &&
+            !canAcceptKnowledgeBase(data.source.data.entity.id)
+          ) {
+            return;
+          }
           return 'link';
         }
       } else {
@@ -371,7 +488,7 @@ const NavigationPanelFolderNodeFolder = ({
       }
       return;
     },
-    [dropEffect, node]
+    [canAcceptKnowledgeBase, dropEffect, node]
   );
 
   const handleDropOnPlaceholder = useCallback(
@@ -394,21 +511,44 @@ const NavigationPanelFolderNodeFolder = ({
         data.source.data.entity?.type === 'collection' ||
         data.source.data.entity?.type === 'doc' ||
         data.source.data.entity?.type === 'tag' ||
-        data.source.data.entity?.type === 'container'
+        data.source.data.entity?.type === 'container' ||
+        data.source.data.entity?.type === 'knowledge-base'
       ) {
         if (
           data.source.data.from?.at === 'navigation-panel:organize:folder-node'
         ) {
-          node.moveHere(data.source.data.from.nodeId, node.indexAt('before'));
+          const index = node.indexAt('before');
+          if (
+            data.source.data.entity?.type === 'knowledge-base' &&
+            !canAcceptKnowledgeBase(data.source.data.entity.id)
+          ) {
+            notifyDuplicateKnowledgeBase();
+            return;
+          }
+          node.moveHere(data.source.data.from.nodeId, index);
+          if (data.source.data.entity?.type === 'knowledge-base') {
+            syncKnowledgeBaseLocation(data.source.data.entity.id, index);
+          }
           track.$.navigationPanel.organize.moveOrganizeItem({
             type: data.source.data.entity?.type,
           });
         } else {
+          const index = node.indexAt('before');
+          if (
+            data.source.data.entity?.type === 'knowledge-base' &&
+            !canAcceptKnowledgeBase(data.source.data.entity.id)
+          ) {
+            notifyDuplicateKnowledgeBase();
+            return;
+          }
           node.createLink(
             data.source.data.entity?.type,
             data.source.data.entity.id,
-            node.indexAt('before')
+            index
           );
+          if (data.source.data.entity?.type === 'knowledge-base') {
+            syncKnowledgeBaseLocation(data.source.data.entity.id, index);
+          }
           track.$.navigationPanel.organize.createOrganizeItem({
             type: 'link',
             target: data.source.data.entity?.type,
@@ -416,7 +556,12 @@ const NavigationPanelFolderNodeFolder = ({
         }
       }
     },
-    [node]
+    [
+      canAcceptKnowledgeBase,
+      node,
+      notifyDuplicateKnowledgeBase,
+      syncKnowledgeBaseLocation,
+    ]
   );
 
   const handleDropOnChildren = useCallback(
@@ -451,26 +596,46 @@ const NavigationPanelFolderNodeFolder = ({
           data.source.data.entity?.type === 'collection' ||
           data.source.data.entity?.type === 'doc' ||
           data.source.data.entity?.type === 'tag' ||
-          data.source.data.entity?.type === 'container'
+          data.source.data.entity?.type === 'container' ||
+          data.source.data.entity?.type === 'knowledge-base'
         ) {
           if (
             data.source.data.from?.at ===
             'navigation-panel:organize:folder-node'
           ) {
-            node.moveHere(
-              data.source.data.from.nodeId,
-              node.indexAt(at, dropAtNode.id)
-            );
+            const index = node.indexAt(at, dropAtNode.id);
+            if (
+              data.source.data.entity?.type === 'knowledge-base' &&
+              !canAcceptKnowledgeBase(data.source.data.entity.id)
+            ) {
+              notifyDuplicateKnowledgeBase();
+              return;
+            }
+            node.moveHere(data.source.data.from.nodeId, index);
+            if (data.source.data.entity?.type === 'knowledge-base') {
+              syncKnowledgeBaseLocation(data.source.data.entity.id, index);
+            }
             track.$.navigationPanel.organize.moveOrganizeItem({
               type: 'link',
               target: data.source.data.entity?.type,
             });
           } else {
+            const index = node.indexAt(at, dropAtNode.id);
+            if (
+              data.source.data.entity?.type === 'knowledge-base' &&
+              !canAcceptKnowledgeBase(data.source.data.entity.id)
+            ) {
+              notifyDuplicateKnowledgeBase();
+              return;
+            }
             node.createLink(
               data.source.data.entity?.type,
               data.source.data.entity.id,
-              node.indexAt(at, dropAtNode.id)
+              index
             );
+            if (data.source.data.entity?.type === 'knowledge-base') {
+              syncKnowledgeBaseLocation(data.source.data.entity.id, index);
+            }
 
             track.$.navigationPanel.organize.createOrganizeItem({
               type: 'link',
@@ -502,7 +667,13 @@ const NavigationPanelFolderNodeFolder = ({
         }
       }
     },
-    [node, onDrop]
+    [
+      canAcceptKnowledgeBase,
+      node,
+      notifyDuplicateKnowledgeBase,
+      onDrop,
+      syncKnowledgeBaseLocation,
+    ]
   );
 
   const handleDropEffectOnChildren =
@@ -524,13 +695,26 @@ const NavigationPanelFolderNodeFolder = ({
             data.source.data.from?.at ===
             'navigation-panel:organize:folder-node'
           ) {
+            if (
+              data.source.data.entity?.type === 'knowledge-base' &&
+              !canAcceptKnowledgeBase(data.source.data.entity.id)
+            ) {
+              return;
+            }
             return 'move';
           } else if (
             data.source.data.entity?.type === 'collection' ||
             data.source.data.entity?.type === 'doc' ||
             data.source.data.entity?.type === 'tag' ||
-            data.source.data.entity?.type === 'container'
+            data.source.data.entity?.type === 'container' ||
+            data.source.data.entity?.type === 'knowledge-base'
           ) {
+            if (
+              data.source.data.entity?.type === 'knowledge-base' &&
+              !canAcceptKnowledgeBase(data.source.data.entity.id)
+            ) {
+              return;
+            }
             return 'link';
           }
         } else if (data.treeInstruction?.type === 'reparent') {
@@ -558,7 +742,7 @@ const NavigationPanelFolderNodeFolder = ({
         }
         return;
       },
-      [dropEffect, node]
+      [canAcceptKnowledgeBase, dropEffect, node]
     );
 
   const handleCanDrop = useMemo<DropTargetOptions<AffineDNDData>['canDrop']>(
@@ -581,18 +765,31 @@ const NavigationPanelFolderNodeFolder = ({
       } else if (
         args.source.data.from?.at === 'navigation-panel:organize:folder-node'
       ) {
+        if (
+          entityType === 'knowledge-base' &&
+          !canAcceptKnowledgeBase(args.source.data.entity?.id)
+        ) {
+          return false;
+        }
         return true;
       } else if (
         entityType === 'collection' ||
         entityType === 'doc' ||
         entityType === 'tag' ||
-        entityType === 'container'
+        entityType === 'container' ||
+        entityType === 'knowledge-base'
       ) {
+        if (
+          entityType === 'knowledge-base' &&
+          !canAcceptKnowledgeBase(args.source.data.entity?.id)
+        ) {
+          return false;
+        }
         return true;
       }
       return false;
     },
-    [canDrop, node]
+    [canAcceptKnowledgeBase, canDrop, node]
   );
 
   const handleChildrenCanDrop = useMemo<
@@ -612,18 +809,31 @@ const NavigationPanelFolderNodeFolder = ({
       } else if (
         args.source.data.from?.at === 'navigation-panel:organize:folder-node'
       ) {
+        if (
+          entityType === 'knowledge-base' &&
+          !canAcceptKnowledgeBase(args.source.data.entity?.id)
+        ) {
+          return false;
+        }
         return true;
       } else if (
         entityType === 'collection' ||
         entityType === 'doc' ||
         entityType === 'tag' ||
-        entityType === 'container'
+        entityType === 'container' ||
+        entityType === 'knowledge-base'
       ) {
+        if (
+          entityType === 'knowledge-base' &&
+          !canAcceptKnowledgeBase(args.source.data.entity?.id)
+        ) {
+          return false;
+        }
         return true;
       }
       return false;
     },
-    [node]
+    [canAcceptKnowledgeBase, node]
   );
 
   const handleNewDoc = useCallback(() => {
@@ -672,6 +882,42 @@ const NavigationPanelFolderNodeFolder = ({
       throw error;
     }
   }, [containerService, node, setCollapsed, t]);
+
+  const handleCreateKnowledgeBase = useCallback(async () => {
+    if (!node.id) {
+      return;
+    }
+    const existingKnowledgeBase = node.sortedChildren$.value.find(
+      child => child.type$.value === 'knowledge-base'
+    );
+    if (existingKnowledgeBase) {
+      notify.error({
+        title: t['com.affine.knowledgeBase.create.duplicate'](),
+      });
+      return;
+    }
+
+    const index = node.indexAt('before');
+    const knowledgeBase = await knowledgeBaseService.createKnowledgeBase({
+      name: t['com.affine.knowledgeBase.new'](),
+      folderNodeId: node.id,
+      index,
+    });
+
+    try {
+      node.createLink('knowledge-base', knowledgeBase.id, index);
+      track.$.navigationPanel.organize.createOrganizeItem({
+        type: 'knowledge-base',
+      });
+      setCollapsed(false);
+    } catch (error) {
+      await knowledgeBaseService.trashKnowledgeBase(knowledgeBase.id, {
+        lastParentFolderNodeId: node.id,
+        lastIndex: index,
+      });
+      throw error;
+    }
+  }, [knowledgeBaseService, node, setCollapsed, t]);
 
   const handleAddToFolder = useCallback(
     (type: 'doc' | 'collection' | 'tag') => {
@@ -723,27 +969,41 @@ const NavigationPanelFolderNodeFolder = ({
         index: 0,
         inline: true,
         view: (
-          <IconButton
-            size="16"
-            onClick={handleNewDoc}
-            tooltip={t[
-              'com.affine.rootAppSidebar.explorer.organize-add-tooltip'
-            ]()}
+          <Menu
+            items={
+              <>
+                <MenuItem prefixIcon={<PageIcon />} onClick={handleNewDoc}>
+                  {t['New Page']()}
+                </MenuItem>
+                {enableContainers ? (
+                  <MenuItem
+                    prefixIcon={<ViewLayersIcon />}
+                    onClick={handleCreateContainer}
+                  >
+                    {t['com.affine.container.new']()}
+                  </MenuItem>
+                ) : null}
+                {enableKnowledgeBase ? (
+                  <MenuItem
+                    prefixIcon={<AiIcon />}
+                    onClick={handleCreateKnowledgeBase}
+                  >
+                    {t['com.affine.knowledgeBase.new']()}
+                  </MenuItem>
+                ) : null}
+              </>
+            }
           >
-            <PlusIcon />
-          </IconButton>
+            <IconButton
+              size="16"
+              tooltip={t[
+                'com.affine.rootAppSidebar.explorer.organize-add-tooltip'
+              ]()}
+            >
+              <PlusIcon />
+            </IconButton>
+          </Menu>
         ),
-      },
-      {
-        index: 1,
-        view: enableContainers ? (
-          <MenuItem
-            prefixIcon={<ViewLayersIcon />}
-            onClick={handleCreateContainer}
-          >
-            {t['com.affine.container.new']()}
-          </MenuItem>
-        ) : null,
       },
       {
         index: 100,
@@ -820,10 +1080,12 @@ const NavigationPanelFolderNodeFolder = ({
   }, [
     handleAddToFolder,
     handleCreateContainer,
+    handleCreateKnowledgeBase,
     handleCreateSubfolder,
     handleDelete,
     handleNewDoc,
     enableContainers,
+    enableKnowledgeBase,
     node,
     t,
   ]);
@@ -841,7 +1103,8 @@ const NavigationPanelFolderNodeFolder = ({
         type === 'doc' ||
         type === 'collection' ||
         type === 'tag' ||
-        type === 'container'
+        type === 'container' ||
+        type === 'knowledge-base'
       ) {
         return [
           {
@@ -861,6 +1124,17 @@ const NavigationPanelFolderNodeFolder = ({
                         lastIndex: node.index$.value,
                       });
                     }
+                  } else if (type === 'knowledge-base') {
+                    const knowledgeBaseId = node.data$.value;
+                    if (knowledgeBaseId) {
+                      await knowledgeBaseService.trashKnowledgeBase(
+                        knowledgeBaseId,
+                        {
+                          lastParentFolderNodeId: node.info$.value?.parentId,
+                          lastIndex: node.index$.value,
+                        }
+                      );
+                    }
                   }
                   node.delete();
                 }}
@@ -873,7 +1147,7 @@ const NavigationPanelFolderNodeFolder = ({
       }
       return [];
     },
-    [containerService, t]
+    [containerService, knowledgeBaseService, t]
   );
 
   const handleCollapsedChange = useCallback(

@@ -54,7 +54,8 @@ export class ListLayoutHandlerExtension extends BlockLayoutHandlerExtension<List
       if (!listItemWrapper) return;
 
       // Determine list item type based on class
-      let itemType: 'bulleted' | 'numbered' | 'todo' | 'toggle' = 'bulleted';
+      let itemType: 'bulleted' | 'numbered' | 'todo' | 'toggle' | 'phase' =
+        'bulleted';
       let checked = false;
       let collapsed = false;
       let prefix = '';
@@ -63,15 +64,21 @@ export class ListLayoutHandlerExtension extends BlockLayoutHandlerExtension<List
         checked = true;
       }
 
-      const parentListBlock = listItemWrapper.closest(
+      const parentListBlock = listItemWrapper.closest<HTMLElement>(
         '.affine-list-block-container'
-      )?.parentElement;
+      );
       if (parentListBlock) {
         if (parentListBlock.dataset.listType === 'numbered') {
           itemType = 'numbered';
           const orderVal = parentListBlock.dataset.listOrder;
           if (orderVal) {
             prefix = orderVal + '.';
+          }
+        } else if (parentListBlock.dataset.listType === 'phase') {
+          itemType = 'phase';
+          const orderVal = parentListBlock.dataset.listOrder;
+          if (orderVal) {
+            prefix = orderVal;
           }
         } else if (parentListBlock.dataset.listType === 'todo') {
           itemType = 'todo';

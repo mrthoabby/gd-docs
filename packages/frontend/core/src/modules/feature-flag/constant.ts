@@ -116,6 +116,15 @@ export const AFFINE_FLAGS = {
     configurable: true,
     defaultState: environment.isSelfHosted,
   },
+  enable_knowledge_base: {
+    category: 'affine',
+    displayName:
+      'com.affine.settings.workspace.experimental-features.enable-knowledge-base.name',
+    description:
+      'com.affine.settings.workspace.experimental-features.enable-knowledge-base.description',
+    configurable: true,
+    defaultState: environment.isSelfHosted,
+  },
   enable_editor_settings: {
     category: 'affine',
     displayName:

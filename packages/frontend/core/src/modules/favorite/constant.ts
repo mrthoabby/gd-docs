@@ -4,13 +4,15 @@ export const FavoriteSupportType = [
   'tag',
   'folder',
   'container',
+  'knowledge-base',
 ] as const;
 export type FavoriteSupportTypeUnion =
   | 'collection'
   | 'doc'
   | 'tag'
   | 'folder'
-  | 'container';
+  | 'container'
+  | 'knowledge-base';
 export const isFavoriteSupportType = (
   type: string
 ): type is FavoriteSupportTypeUnion =>

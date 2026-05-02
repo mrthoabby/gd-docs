@@ -3,6 +3,7 @@ import { type Framework } from '@toeverything/infra';
 import { WorkspaceServerService } from '../cloud';
 import { CollectionService } from '../collection';
 import { ContainerService } from '../container';
+import { KnowledgeBaseService } from '../knowledge-base';
 import { WorkspaceDialogService } from '../dialogs';
 import { DocsService } from '../doc';
 import { DocDisplayMetaService } from '../doc-display-meta';
@@ -25,6 +26,7 @@ import { CreationQuickSearchSession } from './impls/creation';
 import { DocsQuickSearchSession } from './impls/docs';
 import { ExternalLinksQuickSearchSession } from './impls/external-links';
 import { JournalsQuickSearchSession } from './impls/journals';
+import { KnowledgeBasesQuickSearchSession } from './impls/knowledge-bases';
 import { LinksQuickSearchSession } from './impls/links';
 import { RecentDocsQuickSearchSession } from './impls/recent-docs';
 import { TagsQuickSearchSession } from './impls/tags';
@@ -40,6 +42,7 @@ export { ContainersQuickSearchSession } from './impls/containers';
 export { CreationQuickSearchSession } from './impls/creation';
 export { DocsQuickSearchSession } from './impls/docs';
 export { ExternalLinksQuickSearchSession } from './impls/external-links';
+export { KnowledgeBasesQuickSearchSession } from './impls/knowledge-bases';
 export { LinksQuickSearchSession } from './impls/links';
 export { RecentDocsQuickSearchSession } from './impls/recent-docs';
 export { TagsQuickSearchSession } from './impls/tags';
@@ -75,6 +78,7 @@ export function configureQuickSearchModule(framework: Framework) {
     .entity(CreationQuickSearchSession)
     .entity(CollectionsQuickSearchSession, [CollectionService])
     .entity(ContainersQuickSearchSession, [ContainerService])
+    .entity(KnowledgeBasesQuickSearchSession, [KnowledgeBaseService])
     .entity(TagsQuickSearchSession, [TagService])
     .entity(RecentDocsQuickSearchSession, [
       RecentDocsService,

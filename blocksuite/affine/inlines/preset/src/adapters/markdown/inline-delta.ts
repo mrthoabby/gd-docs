@@ -1,5 +1,7 @@
 import { InlineDeltaToMarkdownAdapterExtension } from '@blocksuite/affine-shared/adapters';
 
+import { getSelectedPillSelectOption } from '../../pill-select/utils';
+
 export const boldDeltaToMarkdownAdapterMatcher =
   InlineDeltaToMarkdownAdapterExtension({
     name: 'bold',
@@ -49,7 +51,22 @@ export const inlineCodeDeltaToMarkdownAdapterMatcher =
     }),
   });
 
+export const pillSelectDeltaToMarkdownAdapterMatcher =
+  InlineDeltaToMarkdownAdapterExtension({
+    name: 'pillSelect',
+    match: delta => !!delta.attributes?.pillSelect,
+    toAST: delta => ({
+      type: 'text',
+      value: delta.attributes?.pillSelect
+        ? getSelectedPillSelectOption(delta.attributes.pillSelect).label
+        : typeof delta.insert === 'string'
+          ? delta.insert
+          : '',
+    }),
+  });
+
 export const InlineDeltaToMarkdownAdapterExtensions = [
+  pillSelectDeltaToMarkdownAdapterMatcher,
   inlineCodeDeltaToMarkdownAdapterMatcher,
   boldDeltaToMarkdownAdapterMatcher,
   italicDeltaToMarkdownAdapterMatcher,

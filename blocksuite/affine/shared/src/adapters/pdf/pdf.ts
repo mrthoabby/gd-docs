@@ -439,6 +439,10 @@ export class PdfAdapter extends BaseAdapter<PdfAdapterFile> {
       const number =
         order !== null && order !== undefined ? order : listNestingLevel + 1;
       prefixText = `${getNumberPrefix(number, listNestingLevel)} `;
+    } else if (type === 'phase') {
+      const number =
+        order !== null && order !== undefined ? order : listNestingLevel + 1;
+      prefixText = `${number}. `;
     } else if (type === 'todo') {
       prefixSvg = getCheckboxIconSvg(checked);
     } else if (type === 'toggle') {

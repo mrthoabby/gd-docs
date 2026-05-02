@@ -30,6 +30,10 @@ export const workbenchRoutes = [
     lazy: () => import('./pages/workspace/container'),
   },
   {
+    path: '/knowledge-base/:knowledgeBaseId',
+    lazy: () => import('./pages/workspace/knowledge-base'),
+  },
+  {
     path: '/trash',
     lazy: () => import('./pages/workspace/trash-page'),
   },

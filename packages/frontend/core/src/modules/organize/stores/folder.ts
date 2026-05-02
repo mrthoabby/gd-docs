@@ -2,7 +2,12 @@ import { Store } from '@toeverything/infra';
 
 import type { WorkspaceDBService } from '../../db';
 
-type FolderLinkType = 'doc' | 'tag' | 'collection' | 'container';
+type FolderLinkType =
+  | 'doc'
+  | 'tag'
+  | 'collection'
+  | 'container'
+  | 'knowledge-base';
 
 export class FolderStore extends Store {
   constructor(private readonly dbService: WorkspaceDBService) {
@@ -46,6 +51,19 @@ export class FolderStore extends Store {
     return this.getRootFolders().find(
       node => node.type === 'folder' && node.data === name
     );
+  }
+
+  hasChildLink(
+    parentId: string,
+    type: FolderLinkType,
+    exceptTargetId?: string
+  ) {
+    return this.dbService.db.folders
+      .find({
+        parentId,
+        type,
+      })
+      .some(node => node.data !== exceptTargetId);
   }
 
   isAncestor(childId: string, ancestorId: string): boolean {
@@ -142,7 +160,7 @@ export class FolderStore extends Store {
     }
   }
 
-  collectLinkedNodeData(folderId: string, type: 'container') {
+  collectLinkedNodeData(folderId: string, type: FolderLinkType) {
     const info = this.dbService.db.folders.get(folderId);
     if (info === null || info.type !== 'folder') {
       throw new Error('Folder not found');

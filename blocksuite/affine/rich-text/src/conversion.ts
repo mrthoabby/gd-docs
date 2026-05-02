@@ -104,6 +104,15 @@ export const textConversionConfigs: TextConversionConfig[] = [
   },
   {
     flavour: 'affine:list',
+    type: 'phase',
+    name: 'Phase List',
+    description: 'Create a numbered phase timeline.',
+    searchAlias: ['phase', 'fase', 'fases', 'steps', 'timeline'],
+    hotkey: null,
+    icon: NumberedListIcon,
+  },
+  {
+    flavour: 'affine:list',
     type: 'todo',
     name: 'To-do List',
     description: 'Add tasks to a to-do list.',
