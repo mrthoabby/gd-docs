@@ -96,6 +96,7 @@ export class ListBlockComponent extends CaptionedBlockComponent<ListBlockModel> 
     const abortController = this._phaseColorMenuAbortController;
     const currentColor =
       this.model.props.phaseColor ?? PHASE_LIST_COLORS[0];
+    const sequenceStartsHere = !!this.model.props.phaseSequenceStart;
     const selectColor = (color: string) => {
       this.store.captureSync();
       this.store.updateBlock(this.model, {
@@ -103,22 +104,45 @@ export class ListBlockComponent extends CaptionedBlockComponent<ListBlockModel> 
       });
       abortController.abort();
     };
+    const setSequenceStart = (value: boolean) => {
+      this.store.captureSync();
+      this.store.transact(() => {
+        this.model.props.phaseSequenceStart = value ? true : undefined;
+        correctNumberedListsOrderToPrev(this.store, this.model, false);
+      });
+      abortController.abort();
+    };
 
     const { portal } = createLitPortal({
       template: html`<div
         role="menu"
-        aria-label="Phase color"
-        style="display:flex;gap:6px;padding:8px;border:0.5px solid var(--affine-border-color);border-radius:8px;background:var(--affine-background-overlay-panel-color);box-shadow:0 6px 16px rgba(0,0,0,.14);"
+        aria-label="Phase list options"
+        style="display:flex;flex-direction:column;gap:8px;min-width:190px;padding:8px;border:0.5px solid var(--affine-border-color);border-radius:8px;background:var(--affine-background-overlay-panel-color);box-shadow:0 6px 16px rgba(0,0,0,.14);"
       >
-        ${PHASE_LIST_COLORS.map(
-          color => html`<button
-            type="button"
-            aria-label=${`Set phase color ${color}`}
-            aria-pressed=${color === currentColor}
-            style=${`width:24px;height:24px;border-radius:50%;border:${color === currentColor ? '2px solid var(--affine-text-primary-color)' : '1px solid var(--affine-border-color)'};background:${color};cursor:pointer;`}
-            @click=${() => selectColor(color)}
-          ></button>`
-        )}
+        <div style="display:flex;gap:6px;">
+          ${PHASE_LIST_COLORS.map(
+            color => html`<button
+              type="button"
+              aria-label=${`Set phase color ${color}`}
+              aria-pressed=${color === currentColor}
+              style=${`width:24px;height:24px;border-radius:50%;border:${color === currentColor ? '2px solid var(--affine-text-primary-color)' : '1px solid var(--affine-border-color)'};background:${color};cursor:pointer;`}
+              @click=${() => selectColor(color)}
+            ></button>`
+          )}
+        </div>
+        <button
+          type="button"
+          role="menuitemcheckbox"
+          aria-checked=${sequenceStartsHere}
+          style="display:flex;width:100%;align-items:center;justify-content:space-between;gap:12px;border:0;background:transparent;border-radius:6px;padding:8px;color:var(--affine-text-primary-color);font:inherit;text-align:left;cursor:pointer;"
+          @click=${() => setSequenceStart(!sequenceStartsHere)}
+        >
+          <span>${sequenceStartsHere ? 'Continue sequence' : 'Stop sequence'}</span>
+          <span
+            aria-hidden="true"
+            style=${`width:10px;height:10px;border-radius:50%;background:${sequenceStartsHere ? currentColor : 'transparent'};box-shadow:0 0 0 1px var(--affine-border-color);`}
+          ></span>
+        </button>
       </div>`,
       container: this.host,
       computePosition: {
@@ -250,6 +274,9 @@ export class ListBlockComponent extends CaptionedBlockComponent<ListBlockModel> 
         class=${'affine-list-block-container'}
         data-list-type=${this.model.props.type}
         data-list-order=${this.model.props.order ?? ''}
+        data-phase-sequence-start=${this.model.props.phaseSequenceStart
+          ? 'true'
+          : 'false'}
         data-collapsed=${collapsed}
         style="${textAlignStyle}"
       >

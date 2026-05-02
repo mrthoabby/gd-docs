@@ -58,20 +58,17 @@ export const splitListCommand: Command<{
         bringChildrenTo: paragraph.model,
       });
 
-      // reset next continuous numbered list's order
+      // reset the next ordered list's order
       (['numbered', 'phase'] as const).forEach(type => {
         const nextContinuousOrderedLists = getNextContinuousOrderedLists(
           doc,
           paragraph.model,
           type
         );
-        let base = 1;
-        nextContinuousOrderedLists.forEach(list => {
-          doc.transact(() => {
-            list.props.order = base;
-          });
-          base += 1;
-        });
+        const [firstList] = nextContinuousOrderedLists;
+        if (firstList) {
+          correctNumberedListsOrderToPrev(doc, firstList);
+        }
       });
 
       host.updateComplete

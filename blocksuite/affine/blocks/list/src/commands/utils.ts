@@ -1,6 +1,7 @@
 import { ListBlockModel } from '@blocksuite/affine-model';
 import {
   getNextContinuousOrderedLists,
+  getPreviousOrderedList,
   isOrderedListType,
   matchModels,
 } from '@blocksuite/affine-shared/utils';
@@ -33,18 +34,13 @@ export function correctNumberedListsOrderToPrev(
 
   const fn = () => {
     // step 1
-    const parent = doc.getParent(model);
-    if (!parent) return;
-    const index = parent.children.indexOf(model);
-    const previousSibling = index > 0 ? parent.children[index - 1] : null;
+    const previousList = getPreviousOrderedList(doc, model, type);
 
-    if (
-      previousSibling &&
-      matchModels(previousSibling, [ListBlockModel]) &&
-      previousSibling.props.type === type
-    ) {
-      if (!previousSibling.props.order) previousSibling.props.order = 1;
-      model.props.order = previousSibling.props.order + 1;
+    if (type === 'phase' && model.props.phaseSequenceStart) {
+      model.props.order = 1;
+    } else if (previousList) {
+      if (!previousList.props.order) previousList.props.order = 1;
+      model.props.order = previousList.props.order + 1;
     } else {
       model.props.order = 1;
     }
@@ -57,8 +53,13 @@ export function correctNumberedListsOrderToPrev(
       type
     );
     continuousNumberedLists.forEach(list => {
-      list.props.order = base;
-      base++;
+      if (type === 'phase' && list.props.phaseSequenceStart) {
+        list.props.order = 1;
+        base = 2;
+      } else {
+        list.props.order = base;
+        base++;
+      }
     });
   };
 

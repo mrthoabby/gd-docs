@@ -243,8 +243,11 @@ export class EdgelessTemplatePanel extends WithDisposable(LitElement) {
   private async _initCategory() {
     try {
       this._categories = await EdgelessTemplatePanel.templates.categories();
+      const cachedCategory = this._getLocalSelectedCategory();
       this._currentCategory =
-        this._getLocalSelectedCategory() ?? this._categories[0];
+        cachedCategory && this._categories.includes(cachedCategory)
+          ? cachedCategory
+          : (this._categories[0] ?? '');
       this._updateTemplates();
     } catch (e) {
       console.error('Failed to load categories', e);

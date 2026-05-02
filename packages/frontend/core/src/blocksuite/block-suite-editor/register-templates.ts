@@ -1,4 +1,4 @@
 export function registerTemplates() {
-  // Built-in edgeless templates and sticker packs are intentionally omitted
-  // from the self-hosted web bundle.
+  // Built-in self-host templates are bundled by @blocksuite/affine-gfx-template.
+  // Keep this hook for future workspace/server-provided template registration.
 }

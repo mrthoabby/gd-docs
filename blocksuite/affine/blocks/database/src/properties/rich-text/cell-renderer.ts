@@ -221,7 +221,7 @@ export class RichTextCell extends BaseCellRenderer<Text, string> {
       abortController,
       shadowDom: false,
       portalStyles: {
-        zIndex: 'var(--affine-z-index-popover)',
+        zIndex: '9999',
       },
     });
 
@@ -238,17 +238,34 @@ export class RichTextCell extends BaseCellRenderer<Text, string> {
     );
   }
 
+  private _maybeOpenCellSlashMenu() {
+    const inlineEditor = this.inlineEditor$.value;
+    const inlineRange = inlineEditor?.getInlineRange();
+    if (!inlineEditor || !inlineRange || inlineRange.index === 0) return;
+
+    const slashStartIndex = inlineRange.index - 1;
+    if (inlineEditor.yTextString[slashStartIndex] !== '/') return;
+
+    this._openCellSlashMenu(slashStartIndex);
+  }
+
   private readonly _scheduleCellSlashMenu = () => {
-    requestAnimationFrame(() => {
-      const inlineEditor = this.inlineEditor$.value;
-      const inlineRange = inlineEditor?.getInlineRange();
-      if (!inlineEditor || !inlineRange || inlineRange.index === 0) return;
+    requestAnimationFrame(() => this._maybeOpenCellSlashMenu());
+  };
 
-      const slashStartIndex = inlineRange.index - 1;
-      if (inlineEditor.yTextString[slashStartIndex] !== '/') return;
+  private readonly _onRichTextKeyUp = (event: KeyboardEvent) => {
+    if (
+      event.key === '/' &&
+      !event.metaKey &&
+      !event.ctrlKey &&
+      !event.altKey
+    ) {
+      this._maybeOpenCellSlashMenu();
+    }
+  };
 
-      this._openCellSlashMenu(slashStartIndex);
-    });
+  private readonly _onRichTextInput = () => {
+    this._maybeOpenCellSlashMenu();
   };
 
   private readonly _handleKeyDown = (event: KeyboardEvent) => {
@@ -506,10 +523,14 @@ export class RichTextCell extends BaseCellRenderer<Text, string> {
           richText.addEventListener('copy', this._onCopy, true);
           richText.addEventListener('cut', this._onCut, true);
           richText.addEventListener('paste', this._onPaste, true);
+          richText.addEventListener('keyup', this._onRichTextKeyUp, true);
+          richText.addEventListener('input', this._onRichTextInput, true);
           return () => {
-            richText.removeEventListener('copy', this._onCopy);
-            richText.removeEventListener('cut', this._onCut);
-            richText.removeEventListener('paste', this._onPaste);
+            richText.removeEventListener('copy', this._onCopy, true);
+            richText.removeEventListener('cut', this._onCut, true);
+            richText.removeEventListener('paste', this._onPaste, true);
+            richText.removeEventListener('keyup', this._onRichTextKeyUp, true);
+            richText.removeEventListener('input', this._onRichTextInput, true);
           };
         }
         return;

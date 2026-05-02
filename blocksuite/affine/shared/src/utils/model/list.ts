@@ -10,6 +10,46 @@ export function isOrderedListType(type: unknown): type is OrderedListType {
   return type === 'numbered' || type === 'phase';
 }
 
+function isSameOrderedList(
+  model: BlockModel,
+  type: OrderedListType
+): model is ListBlockModel {
+  return matchModels(model, [ListBlockModel]) && model.props.type === type;
+}
+
+export function getPreviousOrderedList(
+  doc: Store,
+  modelOrId: BlockModel | string,
+  type: OrderedListType = 'numbered'
+): ListBlockModel | null {
+  const model =
+    typeof modelOrId === 'string' ? doc.getBlock(modelOrId)?.model : modelOrId;
+  if (!model) return null;
+
+  const parent = doc.getParent(model);
+  if (!parent) return null;
+
+  const modelIndex = parent.children.indexOf(model);
+  if (modelIndex === -1) return null;
+
+  if (type !== 'phase') {
+    const previousSibling =
+      modelIndex > 0 ? parent.children[modelIndex - 1] : null;
+    return previousSibling && isSameOrderedList(previousSibling, type)
+      ? previousSibling
+      : null;
+  }
+
+  for (let i = modelIndex - 1; i >= 0; i--) {
+    const sibling = parent.children[i];
+    if (isSameOrderedList(sibling, type)) {
+      return sibling;
+    }
+  }
+
+  return null;
+}
+
 /**
  * Pass in a model, and this function will look forward to find continuous sibling ordered lists,
  * typically used for updating list numbers. The result not contains the list passed in.
@@ -27,10 +67,16 @@ export function getNextContinuousOrderedLists(
   const modelIndex = parent.children.indexOf(model);
   if (modelIndex === -1) return [];
 
+  if (type === 'phase') {
+    return parent.children
+      .slice(modelIndex + 1)
+      .filter(model => isSameOrderedList(model, type));
+  }
+
   const firstNotNumberedListIndex = parent.children.findIndex(
     (model, i) =>
       i > modelIndex &&
-      (!matchModels(model, [ListBlockModel]) || model.props.type !== type)
+      (!isSameOrderedList(model, type))
   );
   const newContinuousLists = parent.children.slice(
     modelIndex + 1,
@@ -64,18 +110,14 @@ export function toOrderedList(
   const parent = doc.getParent(model);
   if (!parent) return;
   const index = parent.children.indexOf(model);
-  const prevSibling = doc.getPrev(model);
+  const prevList = getPreviousOrderedList(doc, model, type);
   let realOrder = order;
 
   // if there is a numbered list before, the order continues from the previous list
-  if (
-    prevSibling &&
-    matchModels(prevSibling, [ListBlockModel]) &&
-    prevSibling.props.type === type
-  ) {
+  if (prevList) {
     doc.transact(() => {
-      if (!prevSibling.props.order) prevSibling.props.order = 1;
-      realOrder = prevSibling.props.order + 1;
+      if (!prevList.props.order) prevList.props.order = 1;
+      realOrder = prevList.props.order + 1;
     });
   }
 
@@ -109,9 +151,14 @@ export function toOrderedList(
   let base = realOrder + 1;
   nextContinuousNumberedLists.forEach(list => {
     doc.transact(() => {
-      list.props.order = base;
+      if (type === 'phase' && list.props.phaseSequenceStart) {
+        list.props.order = 1;
+        base = 2;
+      } else {
+        list.props.order = base;
+        base += 1;
+      }
     });
-    base += 1;
   });
 
   return newList.id;

@@ -82,7 +82,7 @@ export const listBlockStyles = css`
     position: absolute;
     left: 24px;
     top: 0;
-    bottom: -1px;
+    bottom: -32px;
     width: 1px;
     background: var(--affine-border-color);
     pointer-events: none;
