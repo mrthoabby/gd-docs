@@ -14,7 +14,7 @@ export const PillSelectInlineSpecExtension =
         pillSelect: z
           .object({
             id: z.string(),
-            selectedOptionId: z.string(),
+            selectedOptionId: z.string().nullable(),
             mode: z.enum(['copy', 'reference']).optional().catch('copy'),
             options: z.array(
               z.object({

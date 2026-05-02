@@ -37,16 +37,10 @@ export function createPillSelectOption(
 }
 
 export function createDefaultPillSelect(): PillSelectData {
-  const options = [
-    createPillSelectOption('Done', PILL_SELECT_COLORS[0]),
-    createPillSelectOption('In Progress', PILL_SELECT_COLORS[1]),
-    createPillSelectOption('Pending', PILL_SELECT_COLORS[2]),
-  ];
-
   return {
     id: createPillSelectId(),
-    selectedOptionId: options[0].id,
-    options,
+    selectedOptionId: null,
+    options: [],
     mode: 'copy',
   };
 }
@@ -67,13 +61,13 @@ export function normalizePillSelect(
           color:
             option.color || PILL_SELECT_COLORS[index % PILL_SELECT_COLORS.length],
         }))
-      : createDefaultPillSelect().options;
+      : [];
 
   const selectedOptionId = options.some(
     option => option.id === data.selectedOptionId
   )
     ? data.selectedOptionId
-    : options[0].id;
+    : null;
 
   return {
     id: data.id || createPillSelectId(),
@@ -85,10 +79,8 @@ export function normalizePillSelect(
 
 export function getSelectedPillSelectOption(data: PillSelectData) {
   const normalized = normalizePillSelect(data);
-  return (
-    normalized.options.find(
-      option => option.id === normalized.selectedOptionId
-    ) ?? normalized.options[0]
+  return normalized.options.find(
+    option => option.id === normalized.selectedOptionId
   );
 }
 

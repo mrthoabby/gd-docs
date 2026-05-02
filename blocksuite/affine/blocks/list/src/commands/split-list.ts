@@ -118,7 +118,11 @@ export const splitListCommand: Command<{
 
   let newListId: string | null = null;
 
-  if (model.children.length > 0 && !model.props.collapsed) {
+  if (
+    model.children.length > 0 &&
+    !model.props.collapsed &&
+    model.props.type !== 'phase'
+  ) {
     const afterText = model.props.text.split(inlineIndex);
     if (inlineIndex === 0) {
       /**
@@ -138,6 +142,7 @@ export const splitListCommand: Command<{
         {
           type: model.props.type,
           text: afterText,
+          phaseColor: model.props.phaseColor,
           order:
             isOrderedListType(model.props.type) && model.props.order !== null
               ? model.props.order + 1
@@ -183,6 +188,7 @@ export const splitListCommand: Command<{
         {
           type: model.props.type,
           text: afterText,
+          phaseColor: model.props.phaseColor,
           order: isOrderedListType(model.props.type) ? 1 : null,
         },
         model,
@@ -235,6 +241,7 @@ export const splitListCommand: Command<{
       {
         type: model.props.type,
         text: afterText,
+        phaseColor: model.props.phaseColor,
         order: isOrderedListType(model.props.type) ? 1 : null,
       },
       parent,

@@ -58,7 +58,8 @@ export const pillSelectDeltaToMarkdownAdapterMatcher =
     toAST: delta => ({
       type: 'text',
       value: delta.attributes?.pillSelect
-        ? getSelectedPillSelectOption(delta.attributes.pillSelect).label
+        ? (getSelectedPillSelectOption(delta.attributes.pillSelect)?.label ??
+          '')
         : typeof delta.insert === 'string'
           ? delta.insert
           : '',

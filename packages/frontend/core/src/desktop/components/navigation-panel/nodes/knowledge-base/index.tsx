@@ -38,9 +38,11 @@ export const NavigationPanelKnowledgeBaseNode = ({
   });
   const favoriteItemsAdapter = useService(CompatibleFavoriteItemsAdapter);
   const navigationPanelService = useService(NavigationPanelService);
-  const knowledgeBase = useLiveData(
-    knowledgeBaseService.knowledgeBase$(knowledgeBaseId)
+  const knowledgeBase$ = useMemo(
+    () => knowledgeBaseService.knowledgeBase$(knowledgeBaseId),
+    [knowledgeBaseId, knowledgeBaseService]
   );
+  const knowledgeBase = useLiveData(knowledgeBase$);
   const routerLocation = useLocation();
   const active =
     routerLocation.pathname === `/knowledge-base/${knowledgeBaseId}`;

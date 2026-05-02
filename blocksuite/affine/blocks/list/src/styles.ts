@@ -31,7 +31,7 @@ export const listPrefix = css`
     width: 28px;
     height: 28px;
     border-radius: 50%;
-    background: var(--affine-blue-700);
+    background: var(--affine-phase-list-color, var(--affine-blue-700));
     color: var(--affine-white);
     font-size: 14px;
     font-weight: 600;

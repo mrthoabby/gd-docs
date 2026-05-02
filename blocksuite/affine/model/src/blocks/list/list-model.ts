@@ -18,6 +18,7 @@ export type ListProps = {
   checked: boolean;
   collapsed: boolean;
   order: number | null;
+  phaseColor?: string;
   comments?: Record<string, boolean>;
 } & BlockMeta;
 
@@ -33,6 +34,7 @@ export const ListBlockSchema = defineBlockSchema({
 
       // number type only for numbered list
       order: null,
+      phaseColor: undefined,
       comments: undefined,
       'meta:createdAt': undefined,
       'meta:createdBy': undefined,

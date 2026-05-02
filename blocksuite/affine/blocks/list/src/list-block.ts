@@ -2,6 +2,7 @@ import '@blocksuite/affine-shared/commands';
 
 import { CaptionedBlockComponent } from '@blocksuite/affine-components/caption';
 import { playCheckAnimation } from '@blocksuite/affine-components/icons';
+import { createLitPortal } from '@blocksuite/affine-components/portal';
 import { TOGGLE_BUTTON_PARENT_CLASS } from '@blocksuite/affine-components/toggle-button';
 import { DefaultInlineManagerExtension } from '@blocksuite/affine-inline-preset';
 import type { ListBlockModel } from '@blocksuite/affine-model';
@@ -33,14 +34,32 @@ import { correctNumberedListsOrderToPrev } from './commands/utils.js';
 import { listBlockStyles } from './styles.js';
 import { getListIcon } from './utils/get-list-icon.js';
 
+const PHASE_LIST_COLORS = [
+  '#1e96eb',
+  '#10b981',
+  '#8b5cf6',
+  '#f59e0b',
+  '#ef4444',
+  '#06b6d4',
+  '#64748b',
+] as const;
+
 export class ListBlockComponent extends CaptionedBlockComponent<ListBlockModel> {
   static override styles = listBlockStyles;
 
   private _inlineRangeProvider: InlineRangeProvider | null = null;
 
+  private _phaseColorMenuAbortController: AbortController | null = null;
+
   private readonly _onClickIcon = (e: MouseEvent) => {
     e.stopPropagation();
     e.preventDefault();
+
+    if (this.model.props.type === 'phase') {
+      if (this.store.readonly) return;
+      this._openPhaseColorMenu(e.currentTarget as HTMLElement);
+      return;
+    }
 
     if (this.model.props.type === 'toggle') {
       if (this.store.readonly) {
@@ -69,6 +88,60 @@ export class ListBlockComponent extends CaptionedBlockComponent<ListBlockModel> 
     }
     this._select();
   };
+
+  private _openPhaseColorMenu(referenceElement: HTMLElement) {
+    this._phaseColorMenuAbortController?.abort();
+    this._phaseColorMenuAbortController = new AbortController();
+
+    const abortController = this._phaseColorMenuAbortController;
+    const currentColor =
+      this.model.props.phaseColor ?? PHASE_LIST_COLORS[0];
+    const selectColor = (color: string) => {
+      this.store.captureSync();
+      this.store.updateBlock(this.model, {
+        phaseColor: color,
+      });
+      abortController.abort();
+    };
+
+    const { portal } = createLitPortal({
+      template: html`<div
+        role="menu"
+        aria-label="Phase color"
+        style="display:flex;gap:6px;padding:8px;border:0.5px solid var(--affine-border-color);border-radius:8px;background:var(--affine-background-overlay-panel-color);box-shadow:0 6px 16px rgba(0,0,0,.14);"
+      >
+        ${PHASE_LIST_COLORS.map(
+          color => html`<button
+            type="button"
+            aria-label=${`Set phase color ${color}`}
+            aria-pressed=${color === currentColor}
+            style=${`width:24px;height:24px;border-radius:50%;border:${color === currentColor ? '2px solid var(--affine-text-primary-color)' : '1px solid var(--affine-border-color)'};background:${color};cursor:pointer;`}
+            @click=${() => selectColor(color)}
+          ></button>`
+        )}
+      </div>`,
+      container: this.host,
+      computePosition: {
+        referenceElement,
+        placement: 'bottom-start',
+        autoUpdate: {
+          animationFrame: true,
+        },
+      },
+      closeOnClickAway: true,
+      abortController,
+      shadowDom: false,
+      portalStyles: {
+        zIndex: 'var(--affine-z-index-popover)',
+      },
+    });
+
+    abortController.signal.addEventListener(
+      'abort',
+      () => portal.remove(),
+      { once: true }
+    );
+  }
 
   get attributeRenderer() {
     return this.inlineManager.getRenderer();
@@ -155,6 +228,8 @@ export class ListBlockComponent extends CaptionedBlockComponent<ListBlockModel> 
 
     const textAlignStyle = styleMap({
       textAlign: this.model.props.textAlign$?.value,
+      '--affine-phase-list-color':
+        this.model.props.phaseColor ?? 'var(--affine-blue-700)',
     });
 
     const children = html`<div

@@ -100,7 +100,9 @@ export const AllDocsHeader = ({
           onImportFile={onImportFile}
           data-testid="new-page-button-trigger"
         >
-          <span className={styles.newPageButtonLabel}>{t['New Page']()}</span>
+          <span className={styles.newPageButtonLabel}>
+            {t['com.affine.new.page-mode']()}
+          </span>
         </PageListNewPageButton>
       </div>
     </div>

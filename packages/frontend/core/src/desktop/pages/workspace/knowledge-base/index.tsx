@@ -111,19 +111,28 @@ export const Component = function KnowledgeBasePage() {
     WorkbenchService,
   });
   const isActiveView = useIsActiveView();
-  const knowledgeBase = useLiveData(
-    knowledgeBaseId
-      ? knowledgeBaseService.knowledgeBase$(knowledgeBaseId)
-      : null
+  const knowledgeBase$ = useMemo(
+    () =>
+      knowledgeBaseId
+        ? knowledgeBaseService.knowledgeBase$(knowledgeBaseId)
+        : null,
+    [knowledgeBaseId, knowledgeBaseService]
   );
-  const sources = useLiveData(
-    knowledgeBaseId ? knowledgeBaseService.sourcesFor$(knowledgeBaseId) : null
+  const sources$ = useMemo(
+    () =>
+      knowledgeBaseId ? knowledgeBaseService.sourcesFor$(knowledgeBaseId) : null,
+    [knowledgeBaseId, knowledgeBaseService]
   );
-  const folderNode = useLiveData(
-    knowledgeBase
-      ? organizeService.folderTree.folderNode$(knowledgeBase.folderNodeId)
-      : null
+  const knowledgeBase = useLiveData(knowledgeBase$);
+  const sources = useLiveData(sources$);
+  const folderNode$ = useMemo(
+    () =>
+      knowledgeBase?.folderNodeId
+        ? organizeService.folderTree.folderNode$(knowledgeBase.folderNodeId)
+        : null,
+    [knowledgeBase?.folderNodeId, organizeService]
   );
+  const folderNode = useLiveData(folderNode$);
   const folderChildren = useLiveData(folderNode?.sortedChildren$);
 
   const [loading, setLoading] = useState(true);

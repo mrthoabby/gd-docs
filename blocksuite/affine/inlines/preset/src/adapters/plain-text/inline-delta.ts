@@ -19,7 +19,8 @@ export const pillSelectDeltaToPlainTextAdapterMatcher =
       }
 
       return {
-        content: getSelectedPillSelectOption(delta.attributes.pillSelect).label,
+        content:
+          getSelectedPillSelectOption(delta.attributes.pillSelect)?.label ?? '',
       };
     },
   });

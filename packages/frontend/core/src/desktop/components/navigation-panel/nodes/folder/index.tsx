@@ -27,9 +27,10 @@ import { Unreachable } from '@affine/env/constant';
 import { useI18n } from '@affine/i18n';
 import { track } from '@affine/track';
 import {
-  DeleteIcon,
-  FolderIcon,
   AiIcon,
+  DeleteIcon,
+  EdgelessIcon,
+  FolderIcon,
   PageIcon,
   PlusIcon,
   PlusThickIcon,
@@ -264,7 +265,7 @@ const NavigationPanelFolderNodeFolder = ({
   );
   const [newFolderId, setNewFolderId] = useState<string | null>(null);
 
-  const { createPage } = usePageHelper(
+  const { createDiagram, createPage } = usePageHelper(
     workspaceService.workspace.docCollection
   );
   const handleDelete = useCallback(async () => {
@@ -847,6 +848,17 @@ const NavigationPanelFolderNodeFolder = ({
     setCollapsed(false);
   }, [createPage, node, setCollapsed]);
 
+  const handleNewDiagram = useCallback(() => {
+    const newDiagram = createDiagram();
+    node.createLink('doc', newDiagram.id, node.indexAt('before'));
+    track.$.navigationPanel.folders.createDoc();
+    track.$.navigationPanel.organize.createOrganizeItem({
+      type: 'link',
+      target: 'doc',
+    });
+    setCollapsed(false);
+  }, [createDiagram, node, setCollapsed]);
+
   const handleCreateSubfolder = useCallback(() => {
     const newFolderId = node.createFolder(
       t['com.affine.rootAppSidebar.organize.new-folders'](),
@@ -973,7 +985,13 @@ const NavigationPanelFolderNodeFolder = ({
             items={
               <>
                 <MenuItem prefixIcon={<PageIcon />} onClick={handleNewDoc}>
-                  {t['New Page']()}
+                  {t['com.affine.rootAppSidebar.organize.folder.new-doc']()}
+                </MenuItem>
+                <MenuItem
+                  prefixIcon={<EdgelessIcon />}
+                  onClick={handleNewDiagram}
+                >
+                  {t['com.affine.new_edgeless']()}
                 </MenuItem>
                 {enableContainers ? (
                   <MenuItem
@@ -1083,6 +1101,7 @@ const NavigationPanelFolderNodeFolder = ({
     handleCreateKnowledgeBase,
     handleCreateSubfolder,
     handleDelete,
+    handleNewDiagram,
     handleNewDoc,
     enableContainers,
     enableKnowledgeBase,

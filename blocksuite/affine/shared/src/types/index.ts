@@ -53,7 +53,7 @@ export type PillSelectOption = {
 
 export type PillSelectData = {
   id: string;
-  selectedOptionId: string;
+  selectedOptionId: string | null;
   options: PillSelectOption[];
   mode?: 'copy' | 'reference';
 };

@@ -159,6 +159,13 @@ export const pillSelectDeltaToHtmlAdapterMatcher =
       }
 
       const option = getSelectedPillSelectOption(pillSelect);
+      if (!option) {
+        return {
+          type: 'text',
+          value: '',
+        };
+      }
+
       return {
         type: 'element',
         tagName: 'span',

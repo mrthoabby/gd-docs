@@ -40,6 +40,7 @@ export class AffinePillSelectNode extends WithDisposable(ShadowlessElement) {
       align-items: center;
       gap: 6px;
       min-height: 22px;
+      min-width: 42px;
       padding: 1px 8px;
       margin: 0 2px;
       border-radius: 999px;
@@ -55,6 +56,11 @@ export class AffinePillSelectNode extends WithDisposable(ShadowlessElement) {
       cursor: pointer;
     }
 
+    affine-pill-select-node .affine-pill-select[data-empty='true'] {
+      border-color: ${unsafeCSSVar('borderColor')};
+      background: ${unsafeCSSVar('hoverColor')};
+    }
+
     affine-pill-select-node .affine-pill-select:hover,
     affine-pill-select-node .affine-pill-select[data-selected='true'] {
       background: color-mix(in srgb, var(--pill-select-color) 24%, transparent);
@@ -66,6 +72,10 @@ export class AffinePillSelectNode extends WithDisposable(ShadowlessElement) {
       flex: none;
       border-radius: 50%;
       background: var(--pill-select-color);
+    }
+
+    affine-pill-select-node .pill-select-label {
+      min-width: 10px;
     }
 
     affine-pill-select-node .pill-select-chevron {
@@ -216,15 +226,17 @@ export class AffinePillSelectNode extends WithDisposable(ShadowlessElement) {
 
   override render() {
     const option = this._selectedOption;
-    const style = `--pill-select-color:${option.color};`;
+    const style = `--pill-select-color:${option?.color ?? 'var(--affine-icon-color)'};`;
 
     return html`<span
       class="affine-pill-select"
       data-selected=${this.selected}
+      data-empty=${!option}
+      aria-label=${option ? option.label : 'Empty pill select'}
       style=${style}
     >
       <span class="pill-select-dot"></span>
-      <span>${option.label}</span>
+      <span class="pill-select-label">${option?.label ?? ''}</span>
       <span class="pill-select-chevron">⌄</span>
       <v-text .str=${ZERO_WIDTH_FOR_EMBED_NODE}></v-text>
     </span>`;
