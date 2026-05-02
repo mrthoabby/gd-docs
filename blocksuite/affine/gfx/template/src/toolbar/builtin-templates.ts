@@ -157,6 +157,414 @@ function preview(title: string, accent: string) {
 </svg>`;
 }
 
+type ArchitectureComponentKind =
+  | 'api'
+  | 'analytics'
+  | 'auth'
+  | 'browser'
+  | 'cache'
+  | 'cdn'
+  | 'ci'
+  | 'cloud'
+  | 'database'
+  | 'dns'
+  | 'docker'
+  | 'email'
+  | 'external'
+  | 'file'
+  | 'firewall'
+  | 'gateway'
+  | 'graphql'
+  | 'grpc'
+  | 'kubernetes'
+  | 'lambda'
+  | 'load-balancer'
+  | 'logs'
+  | 'mobile'
+  | 'monitoring'
+  | 'network'
+  | 'postgres'
+  | 'queue'
+  | 'redis'
+  | 'rest'
+  | 'scheduler'
+  | 'search'
+  | 'secrets'
+  | 'server'
+  | 'service'
+  | 'storage'
+  | 'vpc'
+  | 'webhook'
+  | 'worker';
+
+type ArchitectureComponentConfig = {
+  kind: ArchitectureComponentKind;
+  name: string;
+  accent: string;
+};
+
+function componentIconPath(kind: ArchitectureComponentKind, accent: string) {
+  switch (kind) {
+    case 'analytics':
+      return `<path d="M35 122h90" stroke="#f8fafc" stroke-width="7" stroke-linecap="round"/><rect x="42" y="78" width="16" height="36" rx="4" fill="${accent}"/><rect x="72" y="55" width="16" height="59" rx="4" fill="#f8fafc"/><rect x="102" y="36" width="16" height="78" rx="4" fill="${accent}"/>`;
+    case 'api':
+      return `<path d="M46 43h68M46 67h68M46 91h68" stroke="${accent}" stroke-width="8" stroke-linecap="round"/><path d="M36 43l-14 14 14 14M124 43l14 14-14 14" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 'auth':
+      return `<path d="M80 28 125 48v33c0 28-18 44-45 55-27-11-45-27-45-55V48l45-20Z" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linejoin="round"/><path d="M66 82h28M94 82v25" stroke="${accent}" stroke-width="8" stroke-linecap="round"/><circle cx="62" cy="82" r="11" fill="none" stroke="${accent}" stroke-width="7"/>`;
+    case 'browser':
+      return `<rect x="22" y="34" width="116" height="76" rx="8" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M22 56h116" stroke="#f8fafc" stroke-width="7"/><circle cx="39" cy="45" r="4" fill="${accent}"/><circle cx="54" cy="45" r="4" fill="${accent}"/><circle cx="69" cy="45" r="4" fill="${accent}"/>`;
+    case 'cache':
+      return `<rect x="30" y="32" width="100" height="28" rx="8" fill="none" stroke="${accent}" stroke-width="7"/><rect x="30" y="66" width="100" height="28" rx="8" fill="none" stroke="#f8fafc" stroke-width="7"/><rect x="30" y="100" width="100" height="28" rx="8" fill="none" stroke="${accent}" stroke-width="7"/>`;
+    case 'cdn':
+      return `<circle cx="80" cy="80" r="45" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M35 80h90M80 35c16 15 24 30 24 45s-8 30-24 45M80 35C64 50 56 65 56 80s8 30 24 45" fill="none" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'ci':
+      return `<path d="M32 54h32l15 22h49M32 106h32l15-22h49" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><circle cx="32" cy="54" r="10" fill="${accent}"/><circle cx="32" cy="106" r="10" fill="${accent}"/><path d="M119 66l14 14-14 14" fill="none" stroke="${accent}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 'cloud':
+      return `<path d="M48 108h65a28 28 0 0 0 0-56 39 39 0 0 0-74-10A33 33 0 0 0 48 108Z" fill="none" stroke="#f8fafc" stroke-width="8" stroke-linejoin="round"/><path d="M57 84h50" stroke="${accent}" stroke-width="8" stroke-linecap="round"/>`;
+    case 'database':
+      return `<ellipse cx="80" cy="39" rx="49" ry="18" fill="none" stroke="${accent}" stroke-width="7"/><path d="M31 39v70c0 10 22 18 49 18s49-8 49-18V39" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M31 74c0 10 22 18 49 18s49-8 49-18" fill="none" stroke="#f8fafc" stroke-width="7"/>`;
+    case 'dns':
+      return `<circle cx="80" cy="80" r="45" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M58 64h44M58 80h44M58 96h44" stroke="${accent}" stroke-width="8" stroke-linecap="round"/><circle cx="44" cy="80" r="8" fill="${accent}"/><circle cx="116" cy="80" r="8" fill="${accent}"/>`;
+    case 'docker':
+      return `<path d="M36 83h90c-4 25-21 40-49 40-27 0-43-12-48-36l7-4Z" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linejoin="round"/><path d="M47 67h18v16H47zM68 67h18v16H68zM89 67h18v16H89zM68 48h18v16H68zM89 48h18v16H89z" fill="${accent}"/><path d="M124 72c7-1 11 2 15 8" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'email':
+      return `<rect x="29" y="44" width="102" height="78" rx="10" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M35 53l45 39 45-39" fill="none" stroke="${accent}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 'external':
+      return `<rect x="34" y="38" width="92" height="84" rx="14" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M63 82h51M91 54l25 28-25 28" fill="none" stroke="${accent}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 'file':
+      return `<path d="M49 28h50l26 27v77H49V28Z" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linejoin="round"/><path d="M98 30v28h27M64 83h42M64 105h34" stroke="${accent}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 'firewall':
+      return `<path d="M31 52h98v64H31V52Z" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M31 74h98M31 96h98M56 52v22M92 74v22M68 96v20M116 96v20" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'gateway':
+      return `<path d="M80 25 132 55v50L80 135l-52-30V55l52-30Z" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M52 80h56M84 58l24 22-24 22" fill="none" stroke="${accent}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 'graphql':
+      return `<path d="M80 31 123 56v49L80 130l-43-25V56l43-25Z" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linejoin="round"/><path d="M80 31v99M37 56l86 49M123 56l-86 49" stroke="${accent}" stroke-width="5" stroke-linecap="round"/><circle cx="80" cy="31" r="8" fill="${accent}"/><circle cx="37" cy="56" r="8" fill="${accent}"/><circle cx="123" cy="56" r="8" fill="${accent}"/><circle cx="37" cy="105" r="8" fill="${accent}"/><circle cx="123" cy="105" r="8" fill="${accent}"/><circle cx="80" cy="130" r="8" fill="${accent}"/>`;
+    case 'grpc':
+      return `<rect x="28" y="45" width="104" height="70" rx="14" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M48 80h26M86 63v34M86 63h25M86 80h20" stroke="${accent}" stroke-width="8" stroke-linecap="round"/><path d="M112 63l18 17-18 17" fill="none" stroke="${accent}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 'kubernetes':
+      return `<path d="M80 26 128 53v54L80 134l-48-27V53l48-27Z" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linejoin="round"/><circle cx="80" cy="80" r="18" fill="none" stroke="${accent}" stroke-width="7"/><path d="M80 46v17M80 97v17M50 63l15 9M95 88l15 9M110 63l-15 9M65 88l-15 9" stroke="${accent}" stroke-width="6" stroke-linecap="round"/>`;
+    case 'lambda':
+      return `<path d="M47 124 80 37h16l34 87M64 82h46" fill="none" stroke="#f8fafc" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M40 124h30M104 124h28" stroke="${accent}" stroke-width="8" stroke-linecap="round"/>`;
+    case 'load-balancer':
+      return `<circle cx="80" cy="48" r="17" fill="none" stroke="${accent}" stroke-width="7"/><circle cx="42" cy="112" r="17" fill="none" stroke="#f8fafc" stroke-width="7"/><circle cx="118" cy="112" r="17" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M80 65v22M80 87H42v8M80 87h38v8" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linecap="round"/>`;
+    case 'logs':
+      return `<rect x="38" y="30" width="84" height="104" rx="10" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M56 58h48M56 80h48M56 102h31" stroke="${accent}" stroke-width="7" stroke-linecap="round"/><circle cx="105" cy="103" r="8" fill="${accent}"/>`;
+    case 'mobile':
+      return `<rect x="50" y="22" width="60" height="116" rx="13" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M68 35h24M74 122h12" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'monitoring':
+      return `<rect x="28" y="39" width="104" height="76" rx="10" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M41 84h21l11-24 18 47 13-23h15" fill="none" stroke="${accent}" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/><path d="M61 128h38" stroke="#f8fafc" stroke-width="7" stroke-linecap="round"/>`;
+    case 'network':
+      return `<circle cx="80" cy="42" r="14" fill="none" stroke="${accent}" stroke-width="7"/><circle cx="42" cy="116" r="14" fill="none" stroke="#f8fafc" stroke-width="7"/><circle cx="118" cy="116" r="14" fill="none" stroke="#f8fafc" stroke-width="7"/><circle cx="80" cy="86" r="14" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M80 56v16M70 95l-18 12M90 95l18 12" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'postgres':
+      return `<ellipse cx="80" cy="41" rx="45" ry="17" fill="none" stroke="${accent}" stroke-width="7"/><path d="M35 41v54c0 10 20 17 45 17s45-7 45-17V41" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M53 125c20 10 44 10 62 0M80 112v17" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'queue':
+      return `<path d="M31 50h98M31 80h78M31 110h58" stroke="#f8fafc" stroke-width="8" stroke-linecap="round"/><circle cx="129" cy="50" r="10" fill="${accent}"/><circle cx="109" cy="80" r="10" fill="${accent}"/><circle cx="89" cy="110" r="10" fill="${accent}"/>`;
+    case 'redis':
+      return `<path d="M80 35 128 58 80 81 32 58 80 35Z" fill="none" stroke="${accent}" stroke-width="7" stroke-linejoin="round"/><path d="M38 81 80 101l42-20M38 103l42 20 42-20" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 'rest':
+      return `<path d="M33 64h52M33 96h52" stroke="#f8fafc" stroke-width="8" stroke-linecap="round"/><path d="M101 52l22 28-22 28" fill="none" stroke="${accent}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M66 52 44 80l22 28" fill="none" stroke="${accent}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/>`;
+    case 'scheduler':
+      return `<circle cx="80" cy="80" r="48" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M80 51v32l24 16" stroke="${accent}" stroke-width="8" stroke-linecap="round" stroke-linejoin="round"/><path d="M46 33l-12 13M114 33l12 13" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'search':
+      return `<circle cx="68" cy="68" r="35" fill="none" stroke="#f8fafc" stroke-width="8"/><path d="M94 94l32 32" stroke="${accent}" stroke-width="9" stroke-linecap="round"/><path d="M51 68h34" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'secrets':
+      return `<rect x="39" y="68" width="82" height="58" rx="10" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M55 68V52c0-16 10-26 25-26s25 10 25 26v16" fill="none" stroke="${accent}" stroke-width="8" stroke-linecap="round"/><circle cx="80" cy="96" r="8" fill="${accent}"/>`;
+    case 'server':
+      return `<rect x="31" y="28" width="98" height="104" rx="10" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M47 55h66M47 80h66M47 105h66" stroke="${accent}" stroke-width="7" stroke-linecap="round"/><circle cx="52" cy="118" r="5" fill="#f8fafc"/>`;
+    case 'service':
+      return `<circle cx="80" cy="80" r="34" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M80 31v18M80 111v18M31 80h18M111 80h18M45 45l13 13M102 102l13 13M115 45l-13 13M58 102l-13 13" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'storage':
+      return `<path d="M38 49h84l14 18v52H24V67l14-18Z" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linejoin="round"/><path d="M45 49v34h70V49M48 108h64" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'vpc':
+      return `<rect x="28" y="32" width="104" height="96" rx="14" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M53 61h54v38H53z" fill="none" stroke="${accent}" stroke-width="7" stroke-linejoin="round"/><path d="M28 80h25M107 80h25M80 32v29M80 99v29" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'webhook':
+      return `<path d="M65 44a27 27 0 0 1 42 31l-10 17M54 105a27 27 0 0 1-7-51M105 116a27 27 0 0 1-44 1" fill="none" stroke="#f8fafc" stroke-width="8" stroke-linecap="round"/><circle cx="80" cy="80" r="11" fill="${accent}"/>`;
+    case 'worker':
+      return `<path d="M80 27v24M80 109v24M27 80h24M109 80h24M42 42l17 17M101 101l17 17M118 42l-17 17M59 101l-17 17" stroke="${accent}" stroke-width="7" stroke-linecap="round"/><circle cx="80" cy="80" r="30" fill="none" stroke="#f8fafc" stroke-width="7"/>`;
+  }
+}
+
+function componentSvg({
+  kind,
+  name,
+  accent,
+}: ArchitectureComponentConfig) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="190" viewBox="0 0 240 190">
+  <rect width="240" height="190" rx="24" fill="#1f2026"/>
+  <rect x="18" y="18" width="204" height="154" rx="18" fill="#292b32" stroke="${accent}" stroke-width="3"/>
+  <g transform="translate(40 16)">${componentIconPath(kind, accent)}</g>
+  <text x="120" y="159" text-anchor="middle" fill="#f8fafc" font-family="Inter,Arial" font-size="20" font-weight="700">${name}</text>
+</svg>`;
+}
+
+function svgDataUrl(svg: string) {
+  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+}
+
+function componentSnapshot(name: string, assetKey: string) {
+  return {
+    type: 'page',
+    meta: {
+      id: `component-${assetKey}`,
+      title: name,
+      createDate: 0,
+      tags: [],
+    },
+    blocks: {
+      type: 'block',
+      id: `component-page-${assetKey}`,
+      flavour: 'affine:page',
+      version: 2,
+      props: {
+        title: {
+          '$blocksuite:internal:text$': true,
+          delta: [{ insert: name }],
+        },
+      },
+      children: [
+        {
+          type: 'block',
+          id: `component-surface-${assetKey}`,
+          flavour: 'affine:surface',
+          version: 5,
+          props: {
+            elements: {},
+          },
+          children: [
+            {
+              type: 'block',
+              id: `component-image-${assetKey}`,
+              flavour: 'affine:image',
+              version: 1,
+              props: {
+                caption: name,
+                sourceId: assetKey,
+                width: 240,
+                height: 190,
+                index: 'a0',
+                xywh: '[-120,-95,240,190]',
+                rotate: 0,
+                size: -1,
+              },
+              children: [],
+            },
+          ],
+        },
+      ],
+    },
+  };
+}
+
+function architectureComponent(
+  config: ArchitectureComponentConfig
+): Template {
+  const svg = componentSvg(config);
+  const assetKey = `architecture-component-${config.kind}`;
+
+  return {
+    name: config.name,
+    type: 'sticker',
+    content: componentSnapshot(config.name, assetKey),
+    preview: svg,
+    assets: {
+      [assetKey]: svgDataUrl(svg),
+    },
+  };
+}
+
+const systemIconComponents = [
+  architectureComponent({
+    kind: 'browser',
+    name: 'Web Client',
+    accent: '#38bdf8',
+  }),
+  architectureComponent({
+    kind: 'mobile',
+    name: 'Mobile App',
+    accent: '#34d399',
+  }),
+  architectureComponent({
+    kind: 'service',
+    name: 'Microservice',
+    accent: '#22d3ee',
+  }),
+  architectureComponent({
+    kind: 'api',
+    name: 'API Service',
+    accent: '#818cf8',
+  }),
+  architectureComponent({
+    kind: 'rest',
+    name: 'REST API',
+    accent: '#60a5fa',
+  }),
+  architectureComponent({
+    kind: 'graphql',
+    name: 'GraphQL API',
+    accent: '#f472b6',
+  }),
+  architectureComponent({
+    kind: 'grpc',
+    name: 'gRPC Service',
+    accent: '#a78bfa',
+  }),
+  architectureComponent({
+    kind: 'server',
+    name: 'Server',
+    accent: '#60a5fa',
+  }),
+  architectureComponent({
+    kind: 'docker',
+    name: 'Docker',
+    accent: '#38bdf8',
+  }),
+  architectureComponent({
+    kind: 'kubernetes',
+    name: 'Kubernetes',
+    accent: '#818cf8',
+  }),
+  architectureComponent({
+    kind: 'lambda',
+    name: 'Function',
+    accent: '#fb923c',
+  }),
+  architectureComponent({
+    kind: 'database',
+    name: 'Database',
+    accent: '#facc15',
+  }),
+  architectureComponent({
+    kind: 'postgres',
+    name: 'Postgres',
+    accent: '#60a5fa',
+  }),
+  architectureComponent({
+    kind: 'cache',
+    name: 'Cache',
+    accent: '#fb7185',
+  }),
+  architectureComponent({
+    kind: 'redis',
+    name: 'Redis',
+    accent: '#ef4444',
+  }),
+  architectureComponent({
+    kind: 'storage',
+    name: 'Object Storage',
+    accent: '#fb923c',
+  }),
+  architectureComponent({
+    kind: 'file',
+    name: 'File Store',
+    accent: '#fbbf24',
+  }),
+  architectureComponent({
+    kind: 'queue',
+    name: 'Message Queue',
+    accent: '#a78bfa',
+  }),
+  architectureComponent({
+    kind: 'scheduler',
+    name: 'Scheduler',
+    accent: '#f97316',
+  }),
+  architectureComponent({
+    kind: 'worker',
+    name: 'Worker',
+    accent: '#22d3ee',
+  }),
+  architectureComponent({
+    kind: 'load-balancer',
+    name: 'Load Balancer',
+    accent: '#4ade80',
+  }),
+  architectureComponent({
+    kind: 'gateway',
+    name: 'API Gateway',
+    accent: '#f472b6',
+  }),
+  architectureComponent({
+    kind: 'cdn',
+    name: 'CDN',
+    accent: '#38bdf8',
+  }),
+  architectureComponent({
+    kind: 'dns',
+    name: 'DNS',
+    accent: '#93c5fd',
+  }),
+  architectureComponent({
+    kind: 'network',
+    name: 'Network',
+    accent: '#34d399',
+  }),
+  architectureComponent({
+    kind: 'vpc',
+    name: 'VPC',
+    accent: '#10b981',
+  }),
+  architectureComponent({
+    kind: 'firewall',
+    name: 'Firewall',
+    accent: '#f87171',
+  }),
+  architectureComponent({
+    kind: 'auth',
+    name: 'Auth',
+    accent: '#c084fc',
+  }),
+  architectureComponent({
+    kind: 'secrets',
+    name: 'Secrets',
+    accent: '#facc15',
+  }),
+  architectureComponent({
+    kind: 'search',
+    name: 'Search',
+    accent: '#2dd4bf',
+  }),
+  architectureComponent({
+    kind: 'monitoring',
+    name: 'Monitoring',
+    accent: '#4ade80',
+  }),
+  architectureComponent({
+    kind: 'logs',
+    name: 'Logs',
+    accent: '#94a3b8',
+  }),
+  architectureComponent({
+    kind: 'analytics',
+    name: 'Analytics',
+    accent: '#f472b6',
+  }),
+  architectureComponent({
+    kind: 'email',
+    name: 'Email',
+    accent: '#60a5fa',
+  }),
+  architectureComponent({
+    kind: 'webhook',
+    name: 'Webhook',
+    accent: '#fb7185',
+  }),
+  architectureComponent({
+    kind: 'ci',
+    name: 'CI CD',
+    accent: '#a3e635',
+  }),
+  architectureComponent({
+    kind: 'cloud',
+    name: 'Cloud',
+    accent: '#93c5fd',
+  }),
+  architectureComponent({
+    kind: 'external',
+    name: 'External System',
+    accent: '#cbd5e1',
+  }),
+] satisfies Template[];
+
 const softwareArchitecture = diagramSnapshot('Software Architecture', {
   client: shape({
     id: 'client',
@@ -418,6 +826,10 @@ const flowchart = diagramSnapshot('Decision Flow', {
 
 export const templates: TemplateCategory[] = [
   {
+    name: 'System Icons',
+    templates: systemIconComponents,
+  },
+  {
     name: 'Architecture',
     templates: [
       {
@@ -526,10 +938,13 @@ export const builtInTemplates = {
         }
 
         return Promise.all(
-          Object.entries(categroy.templates).map(async ([name, template]) => {
+          Object.values(categroy.templates).map(async template => {
+            const searchableName = template.name?.toLocaleLowerCase() ?? '';
+            const searchableCategory = categroy.name.toLocaleLowerCase();
+
             if (
-              lcs(keyword, (name as string).toLocaleLowerCase()) ===
-              keyword.length
+              lcs(keyword, searchableName) === keyword.length ||
+              lcs(keyword, searchableCategory) === keyword.length
             ) {
               candidates.push(template);
             }
