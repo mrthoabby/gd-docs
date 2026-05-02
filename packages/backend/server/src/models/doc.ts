@@ -6,7 +6,13 @@ import { Prisma } from '@prisma/client';
 import { EventBus, PaginationInput } from '../base';
 import { DocIsNotPublic } from '../base/error';
 import { BaseModel } from './base';
-import { Doc, DocRole, PublicDocMode, publicUserSelect } from './common';
+import {
+  Doc,
+  DocContentType,
+  DocRole,
+  PublicDocMode,
+  publicUserSelect,
+} from './common';
 
 declare global {
   interface Events {
@@ -519,6 +525,10 @@ export class DocModel extends BaseModel {
     mode: PublicDocMode = PublicDocMode.Page
   ) {
     return await this.upsertMeta(workspaceId, docId, {
+      contentType:
+        mode === PublicDocMode.Edgeless
+          ? DocContentType.diagram
+          : DocContentType.document,
       public: true,
       mode,
       publishedAt: new Date(),
@@ -556,6 +566,7 @@ export class DocModel extends BaseModel {
         workspaceId: string;
         docId: string;
         mode: PublicDocMode;
+        contentType: DocContentType;
         public: boolean;
         defaultRole: DocRole;
         title: string | null;
@@ -570,6 +581,7 @@ export class DocModel extends BaseModel {
      "workspace_pages"."workspace_id" as "workspaceId",
      "workspace_pages"."page_id" as "docId",
      "workspace_pages"."mode" as "mode",
+     "workspace_pages"."content_type" as "contentType",
      "workspace_pages"."public" as "public",
      "workspace_pages"."defaultRole" as "defaultRole",
      "workspace_pages"."title" as "title",
@@ -607,6 +619,7 @@ export class DocModel extends BaseModel {
         workspaceId: string;
         docId: string;
         mode: PublicDocMode;
+        contentType: DocContentType;
         public: boolean;
         defaultRole: DocRole;
         createdAt: Date;
@@ -619,6 +632,7 @@ export class DocModel extends BaseModel {
        "workspace_pages"."workspace_id" as "workspaceId",
        "workspace_pages"."page_id" as "docId",
        "workspace_pages"."mode" as "mode",
+       "workspace_pages"."content_type" as "contentType",
        "workspace_pages"."public" as "public",
        "workspace_pages"."defaultRole" as "defaultRole",
        "snapshots"."created_at" as "createdAt",
@@ -660,6 +674,7 @@ export class DocModel extends BaseModel {
         workspaceId: string;
         docId: string;
         mode: PublicDocMode;
+        contentType: DocContentType;
         public: boolean;
         defaultRole: DocRole;
         title: string | null;
@@ -673,6 +688,7 @@ export class DocModel extends BaseModel {
        "workspace_pages"."workspace_id" as "workspaceId",
        "workspace_pages"."page_id" as "docId",
        "workspace_pages"."mode" as "mode",
+       "workspace_pages"."content_type" as "contentType",
        "workspace_pages"."public" as "public",
        "workspace_pages"."defaultRole" as "defaultRole",
        "workspace_pages"."title" as "title",

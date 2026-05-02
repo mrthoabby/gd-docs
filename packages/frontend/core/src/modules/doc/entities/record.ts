@@ -5,6 +5,11 @@ import { Entity, LiveData } from '@toeverything/infra';
 import type { DocProperties } from '../../db';
 import type { DocPropertiesStore } from '../stores/doc-properties';
 import type { DocsStore } from '../stores/docs';
+import {
+  getContentTypeByDocMode,
+  getDocModeByContentType,
+  type DocContentType,
+} from '../types';
 
 /**
  * # DocRecord
@@ -70,16 +75,45 @@ export class DocRecord extends Entity<{ id: string }> {
   }
 
   primaryMode$: LiveData<DocMode> = LiveData.from(
-    this.docsStore.watchDocPrimaryModeSetting(this.id),
-    'page' as DocMode
-  ).map(mode => (mode === 'edgeless' ? 'edgeless' : 'page') as DocMode);
+    this.docsStore.watchDocContentType(this.id),
+    undefined
+  ).map(contentType => {
+    if (contentType === 'diagram' || contentType === 'document') {
+      return getDocModeByContentType(contentType);
+    }
+    const mode = this.docsStore.getDocPrimaryModeSetting(this.id);
+    return (mode === 'edgeless' ? 'edgeless' : 'page') as DocMode;
+  });
+
+  contentType$: LiveData<DocContentType> = LiveData.from(
+    this.docsStore.watchDocContentType(this.id),
+    undefined
+  ).map(contentType => {
+    if (contentType === 'diagram' || contentType === 'document') {
+      return contentType;
+    }
+    return getContentTypeByDocMode(
+      this.docsStore.getDocPrimaryModeSetting(this.id)
+    );
+  });
+
+  getContentType() {
+    return (
+      this.docsStore.getDocContentType(this.id) ??
+      getContentTypeByDocMode(this.docsStore.getDocPrimaryModeSetting(this.id))
+    );
+  }
+
+  setContentType(contentType: DocContentType) {
+    return this.docsStore.setDocContentType(this.id, contentType);
+  }
 
   setPrimaryMode(mode: DocMode) {
-    return this.docsStore.setDocPrimaryModeSetting(this.id, mode);
+    return this.setContentType(getContentTypeByDocMode(mode));
   }
 
   getPrimaryMode() {
-    return this.docsStore.getDocPrimaryModeSetting(this.id);
+    return getDocModeByContentType(this.getContentType());
   }
 
   moveToTrash() {

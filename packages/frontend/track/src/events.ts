@@ -667,8 +667,14 @@ export type EventArgs = {
   };
   toggleFavorite: OrganizeItemArgs & { on: boolean };
   toggle: { type: 'collapse' | 'expand' };
-  createDoc: { mode?: 'edgeless' | 'page' };
-  quickStart: { with: 'page' | 'edgeless' | 'template' | 'ai' };
+  createDoc: {
+    mode?: 'edgeless' | 'page';
+    contentType?: 'document' | 'diagram';
+  };
+  quickStart: {
+    with: 'page' | 'edgeless' | 'template' | 'ai';
+    contentType?: 'document' | 'diagram';
+  };
   switchPageMode: { mode: 'edgeless' | 'page' };
   createShareLink: { mode: 'edgeless' | 'page' };
   copyShareLink: {

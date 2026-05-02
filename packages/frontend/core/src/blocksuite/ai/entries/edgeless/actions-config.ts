@@ -9,7 +9,6 @@ import {
   TextElementModel,
 } from '@blocksuite/affine/model';
 import {
-  CommentIcon,
   ExplainIcon,
   ImageIcon,
   ImproveWritingIcon,
@@ -51,11 +50,7 @@ import {
 import type { AIItemGroupConfig } from '../../components/ai-item/types';
 import { AIProvider } from '../../provider';
 import { getAIPanelWidget } from '../../utils/ai-widgets';
-import {
-  getEdgelessCopilotWidget,
-  mindMapToMarkdown,
-} from '../../utils/edgeless';
-import { extractSelectedContent } from '../../utils/extract';
+import { mindMapToMarkdown } from '../../utils/edgeless';
 import { canvasToBlob, randomSeed } from '../../utils/image';
 import {
   getCopilotSelectedElems,
@@ -107,34 +102,6 @@ export const imageProcessingSubItem = imageProcessingTypes.map(type => {
     ),
   };
 });
-
-const othersGroup: AIItemGroupConfig = {
-  name: 'others',
-  items: [
-    {
-      name: 'Continue in AI Chat',
-      testId: 'action-continue-with-ai',
-      icon: CommentIcon({ width: '20px', height: '20px' }),
-      showWhen: () => true,
-      handler: host => {
-        const panel = getAIPanelWidget(host);
-        const edgelessCopilot = getEdgelessCopilotWidget(host);
-        extractSelectedContent(host)
-          .then(context => {
-            AIProvider.slots.requestOpenWithChat.next({
-              host,
-              mode: 'edgeless',
-              autoSelect: true,
-              context,
-            });
-          })
-          .catch(console.error);
-        edgelessCopilot.hideCopilotPanel();
-        panel.hide();
-      },
-    },
-  ],
-};
 
 const editTextGroup: AIItemGroupConfig = {
   name: 'edit text',
@@ -577,5 +544,4 @@ export const edgelessAIGroups: AIItemGroupConfig[] = [
   editTextGroup,
   generateFromTextGroup,
   draftFromTextGroup,
-  othersGroup,
 ];

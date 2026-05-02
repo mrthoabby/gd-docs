@@ -99,11 +99,12 @@ export class Editor extends Entity {
   }
 
   toggleMode() {
-    this.mode$.next(this.mode$.value === 'edgeless' ? 'page' : 'edgeless');
+    this.mode$.next(this.doc.getPrimaryMode());
   }
 
   setMode(mode: DocMode) {
-    this.mode$.next(mode);
+    const contentMode = this.doc.getPrimaryMode();
+    this.mode$.next(mode === contentMode ? mode : contentMode);
   }
 
   setDefaultOpenProperty(defaultOpenProperty: DefaultOpenProperty | undefined) {
@@ -158,8 +159,11 @@ export class Editor extends Entity {
       // when view params changed, sync to editor
       try {
         const editorParams = editorParams$.value;
-        if (params.mode !== editorParams.mode) {
-          this.setMode(params.mode);
+        const fixedMode = this.doc.getPrimaryMode();
+        const nextMode = params.mode === fixedMode ? params.mode : fixedMode;
+
+        if (nextMode !== editorParams.mode) {
+          this.setMode(nextMode);
         }
 
         const selector = omit(params, ['mode']);

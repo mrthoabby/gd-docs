@@ -6,7 +6,6 @@ import { WorkspaceService } from '@affine/core/modules/workspace';
 import { inferOpenMode } from '@affine/core/utils';
 import { useI18n } from '@affine/i18n';
 import track from '@affine/track';
-import type { DocMode } from '@blocksuite/affine/model';
 import {
   ArrowDownSmallIcon,
   EdgelessIcon,
@@ -18,6 +17,7 @@ import clsx from 'clsx';
 import type React from 'react';
 import { type MouseEvent, useCallback } from 'react';
 
+import type { DocContentType } from '../../../doc';
 import * as styles from './index.css';
 
 /**
@@ -31,8 +31,8 @@ const useNewDoc = () => {
   const pageHelper = usePageHelper(currentWorkspace.docCollection);
 
   const createPage = useAsyncCallback(
-    async (e?: MouseEvent, mode?: DocMode) => {
-      pageHelper.createPage(mode, { at: inferOpenMode(e) });
+    async (e?: MouseEvent, contentType?: DocContentType) => {
+      pageHelper.createPage(contentType, { at: inferOpenMode(e) });
     },
     [pageHelper]
   );
@@ -65,17 +65,23 @@ function AddPageWithAsk({ className, style }: AddPageButtonProps) {
 
   const createPage = useCallback(
     (e?: MouseEvent) => {
-      createDoc(e, 'page');
+      createDoc(e, 'document');
       track.$.navigationPanel.$.createDoc();
-      track.$.sidebar.newDoc.quickStart({ with: 'page' });
+      track.$.sidebar.newDoc.quickStart({
+        with: 'page',
+        contentType: 'document',
+      });
     },
     [createDoc]
   );
-  const createEdgeless = useCallback(
+  const createDiagram = useCallback(
     (e?: MouseEvent) => {
-      createDoc(e, 'edgeless');
+      createDoc(e, 'diagram');
       track.$.navigationPanel.$.createDoc();
-      track.$.sidebar.newDoc.quickStart({ with: 'edgeless' });
+      track.$.sidebar.newDoc.quickStart({
+        with: 'edgeless',
+        contentType: 'diagram',
+      });
     },
     [createDoc]
   );
@@ -93,8 +99,8 @@ function AddPageWithAsk({ className, style }: AddPageButtonProps) {
           </MenuItem>
           <MenuItem
             prefixIcon={<EdgelessIcon />}
-            onClick={createEdgeless}
-            onAuxClick={createEdgeless}
+            onClick={createDiagram}
+            onAuxClick={createDiagram}
           >
             {t['Edgeless']()}
           </MenuItem>

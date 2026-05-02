@@ -35,10 +35,10 @@ export class CreationQuickSearchSession
         },
         group,
         icon: NewXxxPageIcon,
-        payload: { mode: 'edgeless', title: query },
+        payload: { mode: 'page', title: query },
       },
       {
-        id: 'creation:create-edgeless',
+        id: 'creation:create-diagram',
         source: 'creation',
         label: {
           i18nKey: 'com.affine.cmdk.affine.create-new-edgeless-as',

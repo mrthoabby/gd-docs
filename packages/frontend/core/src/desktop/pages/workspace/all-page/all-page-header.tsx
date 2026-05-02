@@ -43,7 +43,7 @@ export const AllDocsHeader = ({
   const workspaceDialogService = useService(WorkspaceDialogService);
   const workbenchService = useService(WorkbenchService);
   const workbench = workbenchService.workbench;
-  const { createEdgeless, createPage } = usePageHelper(
+  const { createDiagram, createDocument } = usePageHelper(
     workspaceService.workspace.docCollection
   );
 
@@ -94,9 +94,9 @@ export const AllDocsHeader = ({
         />
         <PageListNewPageButton
           size="small"
-          onCreateEdgeless={e => createEdgeless({ at: inferOpenMode(e) })}
-          onCreatePage={e => createPage('page', { at: inferOpenMode(e) })}
-          onCreateDoc={e => createPage(undefined, { at: inferOpenMode(e) })}
+          onCreateEdgeless={e => createDiagram({ at: inferOpenMode(e) })}
+          onCreatePage={e => createDocument({ at: inferOpenMode(e) })}
+          onCreateDoc={e => createDocument({ at: inferOpenMode(e) })}
           onImportFile={onImportFile}
           data-testid="new-page-button-trigger"
         >

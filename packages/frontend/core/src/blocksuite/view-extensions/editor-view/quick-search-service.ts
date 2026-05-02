@@ -93,10 +93,13 @@ export function patchQuickSearchService(framework: FrameworkProvider) {
 
             if (result.source === 'creation') {
               const docsService = framework.get(DocsService);
-              const mode =
-                result.id === 'creation:create-edgeless' ? 'edgeless' : 'page';
+              const contentType =
+                result.id === 'creation:create-diagram' ||
+                result.id === 'creation:create-edgeless'
+                  ? 'diagram'
+                  : 'document';
               const newDoc = docsService.createDoc({
-                primaryMode: mode,
+                contentType,
                 title: result.payload.title,
               });
 

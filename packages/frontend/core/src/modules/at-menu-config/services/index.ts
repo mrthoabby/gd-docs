@@ -142,7 +142,7 @@ export class AtMenuConfigService extends Service {
     const createPage = (mode: DocMode) => {
       const page = this.docsService.createDoc({
         title: query,
-        primaryMode: mode,
+        contentType: mode === 'edgeless' ? 'diagram' : 'document',
       });
 
       return page;

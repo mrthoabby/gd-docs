@@ -21,8 +21,8 @@ export const changeNoteDisplayMode: Command<{
   // 1. Both mode note               |   1. Both mode note
   // 2. Page mode note               |   2. Page mode note
   // ----------------------------    |-> 3. the changed note (Both or Page)
-  // 3. Edgeless mode note           |   ---------------------------
-  // 4. the changing edgeless note  -|   4. Edgeless mode note
+  // 3. Diagram mode note            |   ---------------------------
+  // 4. the changing diagram note   -|   4. Diagram mode note
   const parent = std.store.getParent(noteBlockModel);
   if (parent) {
     const notes = parent.children.filter(child =>

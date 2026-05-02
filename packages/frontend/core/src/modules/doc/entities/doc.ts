@@ -7,6 +7,7 @@ import type { DocProperties } from '../../db';
 import type { WorkspaceService } from '../../workspace';
 import type { DocScope } from '../scopes/doc';
 import type { DocsStore } from '../stores/docs';
+import type { DocContentType } from '../types';
 
 export class Doc extends Entity {
   constructor(
@@ -62,6 +63,7 @@ export class Doc extends Entity {
   readonly meta$ = this.record.meta$;
   readonly properties$ = this.record.properties$;
   readonly primaryMode$ = this.record.primaryMode$;
+  readonly contentType$ = this.record.contentType$;
   readonly title$ = this.record.title$;
   readonly trash$ = this.record.trash$;
   readonly createdAt$ = this.record.createdAt$;
@@ -113,10 +115,16 @@ export class Doc extends Entity {
     return this.record.getPrimaryMode();
   }
 
-  togglePrimaryMode() {
-    this.setPrimaryMode(
-      (this.getPrimaryMode() === 'edgeless' ? 'page' : 'edgeless') as DocMode
-    );
+  setContentType(contentType: DocContentType) {
+    return this.record.setContentType(contentType);
+  }
+
+  getContentType() {
+    return this.record.getContentType();
+  }
+
+  togglePrimaryMode(): DocMode {
+    return this.getPrimaryMode();
   }
 
   moveToTrash() {

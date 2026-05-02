@@ -711,6 +711,12 @@ type DocMemberLastAccessEdge {
   node: DocMemberLastAccess!
 }
 
+"""The first-class product type of a workspace document"""
+enum DocContentType {
+  diagram
+  document
+}
+
 """Doc mode"""
 enum DocMode {
   edgeless
@@ -782,6 +788,9 @@ enum DocRole {
 type DocType {
   """Doc page analytics in a time window"""
   analytics(input: DocPageAnalyticsInput): DocPageAnalytics!
+
+  """First-class product type. Legacy edgeless docs are exposed as diagrams."""
+  contentType: DocContentType!
   createdAt: DateTime
 
   """Doc create user"""

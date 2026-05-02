@@ -30,7 +30,7 @@ import {
   registerObjectType,
 } from '../../../base';
 import { PageInfo } from '../../../base/graphql/pagination';
-import { Models, PublicDocMode } from '../../../models';
+import { DocContentType, Models, PublicDocMode } from '../../../models';
 import { CurrentUser } from '../../auth';
 import { Editor } from '../../doc';
 import {
@@ -53,6 +53,11 @@ registerEnumType(PublicDocMode, {
   description: 'The mode which the public doc default in',
 });
 
+registerEnumType(DocContentType, {
+  name: 'DocContentType',
+  description: 'The first-class product type of a workspace document',
+});
+
 @ObjectType()
 class DocType {
   @Field(() => String, { name: 'id' })
@@ -63,6 +68,9 @@ class DocType {
 
   @Field(() => PublicDocMode)
   mode!: PublicDocMode;
+
+  @Field(() => DocContentType)
+  contentType?: DocContentType;
 
   @Field()
   public!: boolean;
@@ -521,6 +529,19 @@ export class DocResolver {
     private readonly ac: AccessController,
     private readonly models: Models
   ) {}
+
+  @ResolveField(() => DocContentType, {
+    description:
+      'First-class product type. Legacy edgeless docs are exposed as diagrams.',
+  })
+  contentType(@Parent() doc: DocType): DocContentType {
+    if (doc.contentType) {
+      return doc.contentType;
+    }
+    return doc.mode === PublicDocMode.Edgeless
+      ? DocContentType.diagram
+      : DocContentType.document;
+  }
 
   @ResolveField(() => PublicUserType, {
     nullable: true,

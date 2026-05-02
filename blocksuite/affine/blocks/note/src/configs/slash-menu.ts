@@ -20,7 +20,6 @@ import {
   SlashMenuConfigExtension,
   type SlashMenuItem,
 } from '@blocksuite/affine-widget-slash-menu';
-import { HeadingsIcon } from '@blocksuite/icons/lit';
 import { BlockSelection } from '@blocksuite/std';
 
 import { updateBlockAlign, updateBlockType } from '../commands';
@@ -32,14 +31,6 @@ const noteSlashMenuConfig: SlashMenuConfig = {
     ...textConversionConfigs
       .filter(i => i.type && ['h1', 'h2', 'h3', 'text'].includes(i.type))
       .map(config => createConversionItem(config, `0_Basic@${basicIndex++}`)),
-    {
-      name: 'Other Headings',
-      icon: HeadingsIcon(),
-      group: `0_Basic@${basicIndex++}`,
-      subMenu: textConversionConfigs
-        .filter(i => i.type && ['h4', 'h5', 'h6'].includes(i.type))
-        .map(config => createConversionItem(config)),
-    },
     ...textConversionConfigs
       .filter(i => i.flavour === 'affine:code')
       .map(config => createConversionItem(config, `0_Basic@${basicIndex++}`)),

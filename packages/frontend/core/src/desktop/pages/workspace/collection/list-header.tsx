@@ -11,7 +11,6 @@ import { WorkbenchLink } from '@affine/core/modules/workbench';
 import { WorkspaceService } from '@affine/core/modules/workspace';
 import { useI18n } from '@affine/i18n';
 import track from '@affine/track';
-import type { DocMode } from '@blocksuite/affine/model';
 import { ViewLayersIcon } from '@blocksuite/icons/rc';
 import { useLiveData, useServices } from '@toeverything/infra';
 import { useCallback } from 'react';
@@ -39,7 +38,9 @@ export const CollectionListHeader = ({
   }, [collection, workspaceDialogService]);
 
   const workspace = workspaceService.workspace;
-  const { createEdgeless, createPage } = usePageHelper(workspace.docCollection);
+  const { createDiagram, createDocument } = usePageHelper(
+    workspace.docCollection
+  );
   const { openConfirmModal } = useConfirmModal();
   const name = useLiveData(collection.name$);
 
@@ -67,21 +68,16 @@ export const CollectionListHeader = ({
     [openConfirmModal, t, createAndAddDocument]
   );
 
-  const createPageModeDoc = useCallback(
-    () => createPage('page' as DocMode),
-    [createPage]
-  );
-
   const onCreateEdgeless = useCallback(
-    () => onConfirmAddDocument(createEdgeless),
-    [createEdgeless, onConfirmAddDocument]
+    () => onConfirmAddDocument(createDiagram),
+    [createDiagram, onConfirmAddDocument]
   );
   const onCreatePage = useCallback(() => {
-    onConfirmAddDocument(createPageModeDoc);
-  }, [createPageModeDoc, onConfirmAddDocument]);
+    onConfirmAddDocument(createDocument);
+  }, [createDocument, onConfirmAddDocument]);
   const onCreateDoc = useCallback(() => {
-    onConfirmAddDocument(createPage);
-  }, [createPage, onConfirmAddDocument]);
+    onConfirmAddDocument(createDocument);
+  }, [createDocument, onConfirmAddDocument]);
 
   return (
     <header className={styles.collectionHeader}>

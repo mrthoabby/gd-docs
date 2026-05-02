@@ -3,12 +3,11 @@ import {
   pageAIGroups,
 } from '@affine/core/blocksuite/ai';
 import { useEnableAI } from '@affine/core/components/hooks/affine/use-enable-ai';
-import { DocsService } from '@affine/core/modules/doc';
 import { EditorService } from '@affine/core/modules/editor';
 import { useI18n } from '@affine/i18n';
 import { PageRootBlockComponent } from '@blocksuite/affine/blocks/root';
 import type { Store } from '@blocksuite/affine/store';
-import { AiIcon, EdgelessIcon } from '@blocksuite/icons/rc';
+import { AiIcon } from '@blocksuite/icons/rc';
 import { useService } from '@toeverything/infra';
 import clsx from 'clsx';
 import {
@@ -42,19 +41,12 @@ const Badge = forwardRef<
   );
 });
 
-const StarterBarNotEmpty = ({ doc }: { doc: Store }) => {
+const StarterBarNotEmpty = () => {
   const t = useI18n();
 
-  const docsService = useService(DocsService);
   const editorService = useService(EditorService);
 
   const enableAI = useEnableAI();
-
-  const startWithEdgeless = useCallback(() => {
-    const record = docsService.list.doc$(doc.id).value;
-    record?.setPrimaryMode('edgeless');
-    editorService.editor.setMode('edgeless');
-  }, [doc.id, docsService.list, editorService.editor]);
 
   const startWithAI = useCallback(() => {
     const std = editorService.editor.editorContainer$.value?.std;
@@ -79,23 +71,19 @@ const StarterBarNotEmpty = ({ doc }: { doc: Store }) => {
     }
   }, [editorService.editor]);
 
+  if (!enableAI) {
+    return null;
+  }
+
   return (
     <div className={styles.root} data-testid="starter-bar">
       {t['com.affine.page-starter-bar.start']()}
       <ul className={styles.badges}>
-        {enableAI ? (
-          <Badge
-            data-testid="start-with-ai-badge"
-            icon={<AiIcon className={styles.aiIcon} />}
-            text={t['com.affine.page-starter-bar.ai']()}
-            onClick={startWithAI}
-          />
-        ) : null}
-
         <Badge
-          icon={<EdgelessIcon />}
-          text={t['com.affine.page-starter-bar.edgeless']()}
-          onClick={startWithEdgeless}
+          data-testid="start-with-ai-badge"
+          icon={<AiIcon className={styles.aiIcon} />}
+          text={t['com.affine.page-starter-bar.ai']()}
+          onClick={startWithAI}
         />
       </ul>
     </div>
@@ -113,5 +101,5 @@ export const StarterBar = ({ doc }: { doc: Store }) => {
 
   if (!isEmpty) return null;
 
-  return <StarterBarNotEmpty doc={doc} />;
+  return <StarterBarNotEmpty />;
 };

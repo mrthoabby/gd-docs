@@ -5,6 +5,8 @@ export { DocCreated } from './events';
 export { DocScope } from './scopes/doc';
 export { DocService } from './services/doc';
 export { DocsService } from './services/docs';
+export { getContentTypeByDocMode, getDocModeByContentType } from './types';
+export type { DocContentType, DocCreateOptions } from './types';
 
 import type { Framework } from '@toeverything/infra';
 

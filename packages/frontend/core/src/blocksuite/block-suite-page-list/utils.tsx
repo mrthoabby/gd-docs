@@ -1,14 +1,14 @@
 import { toast } from '@affine/component';
 import { getStoreManager } from '@affine/core/blocksuite/manager/store';
 import { AppSidebarService } from '@affine/core/modules/app-sidebar';
-import { DocsService } from '@affine/core/modules/doc';
+import { type DocContentType, DocsService } from '@affine/core/modules/doc';
 import {
   EditorSettingService,
   resolveNewDocTitle,
 } from '@affine/core/modules/editor-setting';
 import { WorkbenchService } from '@affine/core/modules/workbench';
 import { getAFFiNEWorkspaceSchema } from '@affine/core/modules/workspace';
-import { type DocMode } from '@blocksuite/affine/model';
+import type { DocMode } from '@blocksuite/affine/model';
 import type { Workspace } from '@blocksuite/affine/store';
 import { LiveData, useLiveData, useServices } from '@toeverything/infra';
 import { useCallback, useMemo } from 'react';
@@ -26,31 +26,45 @@ export const usePageHelper = (docCollection: Workspace) => {
     EditorSettingService,
   });
   const workbench = workbenchService.workbench;
-  const docRecordList = docsService.list;
   const appSidebar = appSidebarService.sidebar;
   const settings = useLiveData(editorSettingService.editorSetting.settings$);
   const allDocTitles = useLiveData(
     useMemo(() => LiveData.from(docsService.allDocTitle$(), []), [docsService])
   );
 
-  const createBlankDoc = useCallback(() => {
-    const title = resolveNewDocTitle({
-      autoTitleEnabled: settings.autoTitleNewDocWithCurrentDate,
-      existingTitles: allDocTitles.map(doc => doc.title).filter(Boolean),
-      format: settings.newDocDateTitleFormat,
-    });
+  const normalizeContentType = useCallback(
+    (contentTypeOrMode?: DocContentType | DocMode): DocContentType => {
+      return contentTypeOrMode === 'diagram' || contentTypeOrMode === 'edgeless'
+        ? 'diagram'
+        : 'document';
+    },
+    []
+  );
 
-    return docsService.createDoc(title ? { title } : undefined);
-  }, [
-    allDocTitles,
-    docsService,
-    settings.autoTitleNewDocWithCurrentDate,
-    settings.newDocDateTitleFormat,
-  ]);
+  const createBlankDoc = useCallback(
+    (contentType: DocContentType = 'document') => {
+      const title = resolveNewDocTitle({
+        autoTitleEnabled: settings.autoTitleNewDocWithCurrentDate,
+        existingTitles: allDocTitles.map(doc => doc.title).filter(Boolean),
+        format: settings.newDocDateTitleFormat,
+      });
+
+      return docsService.createDoc({
+        ...(title ? { title } : {}),
+        contentType,
+      });
+    },
+    [
+      allDocTitles,
+      docsService,
+      settings.autoTitleNewDocWithCurrentDate,
+      settings.newDocDateTitleFormat,
+    ]
+  );
 
   const createPageAndOpen = useCallback(
     (
-      mode?: DocMode,
+      contentType?: DocContentType | DocMode,
       options: {
         at?: 'new-tab' | 'tail' | 'active';
         show?: boolean;
@@ -60,11 +74,7 @@ export const usePageHelper = (docCollection: Workspace) => {
       }
     ) => {
       appSidebar.setHovering(false);
-      const page = createBlankDoc();
-
-      if (mode) {
-        docRecordList.doc$(page.id).value?.setPrimaryMode(mode);
-      }
+      const page = createBlankDoc(normalizeContentType(contentType));
 
       if (options.show !== false) {
         workbench.openDoc(page.id, {
@@ -74,17 +84,17 @@ export const usePageHelper = (docCollection: Workspace) => {
       }
       return page;
     },
-    [appSidebar, createBlankDoc, docRecordList, workbench]
+    [appSidebar, createBlankDoc, normalizeContentType, workbench]
   );
 
-  const createEdgelessAndOpen = useCallback(
+  const createDiagramAndOpen = useCallback(
     (
       options: { at?: 'new-tab' | 'tail' | 'active'; show?: boolean } = {
         at: 'active',
         show: true,
       }
     ) => {
-      return createPageAndOpen('edgeless', options);
+      return createPageAndOpen('diagram', options);
     },
     [createPageAndOpen]
   );
@@ -137,14 +147,19 @@ export const usePageHelper = (docCollection: Workspace) => {
   return useMemo(() => {
     return {
       createPage: (
-        mode?: DocMode,
+        contentType?: DocContentType | DocMode,
         options?: {
           at?: 'new-tab' | 'tail' | 'active';
           show?: boolean;
         }
-      ) => createPageAndOpen(mode, options),
-      createEdgeless: createEdgelessAndOpen,
+      ) => createPageAndOpen(contentType, options),
+      createDocument: (options?: {
+        at?: 'new-tab' | 'tail' | 'active';
+        show?: boolean;
+      }) => createPageAndOpen('document', options),
+      createDiagram: createDiagramAndOpen,
+      createEdgeless: createDiagramAndOpen,
       importFile: importFileAndOpen,
     };
-  }, [createEdgelessAndOpen, createPageAndOpen, importFileAndOpen]);
+  }, [createDiagramAndOpen, createPageAndOpen, importFileAndOpen]);
 };

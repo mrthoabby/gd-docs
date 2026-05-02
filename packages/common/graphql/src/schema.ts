@@ -919,6 +919,12 @@ export interface DocMemberLastAccessEdge {
   node: DocMemberLastAccess;
 }
 
+/** The first-class product type of a workspace document */
+export enum DocContentType {
+  diagram = 'diagram',
+  document = 'document',
+}
+
 /** Doc mode */
 export enum DocMode {
   edgeless = 'edgeless',
@@ -996,6 +1002,8 @@ export interface DocType {
   __typename?: 'DocType';
   /** Doc page analytics in a time window */
   analytics: DocPageAnalytics;
+  /** First-class product type. Legacy edgeless docs are exposed as diagrams. */
+  contentType: DocContentType;
   createdAt: Maybe<Scalars['DateTime']['output']>;
   /** Doc create user */
   createdBy: Maybe<PublicUserType>;

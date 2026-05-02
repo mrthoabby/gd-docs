@@ -21,6 +21,7 @@ export const AFFiNE_WORKSPACE_DB_SCHEMA = {
   docProperties: t.document({
     // { [`custom:{customPropertyId}`]: any }
     id: f.string().primaryKey(),
+    contentType: f.string().optional(),
     primaryMode: f.string().optional(),
     edgelessColorTheme: f.string().optional(),
     journal: f.string().optional(),

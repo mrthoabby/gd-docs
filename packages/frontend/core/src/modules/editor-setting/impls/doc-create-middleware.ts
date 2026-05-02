@@ -1,7 +1,11 @@
 import { Service } from '@toeverything/infra';
 
 import type { DocCreateMiddleware, DocRecord } from '../../doc';
-import type { DocCreateOptions } from '../../doc/types';
+import {
+  getContentTypeByDocMode,
+  getDocModeByContentType,
+  type DocCreateOptions,
+} from '../../doc/types';
 import type { AppThemeService } from '../../theme';
 import type { EdgelessDefaultTheme } from '../schema';
 import type { EditorSettingService } from '../services/editor-setting';
@@ -43,7 +47,10 @@ export class EditorSettingDocCreateMiddleware
     const preferMode =
       this.editorSettingService.editorSetting.settings$.value.newDocDefaultMode;
     const mode = preferMode === 'ask' ? 'page' : preferMode;
-    docCreateOptions.primaryMode ??= mode;
+    docCreateOptions.contentType ??= getContentTypeByDocMode(mode);
+    docCreateOptions.primaryMode ??= getDocModeByContentType(
+      docCreateOptions.contentType
+    );
 
     docCreateOptions.docProps = {
       ...docCreateOptions.docProps,

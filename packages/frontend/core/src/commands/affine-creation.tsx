@@ -1,6 +1,5 @@
 import type { useI18n } from '@affine/i18n';
 import { track } from '@affine/track';
-import type { DocMode } from '@blocksuite/affine/model';
 import { ImportIcon, PlusIcon } from '@blocksuite/icons/rc';
 
 import type { usePageHelper } from '../blocksuite/block-suite-page-list/utils';
@@ -30,9 +29,12 @@ export function registerAffineCreationCommands({
           }
         : undefined,
       run() {
-        track.$.cmdk.creation.createDoc({ mode: 'page' });
+        track.$.cmdk.creation.createDoc({
+          mode: 'page',
+          contentType: 'document',
+        });
 
-        pageHelper.createPage('page' as DocMode);
+        pageHelper.createDocument();
       },
     })
   );
@@ -46,9 +48,10 @@ export function registerAffineCreationCommands({
       run() {
         track.$.cmdk.creation.createDoc({
           mode: 'edgeless',
+          contentType: 'diagram',
         });
 
-        pageHelper.createEdgeless();
+        pageHelper.createDiagram();
       },
     })
   );

@@ -23,3 +23,8 @@ export enum DocMode {
   page = 'page',
   edgeless = 'edgeless',
 }
+
+export enum DocContentType {
+  document = 'document',
+  diagram = 'diagram',
+}

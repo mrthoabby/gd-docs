@@ -376,8 +376,8 @@ const GenerateFromTextAIGroup: AIItemGroupConfig = {
   ],
 };
 
-const OthersAIGroup: AIItemGroupConfig = {
-  name: 'Others',
+const AIChatGroup: AIItemGroupConfig = {
+  name: 'AI chat',
   items: [
     {
       name: 'Continue in AI Chat',
@@ -404,7 +404,7 @@ export const pageAIGroups: AIItemGroupConfig[] = [
   EditTextAIGroup,
   GenerateFromTextAIGroup,
   DraftFromTextAIGroup,
-  OthersAIGroup,
+  AIChatGroup,
 ];
 
 export function buildAIImageItemGroups(): AIItemGroupConfig[] {
@@ -479,7 +479,7 @@ export function buildAIImageItemGroups(): AIItemGroupConfig[] {
         },
       ],
     },
-    OthersAIGroup,
+    AIChatGroup,
   ];
 }
 
@@ -514,6 +514,6 @@ export function buildAICodeItemGroups(): AIItemGroupConfig[] {
         },
       ],
     },
-    OthersAIGroup,
+    AIChatGroup,
   ];
 }

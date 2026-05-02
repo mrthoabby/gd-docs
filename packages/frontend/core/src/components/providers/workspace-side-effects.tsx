@@ -16,7 +16,10 @@ import {
   GraphQLService,
 } from '@affine/core/modules/cloud';
 import { GlobalDialogService } from '@affine/core/modules/dialogs';
-import { DocsService } from '@affine/core/modules/doc';
+import {
+  DocsService,
+  getContentTypeByDocMode,
+} from '@affine/core/modules/doc';
 import { EditorSettingService } from '@affine/core/modules/editor-setting';
 import { useRegisterNavigationCommands } from '@affine/core/modules/navigation/view/use-register-navigation-commands';
 import { QuickSearchContainer } from '@affine/core/modules/quicksearch';
@@ -77,7 +80,10 @@ export const WorkspaceSideEffects = () => {
           timeout(10000 /* 10s */),
           tap(({ mode, doc }) => {
             if (doc) {
-              docsList.setPrimaryMode(doc.id, mode as DocMode);
+              docsList.setContentType(
+                doc.id,
+                getContentTypeByDocMode(mode as DocMode)
+              );
               workbench.openDoc(doc.id);
             }
           }),

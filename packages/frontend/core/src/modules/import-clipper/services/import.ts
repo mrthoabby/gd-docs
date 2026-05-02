@@ -39,9 +39,9 @@ export class ImportClipperService extends Service {
     });
     const docsService = workspace.scope.get(DocsService);
     if (docId) {
-      // only support page mode for now
+      // only support document content for now
       await docsService.changeDocTitle(docId, clipperInput.title);
-      docsService.list.setPrimaryMode(docId, 'page');
+      docsService.list.setContentType(docId, 'document');
       workspace.engine.doc.addPriority(workspace.id, 100);
       workspace.engine.doc.addPriority(docId, 100);
       await workspace.engine.doc.waitForSynced(workspace.id);

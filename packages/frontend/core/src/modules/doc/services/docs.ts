@@ -16,7 +16,11 @@ import type { DocCreateMiddleware } from '../providers/doc-create-middleware';
 import { DocScope } from '../scopes/doc';
 import type { DocPropertiesStore } from '../stores/doc-properties';
 import type { DocsStore } from '../stores/docs';
-import type { DocCreateOptions } from '../types';
+import {
+  getContentTypeByDocMode,
+  getDocModeByContentType,
+  type DocCreateOptions,
+} from '../types';
 import { DocService } from './doc';
 import { getDuplicatedDocTitle } from './duplicate-title';
 
@@ -159,9 +163,9 @@ export class DocsService extends Service {
     if (!docRecord) {
       throw new Unreachable();
     }
-    if (options.primaryMode) {
-      docRecord.setPrimaryMode(options.primaryMode);
-    }
+    const contentType =
+      options.contentType ?? getContentTypeByDocMode(options.primaryMode);
+    docRecord.setContentType(contentType);
     for (const middleware of this.docCreateMiddlewares) {
       middleware.afterCreate?.(docRecord, options);
     }
@@ -172,6 +176,26 @@ export class DocsService extends Service {
       docCreateOptions: options,
     });
     return docRecord;
+  }
+
+  createDocument(
+    options: Omit<DocCreateOptions, 'contentType' | 'primaryMode'> = {}
+  ) {
+    return this.createDoc({
+      ...options,
+      contentType: 'document',
+      primaryMode: getDocModeByContentType('document'),
+    });
+  }
+
+  createDiagram(
+    options: Omit<DocCreateOptions, 'contentType' | 'primaryMode'> = {}
+  ) {
+    return this.createDoc({
+      ...options,
+      contentType: 'diagram',
+      primaryMode: getDocModeByContentType('diagram'),
+    });
   }
 
   async addLinkedDoc(targetDocId: string, linkedDocId: string) {

@@ -1,17 +1,6 @@
 import { RadioGroup, type RadioItem } from '@affine/component';
-import { registerAffineCommand } from '@affine/core/commands';
-import { EditorService } from '@affine/core/modules/editor';
-import { ViewService, WorkbenchService } from '@affine/core/modules/workbench';
-import { useI18n } from '@affine/i18n';
-import { track } from '@affine/track';
 import type { DocMode } from '@blocksuite/affine/model';
-import { EdgelessIcon, PageIcon } from '@blocksuite/icons/rc';
-import {
-  useLiveData,
-  useService,
-  useServiceOptional,
-} from '@toeverything/infra';
-import { useCallback, useEffect, useMemo } from 'react';
+import { useMemo } from 'react';
 
 import { switchItem } from './style.css';
 import { EdgelessSwitchItem, PageSwitchItem } from './switch-items';
@@ -36,67 +25,7 @@ const PageRadioItem: RadioItem = {
 };
 
 export const EditorModeSwitch = () => {
-  const t = useI18n();
-  const editor = useService(EditorService).editor;
-  const trash = useLiveData(editor.doc.trash$);
-  const currentMode = useLiveData(editor.mode$);
-  const view = useServiceOptional(ViewService)?.view;
-  const workbench = useServiceOptional(WorkbenchService)?.workbench;
-  const activeView = useLiveData(workbench?.activeView$);
-  const isActiveView = activeView?.id && activeView?.id === view?.id;
-
-  const togglePage = useCallback(() => {
-    if (currentMode === 'page' || trash) return;
-    editor.setMode('page');
-    editor.setSelector(undefined);
-    track.$.header.actions.switchPageMode({ mode: 'page' });
-  }, [currentMode, editor, trash]);
-
-  const toggleEdgeless = useCallback(() => {
-    if (currentMode === 'edgeless' || trash) return;
-    editor.setMode('edgeless');
-    editor.setSelector(undefined);
-    track.$.header.actions.switchPageMode({ mode: 'edgeless' });
-  }, [currentMode, editor, trash]);
-
-  const onModeChange = useCallback(
-    (mode: DocMode) => {
-      mode === 'page' ? togglePage() : toggleEdgeless();
-    },
-    [toggleEdgeless, togglePage]
-  );
-
-  const shouldHide = useCallback(
-    (mode: DocMode) => trash && currentMode !== mode,
-    [currentMode, trash]
-  );
-
-  useEffect(() => {
-    if (trash || currentMode === undefined || !isActiveView) return;
-    return registerAffineCommand({
-      id: 'affine:doc-mode-switch',
-      category: 'editor:page',
-      label:
-        currentMode === 'page'
-          ? t['com.affine.cmdk.switch-to-edgeless']()
-          : t['com.affine.cmdk.switch-to-page'](),
-      icon: currentMode === 'page' ? <EdgelessIcon /> : <PageIcon />,
-      keyBinding: {
-        binding: 'Alt+KeyS',
-        capture: true,
-      },
-      run: () => onModeChange(currentMode === 'edgeless' ? 'page' : 'edgeless'),
-    });
-  }, [currentMode, isActiveView, onModeChange, t, trash]);
-
-  return (
-    <PureEditorModeSwitch
-      mode={currentMode}
-      setMode={onModeChange}
-      hidePage={shouldHide('page')}
-      hideEdgeless={shouldHide('edgeless')}
-    />
-  );
+  return null;
 };
 
 export interface PureEditorModeSwitchProps {

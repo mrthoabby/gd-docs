@@ -433,7 +433,7 @@
                     "$blocksuite:internal:text$": true,
                     "delta": [
                       {
-                        "insert": "Others"
+                        "insert": "More tools"
                       }
                     ]
                   }

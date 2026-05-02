@@ -1,9 +1,4 @@
-import {
-  MenuItem,
-  notify,
-  PropertyValue,
-  type RadioItem,
-} from '@affine/component';
+import { MenuItem, PropertyValue, type RadioItem } from '@affine/component';
 import type { FilterParams } from '@affine/core/modules/collection-rules';
 import { DocService } from '@affine/core/modules/doc';
 import { useI18n } from '@affine/i18n';
@@ -43,23 +38,9 @@ export const DocPrimaryModeValue = ({
     [t]
   );
 
-  const handleChange = useCallback(
-    (mode: DocMode) => {
-      doc.setPrimaryMode(mode);
-      notify.success({
-        title:
-          mode === 'page'
-            ? t['com.affine.toastMessage.defaultMode.page.title']()
-            : t['com.affine.toastMessage.defaultMode.edgeless.title'](),
-        message:
-          mode === 'page'
-            ? t['com.affine.toastMessage.defaultMode.page.message']()
-            : t['com.affine.toastMessage.defaultMode.edgeless.message'](),
-      });
-      onChange?.(mode, true);
-    },
-    [doc, t, onChange]
-  );
+  const handleChange = useCallback(() => {
+    onChange?.(primaryMode, false);
+  }, [onChange, primaryMode]);
   return (
     <PropertyValue
       className={styles.container}
@@ -70,7 +51,7 @@ export const DocPrimaryModeValue = ({
         value={primaryMode}
         onChange={handleChange}
         items={DocModeItems}
-        disabled={readonly}
+        disabled
       />
     </PropertyValue>
   );

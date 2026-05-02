@@ -172,6 +172,8 @@ model WorkspaceDoc {
   defaultRole Int       @default(30) @db.SmallInt
   // Page/Edgeless
   mode        Int       @default(0) @db.SmallInt
+  // Document/Diagram. This is the product type; mode is kept for legacy publish/open compatibility.
+  contentType String    @default("document") @map("content_type") @db.VarChar
   // Whether the doc is blocked
   blocked     Boolean   @default(false)
   title       String?   @db.VarChar

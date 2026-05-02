@@ -162,34 +162,6 @@ export function useRegisterBlocksuiteEditorCommands(
 
     unsubs.push(
       registerAffineCommand({
-        id: `editor:${mode}-convert-to-${
-          mode === 'page' ? 'edgeless' : 'page'
-        }`,
-        preconditionStrategy,
-        category: `editor:${mode}`,
-        icon: mode === 'page' ? <PageIcon /> : <EdgelessIcon />,
-        label: `${t['Convert to ']()}${
-          mode === 'page'
-            ? t['com.affine.pageMode.edgeless']()
-            : t['com.affine.pageMode.page']()
-        }`,
-        run() {
-          track.$.cmdk.editor.switchPageMode({
-            mode: mode === 'page' ? 'edgeless' : 'page',
-          });
-
-          editor.toggleMode();
-          toast(
-            mode === 'page'
-              ? t['com.affine.toastMessage.edgelessMode']()
-              : t['com.affine.toastMessage.pageMode']()
-          );
-        },
-      })
-    );
-
-    unsubs.push(
-      registerAffineCommand({
         id: `editor:page-set-width`,
         preconditionStrategy: () => mode === 'page',
         category: `editor:page`,

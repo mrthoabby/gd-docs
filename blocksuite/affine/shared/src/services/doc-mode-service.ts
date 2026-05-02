@@ -93,10 +93,7 @@ export class DocModeService extends Extension implements DocModeProvider {
   }
 
   togglePrimaryMode(id: string) {
-    const mode = this.getPrimaryMode(id) === 'page' ? 'edgeless' : 'page';
-    this.setPrimaryMode(mode, id);
-
-    return mode;
+    return this.getPrimaryMode(id);
   }
 }
 

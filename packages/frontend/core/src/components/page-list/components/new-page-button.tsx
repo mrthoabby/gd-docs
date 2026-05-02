@@ -75,7 +75,9 @@ export const NewPageButton = ({
     e => {
       createNewDoc(e);
       setOpen(false);
-      track.allDocs.header.actions.createDoc();
+      track.allDocs.header.actions.createDoc({
+        contentType: 'document',
+      });
     },
     [createNewDoc]
   );
@@ -84,7 +86,10 @@ export const NewPageButton = ({
     e => {
       createNewPage(e);
       setOpen(false);
-      track.allDocs.header.actions.createDoc({ mode: 'page' });
+      track.allDocs.header.actions.createDoc({
+        mode: 'page',
+        contentType: 'document',
+      });
     },
     [createNewPage]
   );
@@ -96,6 +101,7 @@ export const NewPageButton = ({
         setOpen(false);
         track.allDocs.header.actions.createDoc({
           mode: 'edgeless',
+          contentType: 'diagram',
         });
       },
       [createNewEdgeless]

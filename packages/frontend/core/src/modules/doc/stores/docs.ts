@@ -12,6 +12,7 @@ import { distinctUntilChanged, map, switchMap } from 'rxjs';
 import { Array as YArray, Map as YMap, transact } from 'yjs';
 
 import type { WorkspaceService } from '../../workspace';
+import type { DocContentType } from '../types';
 import type { DocPropertiesStore } from './doc-properties';
 
 export class DocsStore extends Store {
@@ -261,6 +262,26 @@ export class DocsStore extends Store {
   watchDocPrimaryModeSetting(id: string) {
     return this.docPropertiesStore.watchDocProperties(id).pipe(
       map(config => config?.primaryMode),
+      distinctUntilChanged((p, c) => p === c)
+    );
+  }
+
+  setDocContentType(id: string, contentType: DocContentType) {
+    return this.docPropertiesStore.updateDocProperties(id, {
+      contentType,
+      primaryMode: contentType === 'diagram' ? 'edgeless' : 'page',
+    });
+  }
+
+  getDocContentType(id: string) {
+    return this.docPropertiesStore.getDocProperties(id)?.contentType as
+      | DocContentType
+      | undefined;
+  }
+
+  watchDocContentType(id: string) {
+    return this.docPropertiesStore.watchDocProperties(id).pipe(
+      map(config => config?.contentType as DocContentType | undefined),
       distinctUntilChanged((p, c) => p === c)
     );
   }

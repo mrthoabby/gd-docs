@@ -4,6 +4,7 @@ import type {
   ParagraphBlockModel,
 } from '@blocksuite/affine-model';
 import { insertContent } from '@blocksuite/affine-rich-text';
+import { DocModeProvider } from '@blocksuite/affine-shared/services';
 import {
   ArrowDownBigIcon,
   ArrowUpBigIcon,
@@ -22,6 +23,8 @@ import type { SlashMenuConfig } from './types';
 import { formatDate, formatTime } from './utils';
 
 export const defaultSlashMenuConfig: SlashMenuConfig = {
+  disableWhen: ({ std }) =>
+    std.getOptional(DocModeProvider)?.getEditorMode() === 'edgeless',
   items: () => {
     const now = new Date();
     const tomorrow = new Date();
