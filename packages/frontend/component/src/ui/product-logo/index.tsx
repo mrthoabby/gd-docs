@@ -1,14 +1,21 @@
-export const Logo = () => {
+import type { SVGProps } from 'react';
+
+export const ProductLogoIcon = ({
+  width = 24,
+  height = 24,
+  ...props
+}: SVGProps<SVGSVGElement>) => {
   return (
     <svg
-      width="24"
-      height="24"
+      width={width}
+      height={height}
       viewBox="0 0 24 24"
       fill="none"
       xmlns="http://www.w3.org/2000/svg"
       aria-hidden="true"
+      {...props}
     >
-      <rect width="24" height="24" rx="7" fill="url(#gd-docs-logo-bg)" />
+      <rect width="24" height="24" rx="7" fill="url(#documentor-logo-bg)" />
       <path
         d="M7 5.75h7.25L18 9.5v8.75H7V5.75Z"
         fill="#0f172a"
@@ -26,7 +33,7 @@ export const Logo = () => {
       />
       <defs>
         <linearGradient
-          id="gd-docs-logo-bg"
+          id="documentor-logo-bg"
           x1="3"
           y1="3"
           x2="21"

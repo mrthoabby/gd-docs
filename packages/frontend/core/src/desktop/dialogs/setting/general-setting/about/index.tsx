@@ -34,7 +34,7 @@ export const AboutAffine = () => {
           desc={BUILD_CONFIG.editorVersion}
         />
       </SettingWrapper>
-      {/* [SELFHOST PATCH] Secciones contact/community/legal de AFFiNE eliminadas */}
+      {/* [SELFHOST PATCH] Secciones contact/community/legal externas eliminadas */}
     </>
   );
 };

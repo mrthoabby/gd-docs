@@ -1,7 +1,7 @@
 import { OverlayModal } from '@affine/component';
 import { useI18n } from '@affine/i18n';
 
-export const StarAFFiNEModal = ({
+export const StarProjectModal = ({
   open,
   setOpen,
 }: {

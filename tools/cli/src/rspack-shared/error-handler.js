@@ -17,7 +17,7 @@
       '<div>',
       '<p class="p1">Unsupported Environment</p>',
       '<p class="p2">',
-      'It looks like GD docs cannot run in this environment.',
+      'It looks like Documentor cannot run in this environment.',
       "Please ensure you are using a supported browser or update your device's operating system to the latest version.",
       'If the issue persists, contact your administrator.',
       '</p>',

@@ -16,9 +16,9 @@ export type SignUpProps = {
 export default function SignUp(props: SignUpProps) {
   return (
     <Template>
-      <Title>Sign up to GD docs Cloud</Title>
+      <Title>Sign up to Documentor Cloud</Title>
       <Content>
-        <P>You are signing up to GD docs. Here is your code:</P>
+        <P>You are signing up to Documentor. Here is your code:</P>
         <OnelineCodeBlock>{props.otp}</OnelineCodeBlock>
         <P>
           Alternatively, you can sign up directly by clicking the magic link

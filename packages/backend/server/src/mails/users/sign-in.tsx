@@ -16,9 +16,9 @@ export type SignInProps = {
 export default function SignIn(props: SignInProps) {
   return (
     <Template>
-      <Title>Sign in to GD docs Cloud</Title>
+      <Title>Sign in to Documentor Cloud</Title>
       <Content>
-        <P>You are signing in to GD docs. Here is your code:</P>
+        <P>You are signing in to Documentor. Here is your code:</P>
         <OnelineCodeBlock>{props.otp}</OnelineCodeBlock>
         <P>
           Alternatively, you can sign in directly by clicking the magic link

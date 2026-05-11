@@ -158,6 +158,7 @@ function preview(title: string, accent: string) {
 }
 
 type ArchitectureComponentKind =
+  | 'ai'
   | 'api'
   | 'analytics'
   | 'auth'
@@ -193,6 +194,7 @@ type ArchitectureComponentKind =
   | 'server'
   | 'service'
   | 'storage'
+  | 'user'
   | 'vpc'
   | 'webhook'
   | 'worker';
@@ -207,6 +209,8 @@ function componentIconPath(kind: ArchitectureComponentKind, accent: string) {
   switch (kind) {
     case 'analytics':
       return `<path d="M35 122h90" stroke="#f8fafc" stroke-width="7" stroke-linecap="round"/><rect x="42" y="78" width="16" height="36" rx="4" fill="${accent}"/><rect x="72" y="55" width="16" height="59" rx="4" fill="#f8fafc"/><rect x="102" y="36" width="16" height="78" rx="4" fill="${accent}"/>`;
+    case 'ai':
+      return `<rect x="30" y="34" width="100" height="92" rx="16" fill="none" stroke="#f8fafc" stroke-width="7"/><circle cx="60" cy="66" r="8" fill="${accent}"/><circle cx="100" cy="66" r="8" fill="${accent}"/><path d="M54 95h52" stroke="${accent}" stroke-width="8" stroke-linecap="round"/><path d="M80 18v12M49 24l8 10M111 24l-8 10" stroke="#f8fafc" stroke-width="7" stroke-linecap="round"/>`;
     case 'api':
       return `<path d="M46 43h68M46 67h68M46 91h68" stroke="${accent}" stroke-width="8" stroke-linecap="round"/><path d="M36 43l-14 14 14 14M124 43l14 14-14 14" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linecap="round" stroke-linejoin="round"/>`;
     case 'auth':
@@ -275,6 +279,8 @@ function componentIconPath(kind: ArchitectureComponentKind, accent: string) {
       return `<circle cx="80" cy="80" r="34" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M80 31v18M80 111v18M31 80h18M111 80h18M45 45l13 13M102 102l13 13M115 45l-13 13M58 102l-13 13" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
     case 'storage':
       return `<path d="M38 49h84l14 18v52H24V67l14-18Z" fill="none" stroke="#f8fafc" stroke-width="7" stroke-linejoin="round"/><path d="M45 49v34h70V49M48 108h64" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
+    case 'user':
+      return `<circle cx="80" cy="58" r="22" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M34 124c8-22 27-34 46-34s38 12 46 34" fill="none" stroke="${accent}" stroke-width="8" stroke-linecap="round"/><circle cx="121" cy="100" r="9" fill="${accent}"/>`;
     case 'vpc':
       return `<rect x="28" y="32" width="104" height="96" rx="14" fill="none" stroke="#f8fafc" stroke-width="7"/><path d="M53 61h54v38H53z" fill="none" stroke="${accent}" stroke-width="7" stroke-linejoin="round"/><path d="M28 80h25M107 80h25M80 32v29M80 99v29" stroke="${accent}" stroke-width="7" stroke-linecap="round"/>`;
     case 'webhook':
@@ -380,6 +386,24 @@ function architectureComponent(
 }
 
 const systemIconGroups = [
+  {
+    kind: 'ai',
+    accent: '#22d3ee',
+    names: [
+      'AI Agent',
+      'AI Assistant',
+      'LLM Service',
+      'Inference API',
+      'Model Gateway',
+      'Prompt Router',
+      'Embedding Service',
+      'RAG Service',
+      'Vector Worker',
+      'Vision Model',
+      'Speech Model',
+      'AI Orchestrator',
+    ],
+  },
   {
     kind: 'browser',
     accent: '#38bdf8',
@@ -609,6 +633,32 @@ const systemIconGroups = [
     names: ['Network', 'Subnet', 'Peering', 'NAT', 'Private Link', 'Tunnel', 'VPN'],
   },
   {
+    kind: 'user',
+    accent: '#38bdf8',
+    names: [
+      'User',
+      'End User',
+      'Customer',
+      'Member',
+      'Admin User',
+      'Operator',
+      'Developer',
+      'Manager',
+      'Team',
+      'User Group',
+      'Organization',
+      'Stakeholder',
+      'Support Agent',
+      'Reviewer',
+      'Approver',
+      'Guest User',
+      'Authenticated User',
+      'Anonymous User',
+      'Persona',
+      'Account Owner',
+    ],
+  },
+  {
     kind: 'vpc',
     accent: '#10b981',
     names: ['VPC', 'Private Network', 'Public Subnet', 'Private Subnet', 'Security Group'],
@@ -699,6 +749,55 @@ let systemIconTemplateCache: Template[] | null = null;
 function getSystemIconComponents() {
   systemIconTemplateCache ??= systemIconConfigs.map(architectureComponent);
   return systemIconTemplateCache;
+}
+
+function emojiSvg(emoji: string) {
+  return `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="190" viewBox="0 0 240 190">
+  <rect width="240" height="190" rx="24" fill="#1f2026"/>
+  <rect x="18" y="18" width="204" height="154" rx="18" fill="#292b32" stroke="#a3a3a3" stroke-width="2"/>
+  <text x="120" y="112" text-anchor="middle" font-size="84">${emoji}</text>
+</svg>`;
+}
+
+function emojiTemplate(emoji: string, index: number): Template {
+  const key = `emoji-sticker-${index.toString(16)}-${slug(emoji) || 'u'}`;
+  const svg = emojiSvg(emoji);
+  return {
+    name: `Emoji ${emoji}`,
+    type: 'sticker',
+    content: () => componentSnapshot(`Emoji ${emoji}`, key),
+    preview: svg,
+    assets: () => ({ [key]: svgDataUrl(svg) }),
+  };
+}
+
+const emojiRanges: Array<[number, number]> = [
+  [0x1f300, 0x1f5ff],
+  [0x1f600, 0x1f64f],
+  [0x1f680, 0x1f6ff],
+  [0x1f900, 0x1f9ff],
+  [0x1fa70, 0x1faff],
+];
+
+function isEmojiChar(char: string) {
+  return /\p{Extended_Pictographic}/u.test(char);
+}
+
+function getEmojiTemplates() {
+  const out: Template[] = [];
+  const seen = new Set<string>();
+
+  for (const [start, end] of emojiRanges) {
+    for (let cp = start; cp <= end; cp++) {
+      const emoji = String.fromCodePoint(cp);
+      if (!isEmojiChar(emoji) || seen.has(emoji)) continue;
+      seen.add(emoji);
+      out.push(emojiTemplate(emoji, cp));
+      if (out.length >= 1200) return out;
+    }
+  }
+
+  return out;
 }
 
 const softwareArchitecture = diagramSnapshot('Software Architecture', {
@@ -993,7 +1092,23 @@ export const templates: TemplateCategory[] = [
       },
     ],
   },
+  {
+    name: 'Emojis',
+    templates: getEmojiTemplates,
+  },
 ];
+
+function dedupeTemplates(templates: Template[]) {
+  const seen = new Set<string>();
+  const deduped: Template[] = [];
+  for (const template of templates) {
+    const key = `${template.name}|${template.type}`;
+    if (seen.has(key)) continue;
+    seen.add(key);
+    deduped.push(template);
+  }
+  return deduped;
+}
 
 function lcs(text1: string, text2: string) {
   let previous = Array.from({ length: text2.length + 1 }, () => 0);
@@ -1047,7 +1162,7 @@ export const builtInTemplates = {
         ? await cate.templates()
         : await Promise.all(Object.values(cate.templates));
 
-    return result.concat(extendTemplates);
+    return dedupeTemplates(result.concat(extendTemplates));
   },
 
   categories: async (): Promise<string[]> => {
@@ -1096,7 +1211,7 @@ export const builtInTemplates = {
       })
     );
 
-    return candidates;
+    return dedupeTemplates(candidates);
   },
 
   extend(manager: TemplateManager) {

@@ -1,11 +1,10 @@
-import { Scrollable } from '@affine/component';
+import { ProductLogoIcon, Scrollable } from '@affine/component';
 import { Avatar } from '@affine/component/ui/avatar';
 import { AuthService } from '@affine/core/modules/cloud';
 import { GlobalDialogService } from '@affine/core/modules/dialogs';
 import type { SettingTab } from '@affine/core/modules/dialogs/constant';
 import { useI18n } from '@affine/i18n';
 import { track } from '@affine/track';
-import { Logo1Icon } from '@blocksuite/icons/rc';
 import { useLiveData, useService } from '@toeverything/infra';
 import clsx from 'clsx';
 import {
@@ -78,7 +77,7 @@ export const SignInButton = () => {
       }, [globalDialogService])}
     >
       <div className="avatar not-sign">
-        <Logo1Icon />
+        <ProductLogoIcon />
       </div>
 
       <div className="content">

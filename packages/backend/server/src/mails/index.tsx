@@ -60,14 +60,14 @@ function make<T extends ComponentType<any>>(
 
 export const Renderers = {
   //#region Test
-  TestMail: make(TestMail, 'Test Email from GD docs'),
+  TestMail: make(TestMail, 'Test Email from Documentor'),
   //#endregion
 
   //#region User
-  SignIn: make(SignIn, 'Sign in to GD docs'),
-  SignUp: make(SignUp, 'Your GD docs account is waiting for you!'),
-  SetPassword: make(SetPassword, 'Set your GD docs password'),
-  ChangePassword: make(ChangePassword, 'Modify your GD docs password'),
+  SignIn: make(SignIn, 'Sign in to Documentor'),
+  SignUp: make(SignUp, 'Your Documentor account is waiting for you!'),
+  SetPassword: make(SetPassword, 'Set your Documentor password'),
+  ChangePassword: make(ChangePassword, 'Modify your Documentor password'),
   VerifyEmail: make(VerifyEmail, 'Verify your email address'),
   ChangeEmail: make(ChangeEmail, 'Change your email address'),
   VerifyChangeEmail: make(VerifyChangeEmail, 'Verify your new email address'),

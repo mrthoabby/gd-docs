@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>GD docs — Root Admin Panel</title>
+  <title>Documentor — Root Admin Panel</title>
   <style>
     :root {
       --bg: #0f1117;
@@ -230,7 +230,7 @@
 </head>
 <body>
 <header>
-  <h1>🔐 GD docs</h1>
+  <h1>🔐 Documentor</h1>
   <span class="badge">Root Admin</span>
   <span class="server-url" id="server-url">cargando...</span>
 </header>
@@ -259,12 +259,12 @@
     <div class="section active" id="dashboard">
       <div class="section-header">
         <h2>Dashboard</h2>
-        <p>Estado general del servidor GD docs</p>
+        <p>Estado general del servidor Documentor</p>
       </div>
       <div class="grid" id="stats-cards">
         <div class="card loading"><h3>Usuarios</h3><div class="value" id="stat-users">—</div><div class="sub">registrados</div></div>
         <div class="card loading"><h3>Workspaces</h3><div class="value" id="stat-workspaces">—</div><div class="sub">activos</div></div>
-        <div class="card loading"><h3>Versión del servidor</h3><div class="value" id="stat-version">—</div><div class="sub">GD docs Server</div></div>
+        <div class="card loading"><h3>Versión del servidor</h3><div class="value" id="stat-version">—</div><div class="sub">Documentor Server</div></div>
         <div class="card loading"><h3>Estado</h3><div class="value" id="stat-status">—</div><div class="sub">base de datos + redis</div></div>
       </div>
       <div class="card" style="margin-bottom:16px">
@@ -690,7 +690,7 @@
 
 <script>
 // ============================================================
-//  GD docs Root Admin Panel — Client Script
+//  Documentor Root Admin Panel — Client Script
 // ============================================================
 
 const API = window.location.origin;
@@ -1142,7 +1142,7 @@ async function loadConfig() {
   }
   // Current config
   const configExample = {
-    "server": { "name": "GD docs Server" },
+    "server": { "name": "Documentor Server" },
     "auth": {
       "allowSignup": true,
       "requireEmailVerification": false,
@@ -1298,7 +1298,7 @@ const KNOWN_FLAGS = [
   { key: 'enableTableVirtualScroll', name: 'Virtual Scroll en tablas', desc: 'Mejor rendimiento en tablas grandes', dangerous: false },
   { key: 'enableAdapterPanel', name: 'Adapter Panel', desc: 'Panel de adaptadores de formato', dangerous: false },
   { key: 'enableEditorRtl', name: 'RTL Editor', desc: 'Soporte árabe/hebreo (RTL)', dangerous: false },
-  { key: 'enableAi', name: 'AI (GD docs Copilot)', desc: 'Asistente de IA integrado (requiere API key en servidor)', dangerous: false },
+  { key: 'enableAi', name: 'AI (Documentor Copilot)', desc: 'Asistente de IA integrado (requiere API key en servidor)', dangerous: false },
   { key: 'enablePdfEmbedPreview', name: 'Vista previa PDF', desc: 'Previsualización de PDFs embebidos', dangerous: false },
   { key: 'enableDomRenderer', name: 'DOM Renderer', desc: 'Renderer DOM para elementos gráficos', dangerous: false },
   { key: 'enablePdfmakeExport', name: 'Export PDF', desc: 'Exportar documentos como PDF', dangerous: false },
@@ -1374,7 +1374,7 @@ async function loadEnvInfo() {
     const cfg = data.serverConfig;
     staticRows.unshift(
       ['Versión del servidor', `<code>${cfg.version}</code>`],
-      ['Nombre', `<code>${cfg.name || 'GD docs'}</code>`],
+      ['Nombre', `<code>${cfg.name || 'Documentor'}</code>`],
       ['Tipo', `<code>${cfg.type || 'selfhosted'}</code>`],
       ['Inicializado', cfg.initialized ? '<span class="badge-pill ok">✅ Sí</span>' : '<span class="badge-pill warn">⚠️ No — ir a /admin/setup</span>'],
       ['Features activas', `<code style="font-size:11px">${(cfg.features||[]).join(', ') || 'ninguna'}</code>`],

@@ -11,10 +11,10 @@ import {
 type Channel = 'stable' | 'canary' | 'beta' | 'internal';
 
 const appNames = {
-  stable: 'GD docs',
-  canary: 'GD docs Canary',
-  beta: 'GD docs Beta',
-  internal: 'GD docs Internal',
+  stable: 'Documentor',
+  canary: 'Documentor Canary',
+  beta: 'Documentor Beta',
+  internal: 'Documentor Internal',
 } satisfies Record<Channel, string>;
 const appName = appNames[BUILD_CONFIG.appBuildType];
 
@@ -36,11 +36,11 @@ const links = [
   },
 ];
 
-export function AboutAFFiNE() {
+export function AboutDocumentor() {
   return (
     <div className="flex flex-col h-full gap-3 py-5 px-6 w-full">
       <div className="flex items-center">
-        <span className="text-xl font-semibold">About GD docs</span>
+        <span className="text-xl font-semibold">About Documentor</span>
       </div>
       <div className="overflow-y-auto space-y-[10px]">
         <div className="flex flex-col rounded-md border">

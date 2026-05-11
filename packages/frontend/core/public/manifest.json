@@ -1,7 +1,7 @@
 {
-  "name": "GD docs: Workspace colaborativo para tu equipo",
-  "short_name": "GD docs",
-  "description": "GD docs es un workspace con documentos, pizarras y bases de datos integradas. Todo en un solo lugar, bajo tu control.",
+  "name": "Documentor: Workspace colaborativo para tu equipo",
+  "short_name": "Documentor",
+  "description": "Documentor es un workspace con documentos, pizarras y bases de datos integradas. Todo en un solo lugar, bajo tu control.",
   "start_url": "/?source=pwa",
   "background_color": "#ffffff",
   "display": "standalone",

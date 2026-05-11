@@ -226,7 +226,7 @@ export function Template(props: PropsWithChildren) {
                   letterSpacing: '-0.3px',
                 }}
               >
-                GD docs
+                Documentor
               </span>
             </Link>
           </Section>

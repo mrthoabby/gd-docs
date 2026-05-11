@@ -1,6 +1,6 @@
 // [SELFHOST PATCH] Modal de creación de workspace simplificado.
-// Se eliminó el selector de tipo (Local storage / AFFiNE SelfHosted Cloud)
-// porque en GD docs TODO se guarda en el servidor propio.
+// Se eliminó el selector de tipo (Local storage / self-hosted cloud)
+// porque en Documentor TODO se guarda en el servidor propio.
 // El workspace siempre se crea en el servidor self-hosted ('affine-cloud' id).
 
 import { Button, ConfirmModal, notify, RowInput } from '@affine/component';
@@ -47,7 +47,7 @@ export const CreateWorkspaceDialog = ({
   const [workspaceName, setWorkspaceName] = useState('');
 
   const serversService = useService(ServersService);
-  // Siempre usar el servidor self-hosted. En la arquitectura de AFFiNE,
+  // Siempre usar el servidor self-hosted. En la arquitectura del producto,
   // el servidor self-hosted se registra bajo el id 'affine-cloud'.
   const server = useLiveData(serversService.server$('affine-cloud'));
 
@@ -99,7 +99,7 @@ export const CreateWorkspaceDialog = ({
           />
         }
       />
-      {/* Selector de tipo eliminado: siempre se usa el servidor GD docs */}
+      {/* Selector de tipo eliminado: siempre se usa el servidor Documentor */}
     </ConfirmModal>
   );
 };

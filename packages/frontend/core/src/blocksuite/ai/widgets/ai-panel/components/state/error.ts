@@ -146,7 +146,7 @@ export class AIPanelError extends WithDisposable(LitElement) {
           AIErrorType.Unauthorized,
           () =>
             html` <div class="error-info">
-                You need to log in to continue using GD docs AI.
+                You need to log in to continue using Documentor AI.
               </div>
               <div class="action-button-group">
                 <div @click=${this.config.cancel} class="action-button">
@@ -161,7 +161,7 @@ export class AIPanelError extends WithDisposable(LitElement) {
           AIErrorType.UsageLimit,
           () =>
             html` <div class="error-info">
-                You've reached the current usage cap for GD docs AI. Contact your
+                You've reached the current usage cap for Documentor AI. Contact your
                 administrator to configure AI access.
               </div>
               <div class="action-button-group">

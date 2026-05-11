@@ -142,6 +142,8 @@ type AttachmentEvents =
 
 type ContainerEvents =
   | 'openContainer'
+  | 'createContainerTextFile'
+  | 'createContainerDirectory'
   | 'uploadContainerFile'
   | 'previewContainerFile'
   | 'saveContainerTextFile'
@@ -528,6 +530,8 @@ interface PageEvents extends PageDivision {
     };
     files: {
       $: [
+        'createContainerTextFile',
+        'createContainerDirectory',
         'uploadContainerFile',
         'previewContainerFile',
         'saveContainerTextFile',
@@ -612,7 +616,7 @@ type OrganizeItemArgs =
 type AttachmentEventArgs = {
   type: string; // file type
 };
-type ContainerFileKind = 'image' | 'text' | 'pdf';
+type ContainerFileKind = 'image' | 'text' | 'pdf' | 'directory';
 type ContainerFileResult = 'success' | 'failure';
 type ContainerFileEventArgs = {
   kind?: ContainerFileKind;
@@ -737,6 +741,8 @@ export type EventArgs = {
   openAttachmentInPeekView: AttachmentEventArgs;
   openAttachmentInSplitView: AttachmentEventArgs;
   openContainer: {};
+  createContainerTextFile: ContainerFileEventArgs;
+  createContainerDirectory: ContainerFileEventArgs;
   uploadContainerFile: ContainerFileEventArgs;
   previewContainerFile: ContainerFileEventArgs;
   saveContainerTextFile: ContainerFileEventArgs;
@@ -795,10 +801,10 @@ export type EventArgs = {
       | 'New Edgeless'
       | 'Start recording meeting'
       | 'Stop recording'
-      | 'Open AFFiNE'
-      | 'About AFFiNE'
+      | 'Open Documentor'
+      | 'About Documentor'
       | 'Meeting Settings'
-      | 'Quit AFFiNE Completely';
+      | 'Quit Documentor Completely';
   };
   mentionMember: {
     type: 'member' | 'invite' | 'more';

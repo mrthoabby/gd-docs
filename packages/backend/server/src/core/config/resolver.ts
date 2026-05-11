@@ -75,10 +75,10 @@ export class ServerConfigResolver {
       name:
         this.config.server.name ??
         (env.namespaces.canary
-          ? 'GD docs Canary'
+          ? 'Documentor Canary'
           : env.namespaces.beta
-            ? 'GD docs Beta'
-            : 'GD docs'),
+            ? 'Documentor Beta'
+            : 'Documentor'),
       version: env.version,
       baseUrl: this.url.requestBaseUrl,
       type: env.DEPLOYMENT_TYPE,

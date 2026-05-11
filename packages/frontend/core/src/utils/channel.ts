@@ -1,15 +1,15 @@
 export type Channel = 'stable' | 'canary' | 'beta' | 'internal';
 
 export const appIconMap = {
-  stable: '/imgs/app-icon-stable.ico',
-  canary: '/imgs/app-icon-canary.ico',
-  beta: '/imgs/app-icon-beta.ico',
-  internal: '/imgs/app-icon-internal.ico',
+  stable: '/imgs/documentor-logo.svg',
+  canary: '/imgs/documentor-logo.svg',
+  beta: '/imgs/documentor-logo.svg',
+  internal: '/imgs/documentor-logo.svg',
 } satisfies Record<Channel, string>;
 
 export const appNames = {
-  stable: 'GD docs',
-  canary: 'GD docs Canary',
-  beta: 'GD docs Beta',
-  internal: 'GD docs Internal',
+  stable: 'Documentor',
+  canary: 'Documentor Canary',
+  beta: 'Documentor Beta',
+  internal: 'Documentor Internal',
 } satisfies Record<Channel, string>;

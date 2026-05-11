@@ -120,7 +120,7 @@
       "type": "String",
       "desc": "Dirección \"De:\" visible en todos los correos enviados. Formato: <code>Nombre &lt;email@dominio.com&gt;</code>",
       "env": "MAILER_SENDER",
-      "placeholder": "GD docs <noreply@miempresa.com>"
+      "placeholder": "Documentor <noreply@miempresa.com>"
     },
     "SMTP.ignoreTLS": {
       "type": "Boolean",
@@ -159,7 +159,7 @@
     "fallbackSMTP.sender": {
       "type": "String",
       "desc": "Dirección \"De:\" para correos enviados por el SMTP de respaldo. Formato: <code>Nombre &lt;email@dominio.com&gt;</code>",
-      "placeholder": "GD docs <noreply@miempresa.com>"
+      "placeholder": "Documentor <noreply@miempresa.com>"
     },
     "fallbackSMTP.ignoreTLS": {
       "type": "Boolean",
@@ -208,7 +208,7 @@
     "name": {
       "type": "String",
       "desc": "Nombre del servidor que aparece en la app de escritorio al conectar. Úsalo para identificar esta instancia.",
-      "placeholder": "GD docs – Mi Empresa"
+      "placeholder": "Documentor – Mi Empresa"
     },
     "externalUrl": {
       "type": "String",

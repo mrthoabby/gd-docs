@@ -1,4 +1,4 @@
-// [SELFHOST PATCH] Panel Root — configuración avanzada de GD docs
+// [SELFHOST PATCH] Panel Root — configuración avanzada de Documentor
 // Reemplaza root-admin.html: misma funcionalidad, integrada en la app React del admin.
 // Solo visible para usuarios con rol 'administrator' en entornos self-hosted.
 
@@ -43,7 +43,7 @@ const FEATURE_FLAGS: FeatureFlag[] = [
   { key: 'enable_table_virtual_scroll',     name: 'Virtual Scroll en tablas',    desc: 'Mejor rendimiento en tablas grandes' },
   { key: 'enable_adapter_panel',            name: 'Adapter Panel',               desc: 'Panel de adaptadores de formato' },
   { key: 'enable_editor_rtl',               name: 'RTL Editor',                  desc: 'Soporte árabe/hebreo (RTL)' },
-  { key: 'enable_ai',                       name: 'AI (GD docs Copilot)',         desc: 'Asistente de IA (requiere API key en servidor)' },
+  { key: 'enable_ai',                       name: 'AI (Documentor Copilot)',         desc: 'Asistente de IA (requiere API key en servidor)' },
   { key: 'enable_pdf_embed_preview',        name: 'Vista previa PDF',            desc: 'Previsualización de PDFs embebidos' },
   { key: 'enable_dom_renderer',             name: 'DOM Renderer',                desc: 'Renderer DOM para elementos gráficos' },
   { key: 'enable_advanced_block_visibility',name: 'Visibilidad avanzada de bloques', desc: 'Control fino de visibilidad por bloque' },

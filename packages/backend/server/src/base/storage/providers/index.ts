@@ -63,7 +63,7 @@ const S3ConfigSchema: JSONSchema = {
         'Public URL of the storage service reachable by browsers. ' +
         'When set, presigned URLs for uploads use this hostname instead of ' +
         'the internal endpoint, so browsers can upload directly to storage ' +
-        'without passing through the GD docs server. ' +
+        'without passing through the Documentor server. ' +
         'Leave empty to proxy all uploads through the server (default for self-hosted).',
     },
     disablePresign: {

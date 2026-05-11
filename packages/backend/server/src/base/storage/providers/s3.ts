@@ -149,7 +149,7 @@ export class S3StorageProvider implements StorageProvider {
     key: string,
     metadata: PutObjectMetadata = {}
   ): Promise<PresignedUpload | undefined> {
-    // disablePresign=true → uploads go through the GD docs server (GRAPHQL method)
+    // disablePresign=true → uploads go through the Documentor server (GRAPHQL method)
     // instead of directing the browser to MinIO directly (internal URL unreachable)
     if (this.disablePresign) return undefined;
     try {

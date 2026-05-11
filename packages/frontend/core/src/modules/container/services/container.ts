@@ -10,7 +10,7 @@ import {
 import type { WorkspaceService } from '../../workspace';
 
 export type ContainerStatus = 'active' | 'trashed';
-export type ContainerFileKind = 'image' | 'text' | 'pdf';
+export type ContainerFileKind = 'image' | 'text' | 'pdf' | 'directory';
 export type ContainerFileStatus = 'pending' | 'active' | 'deleted';
 
 export interface WorkspaceContainer {
@@ -184,6 +184,37 @@ const uploadInitializedContainerFileMutation = {
     $file: Upload!
   ) {
     uploadInitializedContainerFile(fileId: $fileId, file: $file) {
+      ${fileFields}
+    }
+  }`,
+} satisfies GraphQLQuery;
+
+const createContainerTextFileMutation = {
+  id: 'createContainerTextFile',
+  op: 'createContainerTextFile',
+  query: `mutation createContainerTextFile(
+    $containerId: String!
+    $name: String!
+    $content: String
+  ) {
+    createContainerTextFile(
+      containerId: $containerId
+      name: $name
+      content: $content
+    ) {
+      ${fileFields}
+    }
+  }`,
+} satisfies GraphQLQuery;
+
+const createContainerDirectoryMutation = {
+  id: 'createContainerDirectory',
+  op: 'createContainerDirectory',
+  query: `mutation createContainerDirectory(
+    $containerId: String!
+    $name: String!
+  ) {
+    createContainerDirectory(containerId: $containerId, name: $name) {
       ${fileFields}
     }
   }`,
@@ -442,13 +473,36 @@ export class ContainerService extends Service {
     return response.restoreContainer;
   }
 
-  async uploadFile(containerId: string, file: File) {
+  async createTextFile(containerId: string, name: string, content = '') {
+    const response = await this.gql<{
+      createContainerTextFile: WorkspaceContainerFile;
+    }>(createContainerTextFileMutation, {
+      containerId,
+      name,
+      content,
+    });
+    this.upsertFile(containerId, response.createContainerTextFile);
+    return response.createContainerTextFile;
+  }
+
+  async createDirectory(containerId: string, name: string) {
+    const response = await this.gql<{
+      createContainerDirectory: WorkspaceContainerFile;
+    }>(createContainerDirectoryMutation, {
+      containerId,
+      name,
+    });
+    this.upsertFile(containerId, response.createContainerDirectory);
+    return response.createContainerDirectory;
+  }
+
+  async uploadFile(containerId: string, file: File, name = file.name) {
     const mime = file.type || 'application/octet-stream';
     const initResponse = await this.gql<{
       initContainerFileUpload: ContainerFileUploadInit;
     }>(initContainerFileUploadMutation, {
       containerId,
-      name: file.name,
+      name,
       size: file.size,
       mime,
     });
@@ -492,10 +546,19 @@ export class ContainerService extends Service {
     const response = await this.gql<{
       deleteContainerFile: WorkspaceContainerFile;
     }>(deleteContainerFileMutation, { fileId: file.id });
+    const deletedName = response.deleteContainerFile.name.toLowerCase();
     this.containerFiles$.next({
       ...this.containerFiles$.value,
       [file.containerId]: (this.containerFiles$.value[file.containerId] ?? [])
-        .filter(item => item.id !== file.id),
+        .filter(item => {
+          if (response.deleteContainerFile.kind === 'directory') {
+            return (
+              item.id !== file.id &&
+              !item.name.toLowerCase().startsWith(deletedName)
+            );
+          }
+          return item.id !== file.id;
+        }),
     });
     return response.deleteContainerFile;
   }

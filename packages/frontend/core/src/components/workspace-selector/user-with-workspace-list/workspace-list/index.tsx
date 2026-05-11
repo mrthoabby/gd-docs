@@ -128,7 +128,7 @@ const CloudWorkSpaceList = ({
   );
 };
 
-export const AFFiNEWorkspaceList = ({
+export const CloudWorkspaceListSection = ({
   onEventEnd,
   onClickWorkspace,
 }: {

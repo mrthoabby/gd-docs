@@ -327,7 +327,7 @@ export class AIChatMessages extends WithDisposable(ShadowlessElement) {
               >
                 ${this.isHistoryLoading
                   ? html`<span data-testid="chat-panel-loading-state"
-                      >GD docs AI is loading history...</span
+                      >Documentor AI is loading history...</span
                     >`
                   : html`<span data-testid="chat-panel-empty-state"
                       >What can I help you with?</span

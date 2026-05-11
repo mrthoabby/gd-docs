@@ -2,7 +2,7 @@ import { Injectable } from '@nestjs/common';
 
 import { BaseModel } from './base';
 
-export type ContainerFileKind = 'image' | 'text' | 'pdf';
+export type ContainerFileKind = 'image' | 'text' | 'pdf' | 'directory';
 export type ContainerFileStatus = 'pending' | 'active' | 'deleted';
 
 export interface WorkspaceContainerFileRecord {
@@ -67,6 +67,21 @@ export class ContainerFileModel extends BaseModel {
     });
   }
 
+  async listByNamePrefix(
+    containerId: string,
+    prefix: string
+  ): Promise<WorkspaceContainerFileRecord[]> {
+    return this.table.findMany({
+      where: {
+        containerId,
+        status: 'active',
+        deletedAt: null,
+        name: { startsWith: prefix, mode: 'insensitive' },
+      },
+      orderBy: [{ name: 'asc' }],
+    });
+  }
+
   async findActiveByName(containerId: string, name: string) {
     return this.table.findFirst({
       where: {
@@ -90,6 +105,20 @@ export class ContainerFileModel extends BaseModel {
       where: { id },
       data: { name, updatedBy: userId },
     });
+  }
+
+  async renameMany(
+    input: { id: string; name: string }[],
+    userId: string
+  ): Promise<WorkspaceContainerFileRecord[]> {
+    return (this.db as any).$transaction(
+      input.map(item =>
+        this.table.update({
+          where: { id: item.id },
+          data: { name: item.name, updatedBy: userId },
+        })
+      )
+    );
   }
 
   async updateText(input: {
@@ -122,5 +151,21 @@ export class ContainerFileModel extends BaseModel {
         updatedBy: userId,
       },
     });
+  }
+
+  async deleteMany(ids: string[], userId: string) {
+    return (this.db as any).$transaction(
+      ids.map(id =>
+        this.table.update({
+          where: { id },
+          data: {
+            status: 'deleted',
+            deletedAt: new Date(),
+            deletedBy: userId,
+            updatedBy: userId,
+          },
+        })
+      )
+    );
   }
 }

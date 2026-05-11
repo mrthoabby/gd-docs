@@ -741,6 +741,7 @@ enum ContainerFileKind {
   image
   text
   pdf
+  directory
 }
 
 enum ContainerFileStatus {

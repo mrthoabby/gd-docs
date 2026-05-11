@@ -22,7 +22,7 @@ export interface Storages {
      * Public URL of the storage endpoint reachable by browsers.
      * When set, presigned upload URLs use this hostname so browsers can
      * upload blobs (images, videos, etc.) directly to storage without
-     * passing through the GD docs server.
+     * passing through the Documentor server.
      * Leave empty (default) to proxy all uploads through the server.
      *
      * Example: https://storage.your-domain.com

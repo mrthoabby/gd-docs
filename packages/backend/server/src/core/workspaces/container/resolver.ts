@@ -37,6 +37,7 @@ enum WorkspaceContainerFileKind {
   image = 'image',
   text = 'text',
   pdf = 'pdf',
+  directory = 'directory',
 }
 
 enum WorkspaceContainerFileStatus {
@@ -285,6 +286,32 @@ export class WorkspaceContainerResolver {
     @Args('id') id: string
   ) {
     return this.containerService.restoreContainer(user, id);
+  }
+
+  @Mutation(() => WorkspaceContainerFileObject)
+  async createContainerTextFile(
+    @CurrentUser() user: CurrentUserType,
+    @Args('containerId') containerId: string,
+    @Args('name') name: string,
+    @Args('content', { nullable: true }) content?: string
+  ) {
+    return this.containerService.createTextFile(user, {
+      containerId,
+      name,
+      content,
+    });
+  }
+
+  @Mutation(() => WorkspaceContainerFileObject)
+  async createContainerDirectory(
+    @CurrentUser() user: CurrentUserType,
+    @Args('containerId') containerId: string,
+    @Args('name') name: string
+  ) {
+    return this.containerService.createDirectory(user, {
+      containerId,
+      name,
+    });
   }
 
   @Mutation(() => WorkspaceContainerFileObject)

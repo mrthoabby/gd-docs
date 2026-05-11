@@ -32,7 +32,7 @@ export class RunCommand extends PackageCommand {
   static override paths = [[], ['run'], ['r']];
 
   static override usage = PackageCommand.Usage({
-    description: 'AFFiNE Monorepo scripts',
+    description: 'Documentor monorepo scripts',
     details: `
       \`affine web <script>\`    Run any script defined in package's package.json
 

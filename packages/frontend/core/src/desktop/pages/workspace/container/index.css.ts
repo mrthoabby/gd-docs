@@ -38,10 +38,17 @@ export const titleInput = style({
 });
 
 export const body = style({
+  position: 'relative',
   flex: 1,
   minHeight: 0,
   padding: 24,
   overflow: 'auto',
+  selectors: {
+    '&[data-dragging="true"]': {
+      outline: '2px solid var(--affine-primary-color)',
+      outlineOffset: -2,
+    },
+  },
 });
 
 export const toolbar = style({
@@ -52,6 +59,10 @@ export const toolbar = style({
 
 export const button = style({
   height: 32,
+  display: 'inline-flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 6,
   borderRadius: 6,
   border: '1px solid var(--affine-border-color)',
   background: 'var(--affine-background-secondary-color)',
@@ -63,6 +74,37 @@ export const button = style({
     '&:disabled': {
       opacity: 0.5,
       cursor: 'not-allowed',
+    },
+  },
+});
+
+export const pathBar = style({
+  display: 'flex',
+  alignItems: 'center',
+  gap: 4,
+  minHeight: 32,
+  marginBottom: 12,
+  color: 'var(--affine-text-secondary-color)',
+  fontSize: 'var(--affine-font-sm)',
+});
+
+export const pathButton = style({
+  height: 28,
+  border: 0,
+  borderRadius: 6,
+  padding: '0 8px',
+  background: 'transparent',
+  color: 'inherit',
+  cursor: 'pointer',
+  selectors: {
+    '&:not(:first-child)::before': {
+      content: '"/"',
+      marginRight: 8,
+      color: 'var(--affine-text-disable-color)',
+    },
+    '&:hover, &[aria-current="page"]': {
+      background: 'var(--affine-hover-color)',
+      color: 'var(--affine-text-primary-color)',
     },
   },
 });
@@ -125,13 +167,30 @@ export const rowActions = style({
 });
 
 export const empty = style({
-  height: '100%',
+  height: 'calc(100% - 44px)',
   minHeight: 260,
   display: 'flex',
   alignItems: 'center',
   justifyContent: 'center',
   color: 'var(--affine-text-secondary-color)',
   fontSize: 'var(--affine-font-base)',
+});
+
+export const dropOverlay = style({
+  position: 'absolute',
+  inset: 16,
+  zIndex: 1,
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  gap: 8,
+  borderRadius: 8,
+  border: '1px dashed var(--affine-primary-color)',
+  background: 'var(--affine-background-primary-color)',
+  boxShadow: 'var(--affine-shadow-2)',
+  color: 'var(--affine-primary-color)',
+  fontWeight: 600,
+  pointerEvents: 'none',
 });
 
 export const overlay = style({

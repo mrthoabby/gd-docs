@@ -7,7 +7,7 @@ import {
 import type { ServerConfig, ServerMetadata } from './types';
 
 const defaultServerConfig: ServerConfig = {
-  serverName: 'GD docs Server',
+  serverName: 'Documentor Server',
   features: [
     ServerFeature.Indexer,
     ServerFeature.Copilot,

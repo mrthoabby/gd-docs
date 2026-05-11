@@ -1,6 +1,6 @@
 // [SELFHOST PATCH] Footer de email reescrito sin dependencias de cdn.affine.pro.
 // Eliminado: iconos de redes sociales de AFFiNE, logo de copyright de ToEverything.
-// Reemplazado por footer institucional de GD docs sin imágenes externas.
+// Reemplazado por footer institucional de Documentor sin imágenes externas.
 import { Container, Row, Section } from '@react-email/components';
 import type { CSSProperties } from 'react';
 
@@ -28,13 +28,13 @@ export const Footer = () => {
     >
       <Section align="center" width="auto">
         <Row style={TextStyles}>
-          <td>GD docs — Plataforma colaborativa de documentos</td>
+          <td>Documentor — Plataforma colaborativa de documentos</td>
         </Row>
       </Section>
       <Section align="center" width="auto">
         <Row style={{ ...TextStyles, fontSize: '11px' }}>
           <td>
-            © {new Date().getUTCFullYear()} GD docs. Todos los derechos reservados.
+            © {new Date().getUTCFullYear()} Documentor. Todos los derechos reservados.
           </td>
         </Row>
       </Section>

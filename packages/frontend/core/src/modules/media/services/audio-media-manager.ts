@@ -110,7 +110,7 @@ export class AudioMediaManagerService extends Service {
           blobId: descriptor.blobId,
           metadata: new MediaMetadata({
             title: descriptor.name,
-            artist: 'GD docs',
+            artist: 'Documentor',
             // todo: add artwork, like the app icon?
           }),
         })

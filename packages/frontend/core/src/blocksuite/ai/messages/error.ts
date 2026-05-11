@@ -188,7 +188,7 @@ export class AIErrorWrapper extends SignalWatcher(WithDisposable(LitElement)) {
 
 const UsageLimitErrorRenderer = (host?: EditorHost | null) => html`
   <ai-error-wrapper
-    .text=${"You've reached the current usage cap for GD docs AI. Contact your administrator to configure AI access."}
+    .text=${"You've reached the current usage cap for Documentor AI. Contact your administrator to configure AI access."}
     .actionText=${'Contact admin'}
     .onClick=${() => AIProvider.slots.requestAIUsageHelp.next({ host })}
   ></ai-error-wrapper>
@@ -196,7 +196,7 @@ const UsageLimitErrorRenderer = (host?: EditorHost | null) => html`
 
 const LoginRequiredErrorRenderer = (host?: EditorHost | null) => html`
   <ai-error-wrapper
-    .text=${'You need to log in to continue using GD docs AI.'}
+    .text=${'You need to log in to continue using Documentor AI.'}
     .actionText=${'Login'}
     .onClick=${() => AIProvider.slots.requestLogin.next({ host })}
   ></ai-error-wrapper>

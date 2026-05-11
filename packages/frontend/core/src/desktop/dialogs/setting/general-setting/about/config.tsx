@@ -1,2 +1,2 @@
-// [SELFHOST PATCH] Links de comunidad de AFFiNE eliminados
+// [SELFHOST PATCH] Links de comunidad externos eliminados
 export const relatedLinks: never[] = [];

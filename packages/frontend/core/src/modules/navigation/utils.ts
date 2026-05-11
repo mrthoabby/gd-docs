@@ -3,7 +3,7 @@ import { isNil, pick, pickBy } from 'lodash-es';
 import type { ParsedQuery, ParseOptions } from 'query-string';
 import queryString from 'query-string';
 
-// [SELFHOST PATCH] Eliminadas referencias a dominios de AFFiNE cloud (affine.pro, etc.)
+// [SELFHOST PATCH] Eliminadas referencias a dominios cloud externos.
 // Solo se reconoce como origen válido el servidor propio (baseUrl).
 function maybeAffineOrigin(origin: string, baseUrl: string) {
   return (
@@ -19,7 +19,7 @@ export const resolveRouteLinkMeta = (
   try {
     const url = new URL(href, baseUrl);
 
-    // check if origin is one of affine's origins
+    // check if origin is one of the product's allowed origins
     // check if origin is localhost or self-hosted
 
     if (!maybeAffineOrigin(url.origin, baseUrl)) {

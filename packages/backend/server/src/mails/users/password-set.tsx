@@ -7,13 +7,13 @@ export type SetPasswordProps = {
 export default function SetPassword(props: SetPasswordProps) {
   return (
     <Template>
-      <Title>Set your GD docs password</Title>
+      <Title>Set your Documentor password</Title>
       <Content>
         <P>
           Click the button below to set your password. The magic link will
           expire in <Bold>30 minutes</Bold>.
         </P>
-        <Button href={props.url}>Sign in to GD docs</Button>
+        <Button href={props.url}>Sign in to Documentor</Button>
       </Content>
     </Template>
   );

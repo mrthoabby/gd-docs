@@ -19,7 +19,7 @@ declare global {
 
 defineModuleConfig('server', {
   name: {
-    desc: 'Nombre del servidor que aparece en la app de escritorio al conectar. Ej: "GD docs – Mi Empresa".',
+    desc: 'Nombre del servidor que aparece en la app de escritorio al conectar. Ej: "Documentor – Mi Empresa".',
     default: undefined,
     shape: z.string().optional(),
   },

@@ -7,11 +7,11 @@ export type ChangeEmailProps = {
 export default function ChangeEmail(props: ChangeEmailProps) {
   return (
     <Template>
-      <Title>Verify your current email for GD docs</Title>
+      <Title>Verify your current email for Documentor</Title>
       <Content>
         <P>
           You recently requested to change the email address associated with
-          your GD docs account.
+          your Documentor account.
           <br />
           To complete this process, please click on the verification link below.
         </P>
