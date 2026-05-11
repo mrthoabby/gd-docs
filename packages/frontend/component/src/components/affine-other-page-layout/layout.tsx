@@ -1,9 +1,9 @@
 import { Button } from '@affine/component/ui/button';
-import { ProductLogoIcon } from '@affine/component/ui/product-logo';
 import { useI18n } from '@affine/i18n';
 import { useTheme } from 'next-themes';
 import { type ReactNode, useCallback } from 'react';
 
+import { ProductLogoIcon } from '../../ui/product-logo';
 import crystalBackground from './assets/crystal-background.png';
 import { DesktopNavbar } from './desktop-navbar';
 import * as styles from './index.css';
@@ -14,10 +14,14 @@ export const AffineOtherPageLayout = ({
   children: ReactNode;
 }) => {
   const t = useI18n();
+  const downloadUrl = BUILD_CONFIG.downloadUrl;
 
   const openDownloadLink = useCallback(() => {
-    open(BUILD_CONFIG.downloadUrl, '_blank');
-  }, []);
+    if (!downloadUrl) {
+      return;
+    }
+    globalThis.open(downloadUrl, '_blank', 'noopener,noreferrer');
+  }, [downloadUrl]);
 
   const { resolvedTheme } = useTheme();
   const backgroundOverlay =
@@ -41,12 +45,14 @@ export const AffineOtherPageLayout = ({
           </a>
 
           <DesktopNavbar />
-          <Button
-            onClick={openDownloadLink}
-            className={styles.hideInSmallScreen}
-          >
-            {t['com.affine.other-page.nav.download-app']()}
-          </Button>
+          {downloadUrl ? (
+            <Button
+              onClick={openDownloadLink}
+              className={styles.hideInSmallScreen}
+            >
+              {t['com.affine.other-page.nav.download-app']()}
+            </Button>
+          ) : null}
         </div>
       )}
 
