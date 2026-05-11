@@ -28,8 +28,15 @@ import { defaultPreview, Triangle } from './cards.js';
 import type { Template } from './template-type.js';
 import { cloneDeep } from './utils.js';
 
+const svgPreviewDataUrlCache = new Map<string, string>();
+
 function toSvgPreviewDataUrl(svg: string) {
-  return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  const cached = svgPreviewDataUrlCache.get(svg);
+  if (cached) return cached;
+
+  const dataUrl = `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
+  svgPreviewDataUrlCache.set(svg, dataUrl);
+  return dataUrl;
 }
 
 export class EdgelessTemplatePanel extends WithDisposable(LitElement) {
@@ -297,7 +304,10 @@ export class EdgelessTemplatePanel extends WithDisposable(LitElement) {
     );
 
     try {
-      const { assets } = template;
+      const assets =
+        typeof template.assets === 'function'
+          ? template.assets()
+          : template.assets;
 
       if (assets) {
         await Promise.all(
@@ -309,7 +319,11 @@ export class EdgelessTemplatePanel extends WithDisposable(LitElement) {
         );
       }
 
-      const insertedBound = await templateJob.insertTemplate(template.content);
+      const content =
+        typeof template.content === 'function'
+          ? template.content()
+          : template.content;
+      const insertedBound = await templateJob.insertTemplate(content);
 
       if (insertedBound && template.type === 'template') {
         const padding = 20 / this.gfx.viewport.zoom;

@@ -10,6 +10,7 @@
   },
   "scripts": {
     "build": "r build.ts",
+    "check-usage": "node ./check-usage.mjs",
     "dev": "r build.ts --dev"
   },
   "keywords": [],

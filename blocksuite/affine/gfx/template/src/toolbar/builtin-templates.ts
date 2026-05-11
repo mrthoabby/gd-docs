@@ -364,206 +364,213 @@ function architectureComponent(
   return {
     name: config.name,
     type: 'sticker',
-    content: componentSnapshot(config.name, assetKey),
+    content: () => componentSnapshot(config.name, assetKey),
     preview: svg,
-    assets: {
+    assets: () => ({
       [assetKey]: svgDataUrl(svg),
-    },
+    }),
   };
 }
 
-const systemIconComponents = [
-  architectureComponent({
+const systemIconConfigs = [
+  {
     kind: 'browser',
     name: 'Web Client',
     accent: '#38bdf8',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'mobile',
     name: 'Mobile App',
     accent: '#34d399',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'service',
     name: 'Microservice',
     accent: '#22d3ee',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'api',
     name: 'API Service',
     accent: '#818cf8',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'rest',
     name: 'REST API',
     accent: '#60a5fa',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'graphql',
     name: 'GraphQL API',
     accent: '#f472b6',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'grpc',
     name: 'gRPC Service',
     accent: '#a78bfa',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'server',
     name: 'Server',
     accent: '#60a5fa',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'docker',
     name: 'Docker',
     accent: '#38bdf8',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'kubernetes',
     name: 'Kubernetes',
     accent: '#818cf8',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'lambda',
     name: 'Function',
     accent: '#fb923c',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'database',
     name: 'Database',
     accent: '#facc15',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'postgres',
     name: 'Postgres',
     accent: '#60a5fa',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'cache',
     name: 'Cache',
     accent: '#fb7185',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'redis',
     name: 'Redis',
     accent: '#ef4444',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'storage',
     name: 'Object Storage',
     accent: '#fb923c',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'file',
     name: 'File Store',
     accent: '#fbbf24',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'queue',
     name: 'Message Queue',
     accent: '#a78bfa',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'scheduler',
     name: 'Scheduler',
     accent: '#f97316',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'worker',
     name: 'Worker',
     accent: '#22d3ee',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'load-balancer',
     name: 'Load Balancer',
     accent: '#4ade80',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'gateway',
     name: 'API Gateway',
     accent: '#f472b6',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'cdn',
     name: 'CDN',
     accent: '#38bdf8',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'dns',
     name: 'DNS',
     accent: '#93c5fd',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'network',
     name: 'Network',
     accent: '#34d399',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'vpc',
     name: 'VPC',
     accent: '#10b981',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'firewall',
     name: 'Firewall',
     accent: '#f87171',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'auth',
     name: 'Auth',
     accent: '#c084fc',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'secrets',
     name: 'Secrets',
     accent: '#facc15',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'search',
     name: 'Search',
     accent: '#2dd4bf',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'monitoring',
     name: 'Monitoring',
     accent: '#4ade80',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'logs',
     name: 'Logs',
     accent: '#94a3b8',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'analytics',
     name: 'Analytics',
     accent: '#f472b6',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'email',
     name: 'Email',
     accent: '#60a5fa',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'webhook',
     name: 'Webhook',
     accent: '#fb7185',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'ci',
     name: 'CI CD',
     accent: '#a3e635',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'cloud',
     name: 'Cloud',
     accent: '#93c5fd',
-  }),
-  architectureComponent({
+  },
+  {
     kind: 'external',
     name: 'External System',
     accent: '#cbd5e1',
-  }),
-] satisfies Template[];
+  },
+] satisfies ArchitectureComponentConfig[];
+
+let systemIconTemplateCache: Template[] | null = null;
+
+function getSystemIconComponents() {
+  systemIconTemplateCache ??= systemIconConfigs.map(architectureComponent);
+  return systemIconTemplateCache;
+}
 
 const softwareArchitecture = diagramSnapshot('Software Architecture', {
   client: shape({
@@ -827,7 +834,7 @@ const flowchart = diagramSnapshot('Decision Flow', {
 export const templates: TemplateCategory[] = [
   {
     name: 'System Icons',
-    templates: systemIconComponents,
+    templates: getSystemIconComponents,
   },
   {
     name: 'Architecture',
@@ -860,24 +867,30 @@ export const templates: TemplateCategory[] = [
 ];
 
 function lcs(text1: string, text2: string) {
-  const dp: number[][] = Array.from(
-    {
-      length: text1.length + 1,
-    },
-    () => Array.from({ length: text2.length + 1 }, () => 0)
-  );
+  let previous = Array.from({ length: text2.length + 1 }, () => 0);
 
   for (let i = 1; i <= text1.length; i++) {
+    const current = Array.from({ length: text2.length + 1 }, () => 0);
+
     for (let j = 1; j <= text2.length; j++) {
       if (text1[i - 1] === text2[j - 1]) {
-        dp[i][j] = dp[i - 1][j - 1] + 1;
+        current[j] = previous[j - 1] + 1;
       } else {
-        dp[i][j] = Math.max(dp[i - 1][j], dp[i][j - 1]);
+        current[j] = Math.max(previous[j], current[j - 1]);
       }
     }
+
+    previous = current;
   }
 
-  return dp[text1.length][text2.length];
+  return previous[text2.length];
+}
+
+function matchesKeyword(keyword: string, candidate: string) {
+  if (!keyword) return false;
+  if (candidate.includes(keyword)) return true;
+
+  return lcs(keyword, candidate) === keyword.length;
 }
 const extendTemplate: TemplateManager[] = [];
 
@@ -933,18 +946,19 @@ export const builtInTemplates = {
           return;
         }
 
-        if (categroy.templates instanceof Function) {
-          return categroy.templates();
-        }
+        const templates =
+          categroy.templates instanceof Function
+            ? await categroy.templates()
+            : categroy.templates;
 
         return Promise.all(
-          Object.values(categroy.templates).map(async template => {
+          Object.values(templates).map(async template => {
             const searchableName = template.name?.toLocaleLowerCase() ?? '';
             const searchableCategory = categroy.name.toLocaleLowerCase();
 
             if (
-              lcs(keyword, searchableName) === keyword.length ||
-              lcs(keyword, searchableCategory) === keyword.length
+              matchesKeyword(keyword, searchableName) ||
+              matchesKeyword(keyword, searchableCategory)
             ) {
               candidates.push(template);
             }

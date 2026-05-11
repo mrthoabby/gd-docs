@@ -1,7 +1,6 @@
 import { WorkspacesService } from '@affine/core/modules/workspace';
-import { createFirstAppData } from '@affine/core/utils/first-app-data';
 import { useLiveData, useService } from '@toeverything/infra';
-import { type ReactNode, useEffect, useLayoutEffect, useState } from 'react';
+import { type ReactNode, useLayoutEffect, useState } from 'react';
 
 import {
   RouteLogic,
@@ -14,7 +13,8 @@ import { AppContainer } from '../../components/app-container';
 /**
  * index page
  *
- * Server-only index page. Workspaces are created on the current Docker backend.
+ * Server-only index page. Workspaces are created explicitly by the user on the
+ * current Docker backend.
  */
 export const Component = ({
   defaultIndexRoute = 'all',
@@ -25,9 +25,8 @@ export const Component = ({
   children?: ReactNode;
   fallback?: ReactNode;
 }) => {
-  // navigating and creating may be slow, to avoid flickering, we show workspace fallback
+  // navigating may be slow, to avoid flickering, we show workspace fallback
   const [navigating, setNavigating] = useState(true);
-  const [creating, setCreating] = useState(false);
   const authService = useService(AuthService);
 
   const loggedIn = useLiveData(
@@ -38,7 +37,7 @@ export const Component = ({
   const list = useLiveData(workspacesService.list.workspaces$);
   const listIsLoading = useLiveData(workspacesService.list.isRevalidating$);
 
-  const { openPage, jumpToPage, jumpToSignIn } = useNavigateHelper();
+  const { openPage, jumpToSignIn } = useNavigateHelper();
 
   useLayoutEffect(() => {
     if (!navigating) {
@@ -75,42 +74,7 @@ export const Component = ({
     defaultIndexRoute,
   ]);
 
-  useEffect(() => {
-    if (listIsLoading || list.length > 0 || !loggedIn) {
-      return;
-    }
-
-    setCreating(true);
-    createFirstAppData(workspacesService)
-      .then(createdWorkspace => {
-        if (createdWorkspace) {
-          if (createdWorkspace.defaultPageId) {
-            jumpToPage(
-              createdWorkspace.meta.id,
-              createdWorkspace.defaultPageId
-            );
-          } else {
-            openPage(createdWorkspace.meta.id, 'all');
-          }
-        }
-      })
-      .catch(err => {
-        console.error('Failed to create first app data', err);
-      })
-      .finally(() => {
-        setCreating(false);
-      });
-  }, [
-    jumpToPage,
-    jumpToSignIn,
-    openPage,
-    workspacesService,
-    loggedIn,
-    listIsLoading,
-    list,
-  ]);
-
-  if (navigating || creating) {
+  if (navigating) {
     return fallback ?? <AppContainer fallback />;
   }
 

@@ -20,8 +20,12 @@ type CacheParams = {
 
 class BitmapLRU {
   private readonly map = new Map<CacheKey, CacheEntry>();
+  private totalBytes = 0;
 
-  constructor(private readonly maxEntries: number) {}
+  constructor(
+    private readonly maxEntries: number,
+    private readonly maxBytes: number
+  ) {}
 
   has(key: CacheKey) {
     return this.map.has(key);
@@ -71,24 +75,34 @@ class BitmapLRU {
 
   set(entry: CacheEntry) {
     if (this.map.has(entry.key)) {
-      this.map.delete(entry.key);
+      this.delete(entry.key);
     }
 
     this.map.set(entry.key, entry);
+    this.totalBytes += entry.blob.size;
 
-    while (this.map.size > this.maxEntries) {
+    while (this.map.size > this.maxEntries || this.totalBytes > this.maxBytes) {
       const oldest = this.map.keys().next().value as CacheKey | undefined;
       if (oldest === undefined) break;
-      this.map.delete(oldest);
+      this.delete(oldest);
     }
+  }
+
+  private delete(key: CacheKey) {
+    const entry = this.map.get(key);
+    if (!entry) return;
+
+    this.totalBytes -= entry.blob.size;
+    this.map.delete(key);
   }
 }
 
-const MAX_ENTRIES = 64;
+const MAX_ENTRIES = 24;
+const MAX_BYTES = 64 * 1024 * 1024;
 const UPSCALE_THRESHOLD = 1.3;
 const QUALITY = 0.72;
 
-const cache = new BitmapLRU(MAX_ENTRIES);
+const cache = new BitmapLRU(MAX_ENTRIES, MAX_BYTES);
 
 const normalize = (value: number) => Math.round(value);
 const toKey = ({

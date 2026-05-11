@@ -9,6 +9,8 @@ export const root = style({
   position: 'relative',
   backgroundColor: cssVar('backgroundPrimaryColor'),
   backgroundSize: 'cover',
+  backgroundPosition: 'center',
+  backgroundRepeat: 'no-repeat',
 });
 export const affineLogo = style({
   color: 'inherit',

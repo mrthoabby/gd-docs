@@ -9,12 +9,12 @@ export type Template = {
   /**
    * template content
    */
-  content: unknown;
+  content: unknown | (() => unknown);
 
   /**
    * external assets
    */
-  assets?: Record<string, string>;
+  assets?: Record<string, string> | (() => Record<string, string>);
 
   preview?: string;
 
@@ -28,7 +28,7 @@ export type Template = {
 
 export type TemplateCategory = {
   name: string;
-  templates: Template[] | (() => Promise<Template[]>);
+  templates: Template[] | (() => Promise<Template[]> | Template[]);
 };
 
 export interface TemplateManager {

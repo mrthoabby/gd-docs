@@ -2,7 +2,14 @@ import { observeIntersection } from '@affine/component';
 import { useI18n } from '@affine/i18n';
 import { useLiveData } from '@toeverything/infra';
 import { debounce } from 'lodash-es';
-import { forwardRef, useEffect, useMemo, useRef, useState } from 'react';
+import {
+  forwardRef,
+  useCallback,
+  useEffect,
+  useMemo,
+  useRef,
+  useState,
+} from 'react';
 
 import { cacheBitmap, getReusableBitmap } from '../cache/bitmap-cache';
 import type { PDF } from '../entities/pdf';
@@ -46,13 +53,30 @@ function usePDFPage({
 }) {
   const [page, setPage] = useState<PDFPage | null>(null);
   const [cachedBitmap, setCachedBitmap] = useState<ImageBitmap | null>(null);
+  const cachedBitmapRef = useRef<ImageBitmap | null>(null);
   const img = useLiveData(useMemo(() => (page ? page.bitmap$ : null), [page]));
   const error = useLiveData(page?.error$ ?? null);
+  const updateCachedBitmap = useCallback((next: ImageBitmap | null) => {
+    const previous = cachedBitmapRef.current;
+    if (previous && previous !== next) {
+      previous.close();
+    }
+    cachedBitmapRef.current = next;
+    setCachedBitmap(next);
+  }, []);
+
+  useEffect(() => {
+    return () => {
+      cachedBitmapRef.current?.close();
+      cachedBitmapRef.current = null;
+    };
+  }, []);
 
   // Consolidated effect to handle loading strategy (Cache vs Render)
   useEffect(() => {
     if (!visibility || !width || !height) {
       setPage(null);
+      updateCachedBitmap(null);
       return;
     }
 
@@ -70,14 +94,17 @@ function usePDFPage({
           scale,
         });
 
-        if (!active) return;
+        if (!active) {
+          compressed?.close();
+          return;
+        }
 
         if (compressed) {
-          setCachedBitmap(compressed);
+          updateCachedBitmap(compressed);
           setPage(null);
         } else {
           // 2. Load Page
-          setCachedBitmap(null); // Clear stale cache
+          updateCachedBitmap(null); // Clear stale cache
 
           const key = `${width}:${height}:${scale}`;
           const { page: newPage, release } = pdf.page(pageNum, key);
@@ -98,7 +125,7 @@ function usePDFPage({
       releasePage?.();
       setPage(null);
     };
-  }, [visibility, pdf, pageNum, width, height, scale]);
+  }, [visibility, pdf, pageNum, width, height, scale, updateCachedBitmap]);
 
   // Cache new bitmap when generated
   useEffect(() => {

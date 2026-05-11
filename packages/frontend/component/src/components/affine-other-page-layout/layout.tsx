@@ -4,8 +4,7 @@ import { Logo1Icon } from '@blocksuite/icons/rc';
 import { useTheme } from 'next-themes';
 import { type ReactNode, useCallback } from 'react';
 
-import dotBgDark from './assets/dot-bg.dark.png';
-import dotBgLight from './assets/dot-bg.light.png';
+import crystalBackground from './assets/crystal-background.png';
 import { DesktopNavbar } from './desktop-navbar';
 import * as styles from './index.css';
 
@@ -21,13 +20,17 @@ export const AffineOtherPageLayout = ({
   }, []);
 
   const { resolvedTheme } = useTheme();
-  const backgroundImage =
-    resolvedTheme === 'dark' && dotBgDark ? dotBgDark : dotBgLight;
+  const backgroundOverlay =
+    resolvedTheme === 'dark'
+      ? 'linear-gradient(90deg, rgba(5, 8, 13, 0.84) 0%, rgba(5, 8, 13, 0.64) 45%, rgba(5, 8, 13, 0.38) 100%)'
+      : 'linear-gradient(90deg, rgba(255, 255, 255, 0.78) 0%, rgba(255, 255, 255, 0.58) 45%, rgba(255, 255, 255, 0.26) 100%)';
 
   return (
     <div
       className={styles.root}
-      style={{ backgroundImage: `url(${backgroundImage})` }}
+      style={{
+        backgroundImage: `${backgroundOverlay}, url(${crystalBackground})`,
+      }}
     >
       {BUILD_CONFIG.isElectron ? (
         <div className={styles.draggableHeader} />
@@ -42,7 +45,7 @@ export const AffineOtherPageLayout = ({
             onClick={openDownloadLink}
             className={styles.hideInSmallScreen}
           >
-            {t['com.affine.auth.open.affine.download-app']()}
+            {t['com.affine.other-page.nav.download-app']()}
           </Button>
         </div>
       )}

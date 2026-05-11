@@ -23,14 +23,14 @@ export const EmailInvite = ({
   return (
     <>
       <div className={styles.modalSubTitle}>
-        {t['com.affine.team.invite.email-invite']()}
+        {t['com.affine.workspace.members.team.invite.email-invite']()}
       </div>
       <div>
         <Input
           inputStyle={{ fontSize: cssVar('fontXs') }}
           disabled={isMutating}
           placeholder={t[
-            'com.affine.team.invite.email-placeholder'
+            'com.affine.workspace.members.team.invite.email-placeholder'
           ]()}
           value={inviteEmail}
           onChange={setInviteEmail}
