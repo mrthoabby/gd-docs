@@ -301,6 +301,13 @@ function svgDataUrl(svg: string) {
   return `data:image/svg+xml;charset=utf-8,${encodeURIComponent(svg)}`;
 }
 
+function slug(value: string) {
+  return value
+    .toLowerCase()
+    .replace(/[^a-z0-9]+/g, '-')
+    .replace(/^-|-$/g, '');
+}
+
 function componentSnapshot(name: string, assetKey: string) {
   return {
     type: 'page',
@@ -359,7 +366,7 @@ function architectureComponent(
   config: ArchitectureComponentConfig
 ): Template {
   const svg = componentSvg(config);
-  const assetKey = `architecture-component-${config.kind}`;
+  const assetKey = `architecture-component-${config.kind}-${slug(config.name)}`;
 
   return {
     name: config.name,
@@ -372,198 +379,320 @@ function architectureComponent(
   };
 }
 
-const systemIconConfigs = [
+const systemIconGroups = [
   {
     kind: 'browser',
-    name: 'Web Client',
     accent: '#38bdf8',
+    names: [
+      'Web Client',
+      'Web App',
+      'Admin Portal',
+      'Backoffice',
+      'Customer Portal',
+      'Dashboard',
+      'Browser Session',
+    ],
   },
   {
     kind: 'mobile',
-    name: 'Mobile App',
     accent: '#34d399',
+    names: ['Mobile App', 'iOS App', 'Android App', 'Tablet App'],
   },
   {
     kind: 'service',
-    name: 'Microservice',
     accent: '#22d3ee',
+    names: [
+      'Microservice',
+      'Core Service',
+      'Billing Service',
+      'User Service',
+      'Notification Service',
+      'Reporting Service',
+      'Workflow Service',
+      'Integration Service',
+      'Domain Service',
+      'Background Service',
+    ],
   },
   {
     kind: 'api',
-    name: 'API Service',
     accent: '#818cf8',
+    names: [
+      'API Service',
+      'Public API',
+      'Internal API',
+      'Partner API',
+      'Admin API',
+      'BFF',
+      'API Endpoint',
+    ],
   },
   {
     kind: 'rest',
-    name: 'REST API',
     accent: '#60a5fa',
+    names: ['REST API', 'REST Controller', 'REST Client', 'HTTP Route', 'Web API'],
   },
   {
     kind: 'graphql',
-    name: 'GraphQL API',
     accent: '#f472b6',
+    names: ['GraphQL API', 'GraphQL Resolver', 'GraphQL Schema', 'GraphQL Gateway'],
   },
   {
     kind: 'grpc',
-    name: 'gRPC Service',
     accent: '#a78bfa',
+    names: ['gRPC Service', 'gRPC Client', 'RPC Gateway', 'Streaming RPC'],
   },
   {
     kind: 'server',
-    name: 'Server',
     accent: '#60a5fa',
+    names: [
+      'Server',
+      'App Server',
+      'Web Server',
+      'Edge Server',
+      'Bastion Host',
+      'VM Instance',
+      'Compute Node',
+    ],
   },
   {
     kind: 'docker',
-    name: 'Docker',
     accent: '#38bdf8',
+    names: ['Docker', 'Container', 'Container Image', 'Compose Stack', 'Sidecar'],
   },
   {
     kind: 'kubernetes',
-    name: 'Kubernetes',
     accent: '#818cf8',
+    names: [
+      'Kubernetes',
+      'Pod',
+      'Deployment',
+      'StatefulSet',
+      'DaemonSet',
+      'Namespace',
+      'Cluster',
+      'Ingress',
+      'Service Mesh',
+    ],
   },
   {
     kind: 'lambda',
-    name: 'Function',
     accent: '#fb923c',
+    names: [
+      'Function',
+      'Serverless Function',
+      'Event Function',
+      'Worker Function',
+      'Cron Function',
+    ],
   },
   {
     kind: 'database',
-    name: 'Database',
     accent: '#facc15',
+    names: [
+      'Database',
+      'Primary DB',
+      'Read Replica',
+      'SQL Database',
+      'Data Warehouse',
+      'OLTP Store',
+      'Metadata DB',
+    ],
   },
   {
     kind: 'postgres',
-    name: 'Postgres',
     accent: '#60a5fa',
+    names: ['Postgres', 'Postgres Primary', 'Postgres Replica', 'Timescale DB'],
   },
   {
     kind: 'cache',
-    name: 'Cache',
     accent: '#fb7185',
+    names: [
+      'Cache',
+      'Memory Cache',
+      'Session Cache',
+      'Page Cache',
+      'Edge Cache',
+      'Distributed Cache',
+    ],
   },
   {
     kind: 'redis',
-    name: 'Redis',
     accent: '#ef4444',
+    names: ['Redis', 'Redis Cluster', 'Redis PubSub', 'Redis Stream'],
   },
   {
     kind: 'storage',
-    name: 'Object Storage',
     accent: '#fb923c',
+    names: [
+      'Object Storage',
+      'Blob Storage',
+      'Bucket',
+      'Media Store',
+      'Backup Store',
+      'Archive Store',
+      'Artifact Store',
+    ],
   },
   {
     kind: 'file',
-    name: 'File Store',
     accent: '#fbbf24',
+    names: ['File Store', 'Document Store', 'File Uploads', 'Shared Drive'],
   },
   {
     kind: 'queue',
-    name: 'Message Queue',
     accent: '#a78bfa',
+    names: [
+      'Message Queue',
+      'Event Queue',
+      'Task Queue',
+      'Dead Letter Queue',
+      'Priority Queue',
+      'Stream Topic',
+      'Event Bus',
+    ],
   },
   {
     kind: 'scheduler',
-    name: 'Scheduler',
     accent: '#f97316',
+    names: ['Scheduler', 'Cron', 'Job Runner', 'Timer Trigger', 'Batch Window'],
   },
   {
     kind: 'worker',
-    name: 'Worker',
     accent: '#22d3ee',
+    names: [
+      'Worker',
+      'Queue Worker',
+      'Sync Worker',
+      'Import Worker',
+      'Export Worker',
+      'Image Worker',
+      'Email Worker',
+      'Index Worker',
+    ],
   },
   {
     kind: 'load-balancer',
-    name: 'Load Balancer',
     accent: '#4ade80',
+    names: [
+      'Load Balancer',
+      'Reverse Proxy',
+      'Traffic Router',
+      'Health Check',
+      'Global Accelerator',
+    ],
   },
   {
     kind: 'gateway',
-    name: 'API Gateway',
     accent: '#f472b6',
+    names: [
+      'API Gateway',
+      'Edge Gateway',
+      'Service Gateway',
+      'Ingress Gateway',
+      'Payment Gateway',
+    ],
   },
   {
     kind: 'cdn',
-    name: 'CDN',
     accent: '#38bdf8',
+    names: ['CDN', 'Static CDN', 'Media CDN', 'Edge Cache Node'],
   },
   {
     kind: 'dns',
-    name: 'DNS',
     accent: '#93c5fd',
+    names: ['DNS', 'DNS Zone', 'Domain', 'Resolver', 'Route Record'],
   },
   {
     kind: 'network',
-    name: 'Network',
     accent: '#34d399',
+    names: ['Network', 'Subnet', 'Peering', 'NAT', 'Private Link', 'Tunnel', 'VPN'],
   },
   {
     kind: 'vpc',
-    name: 'VPC',
     accent: '#10b981',
+    names: ['VPC', 'Private Network', 'Public Subnet', 'Private Subnet', 'Security Group'],
   },
   {
     kind: 'firewall',
-    name: 'Firewall',
     accent: '#f87171',
+    names: ['Firewall', 'WAF', 'ACL', 'Network Policy', 'Rate Limit'],
   },
   {
     kind: 'auth',
-    name: 'Auth',
     accent: '#c084fc',
+    names: ['Auth', 'Identity Provider', 'OAuth', 'SSO', 'Session Service', 'RBAC', 'IAM'],
   },
   {
     kind: 'secrets',
-    name: 'Secrets',
     accent: '#facc15',
+    names: ['Secrets', 'Key Vault', 'KMS', 'Certificate', 'Token Store'],
   },
   {
     kind: 'search',
-    name: 'Search',
     accent: '#2dd4bf',
+    names: ['Search', 'Search Index', 'Vector Index', 'Full Text Search', 'RAG Index'],
   },
   {
     kind: 'monitoring',
-    name: 'Monitoring',
     accent: '#4ade80',
+    names: ['Monitoring', 'Metrics', 'Alerting', 'Tracing', 'Observability', 'Uptime Check'],
   },
   {
     kind: 'logs',
-    name: 'Logs',
     accent: '#94a3b8',
+    names: ['Logs', 'Log Stream', 'Audit Log', 'Event Log'],
   },
   {
     kind: 'analytics',
-    name: 'Analytics',
     accent: '#f472b6',
+    names: ['Analytics', 'BI Dashboard', 'ETL Pipeline', 'Data Mart', 'Metrics Store'],
   },
   {
     kind: 'email',
-    name: 'Email',
     accent: '#60a5fa',
+    names: ['Email', 'SMTP', 'Mail Queue', 'Notification Email', 'Inbound Email'],
   },
   {
     kind: 'webhook',
-    name: 'Webhook',
     accent: '#fb7185',
+    names: ['Webhook', 'Callback', 'Event Receiver', 'Outbound Webhook'],
   },
   {
     kind: 'ci',
-    name: 'CI CD',
     accent: '#a3e635',
+    names: ['CI CD', 'Build Pipeline', 'Test Runner', 'Deploy Pipeline', 'Release Gate'],
   },
   {
     kind: 'cloud',
-    name: 'Cloud',
     accent: '#93c5fd',
+    names: ['Cloud', 'Cloud Region', 'Availability Zone', 'Cloud Account', 'Control Plane'],
   },
   {
     kind: 'external',
-    name: 'External System',
     accent: '#cbd5e1',
+    names: [
+      'External System',
+      'Third Party API',
+      'SaaS App',
+      'Legacy System',
+      'Vendor Service',
+      'Payment Processor',
+    ],
   },
-] satisfies ArchitectureComponentConfig[];
+] satisfies Array<{
+  kind: ArchitectureComponentKind;
+  accent: string;
+  names: string[];
+}>;
+
+const systemIconConfigs = systemIconGroups.flatMap(({ kind, accent, names }) =>
+  names.map(name => ({
+    kind,
+    name,
+    accent,
+  }))
+) satisfies ArchitectureComponentConfig[];
 
 let systemIconTemplateCache: Template[] | null = null;
 

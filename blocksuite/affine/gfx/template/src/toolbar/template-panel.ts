@@ -39,6 +39,38 @@ function toSvgPreviewDataUrl(svg: string) {
   return dataUrl;
 }
 
+function dataUrlToBlob(dataUrl: string) {
+  const commaIndex = dataUrl.indexOf(',');
+  if (commaIndex === -1) {
+    throw new Error('Invalid data URL asset');
+  }
+
+  const metadata = dataUrl.slice(5, commaIndex);
+  const data = dataUrl.slice(commaIndex + 1);
+  const parts = metadata.split(';');
+  const mime = parts[0] || 'text/plain';
+
+  if (parts.includes('base64')) {
+    const binary = atob(data);
+    const bytes = new Uint8Array(binary.length);
+    for (let i = 0; i < binary.length; i++) {
+      bytes[i] = binary.charCodeAt(i);
+    }
+    return new Blob([bytes], { type: mime });
+  }
+
+  return new Blob([decodeURIComponent(data)], { type: mime });
+}
+
+async function loadAssetBlob(url: string) {
+  if (url.startsWith('data:')) {
+    return dataUrlToBlob(url);
+  }
+
+  const response = await fetch(url);
+  return response.blob();
+}
+
 export class EdgelessTemplatePanel extends WithDisposable(LitElement) {
   static override styles = css`
     :host {
@@ -312,9 +344,9 @@ export class EdgelessTemplatePanel extends WithDisposable(LitElement) {
       if (assets) {
         await Promise.all(
           Object.entries(assets).map(([key, value]) =>
-            fetch(value)
-              .then(res => res.blob())
-              .then(blob => templateJob.job.assets.set(key, blob))
+            loadAssetBlob(value).then(blob =>
+              templateJob.job.assets.set(key, blob)
+            )
           )
         );
       }
