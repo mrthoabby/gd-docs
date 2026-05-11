@@ -4,6 +4,7 @@ import type {
   TemplateCategory,
   TemplateManager,
 } from './template-type.js';
+import { curatedIcons } from './generated-curated-icons.js';
 
 type SurfaceElement = Record<string, unknown>;
 
@@ -295,11 +296,26 @@ function componentSvg({
   name,
   accent,
 }: ArchitectureComponentConfig) {
+  const variant = name
+    .split('')
+    .reduce((acc, char) => acc + char.charCodeAt(0), 0);
+  const badge = variant % 6;
+  const badgeSvg =
+    badge === 0
+      ? `<circle cx="186" cy="40" r="9" fill="${accent}"/>`
+      : badge === 1
+        ? `<rect x="176" y="31" width="20" height="20" rx="4" fill="${accent}"/>`
+        : badge === 2
+          ? `<path d="M186 29l10 18h-20z" fill="${accent}"/>`
+          : badge === 3
+            ? `<path d="M186 30l11 11-11 11-11-11z" fill="${accent}"/>`
+            : badge === 4
+              ? `<path d="M186 29l6 6 8 1-5 7 2 8-8-4-8 4 2-8-5-7 8-1z" fill="${accent}"/>`
+              : `<path d="M176 31h20v20h-20z" fill="none" stroke="${accent}" stroke-width="3"/><path d="M176 41h20M186 31v20" stroke="${accent}" stroke-width="3"/>`;
+
   return `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="190" viewBox="0 0 240 190">
-  <rect width="240" height="190" rx="24" fill="#1f2026"/>
-  <rect x="18" y="18" width="204" height="154" rx="18" fill="#292b32" stroke="${accent}" stroke-width="3"/>
+  ${badgeSvg}
   <g transform="translate(40 16)">${componentIconPath(kind, accent)}</g>
-  <text x="120" y="159" text-anchor="middle" fill="#f8fafc" font-family="Inter,Arial" font-size="20" font-weight="700">${name}</text>
 </svg>`;
 }
 
@@ -753,8 +769,6 @@ function getSystemIconComponents() {
 
 function emojiSvg(emoji: string) {
   return `<svg xmlns="http://www.w3.org/2000/svg" width="240" height="190" viewBox="0 0 240 190">
-  <rect width="240" height="190" rx="24" fill="#1f2026"/>
-  <rect x="18" y="18" width="204" height="154" rx="18" fill="#292b32" stroke="#a3a3a3" stroke-width="2"/>
   <text x="120" y="112" text-anchor="middle" font-size="84">${emoji}</text>
 </svg>`;
 }
@@ -798,6 +812,17 @@ function getEmojiTemplates() {
   }
 
   return out;
+}
+
+function curatedStickerTemplate(name: string, svg: string): Template {
+  const assetKey = `curated-${slug(name)}`;
+  return {
+    name,
+    type: 'sticker',
+    content: () => componentSnapshot(name, assetKey),
+    preview: svg,
+    assets: () => ({ [assetKey]: svgDataUrl(svg) }),
+  };
 }
 
 const softwareArchitecture = diagramSnapshot('Software Architecture', {
@@ -1062,35 +1087,51 @@ const flowchart = diagramSnapshot('Decision Flow', {
 export const templates: TemplateCategory[] = [
   {
     name: 'System Icons',
-    templates: getSystemIconComponents,
+    templates: () =>
+      getSystemIconComponents().concat(
+        curatedIcons
+          .filter(icon => icon.category === 'AI' || icon.category === 'People')
+          .map(icon => curatedStickerTemplate(icon.name, icon.svg))
+      ),
   },
   {
     name: 'Architecture',
-    templates: [
-      {
-        name: 'Software Architecture',
-        type: 'template',
-        content: softwareArchitecture,
-        preview: preview('Software Architecture', '#3b82f6'),
-      },
-      {
-        name: 'Deployment Diagram',
-        type: 'template',
-        content: deploymentMap,
-        preview: preview('Deployment Diagram', '#10b981'),
-      },
-    ],
+    templates: () =>
+      curatedIcons
+        .filter(
+          icon =>
+            icon.category === 'Architecture' || icon.category === 'Mobile'
+        )
+        .map(icon => curatedStickerTemplate(icon.name, icon.svg))
+        .concat([
+          {
+            name: 'Software Architecture',
+            type: 'template',
+            content: softwareArchitecture,
+            preview: preview('Software Architecture', '#3b82f6'),
+          },
+          {
+            name: 'Deployment Diagram',
+            type: 'template',
+            content: deploymentMap,
+            preview: preview('Deployment Diagram', '#10b981'),
+          },
+        ]),
   },
   {
     name: 'Flowchart',
-    templates: [
-      {
-        name: 'Decision Flow',
-        type: 'template',
-        content: flowchart,
-        preview: preview('Decision Flow', '#f59e0b'),
-      },
-    ],
+    templates: () =>
+      curatedIcons
+        .filter(icon => icon.category === 'Flowchart')
+        .map(icon => curatedStickerTemplate(icon.name, icon.svg))
+        .concat([
+          {
+            name: 'Decision Flow',
+            type: 'template',
+            content: flowchart,
+            preview: preview('Decision Flow', '#f59e0b'),
+          },
+        ]),
   },
   {
     name: 'Emojis',
