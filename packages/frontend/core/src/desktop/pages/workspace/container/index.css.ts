@@ -166,6 +166,79 @@ export const rowActions = style({
   gap: 8,
 });
 
+export const viewToggle = style({
+  display: 'inline-flex',
+  alignItems: 'center',
+  border: '1px solid var(--affine-border-color)',
+  borderRadius: 6,
+  overflow: 'hidden',
+});
+
+export const viewToggleButton = style({
+  height: 30,
+  border: 0,
+  background: 'var(--affine-background-secondary-color)',
+  color: 'var(--affine-text-secondary-color)',
+  padding: '0 10px',
+  cursor: 'pointer',
+  fontSize: 'var(--affine-font-xs)',
+  selectors: {
+    '&[data-active="true"]': {
+      background: 'var(--affine-hover-color)',
+      color: 'var(--affine-text-primary-color)',
+      fontWeight: 600,
+    },
+  },
+});
+
+export const grid = style({
+  display: 'grid',
+  gridTemplateColumns: 'repeat(auto-fill, minmax(220px, 1fr))',
+  gap: 12,
+});
+
+export const card = style({
+  border: '1px solid var(--affine-border-color)',
+  borderRadius: 8,
+  background: 'var(--affine-background-secondary-color)',
+  overflow: 'hidden',
+});
+
+export const cardPreview = style({
+  height: 130,
+  background: 'var(--affine-background-primary-color)',
+  borderBottom: '1px solid var(--affine-border-color)',
+  display: 'flex',
+  alignItems: 'center',
+  justifyContent: 'center',
+  overflow: 'hidden',
+});
+
+export const cardImage = style({
+  width: '100%',
+  height: '100%',
+  objectFit: 'cover',
+});
+
+export const cardTextPreview = style({
+  width: '100%',
+  height: '100%',
+  padding: 10,
+  margin: 0,
+  whiteSpace: 'pre-wrap',
+  fontSize: 'var(--affine-font-xs)',
+  lineHeight: 1.4,
+  color: 'var(--affine-text-secondary-color)',
+  overflow: 'hidden',
+});
+
+export const cardMeta = style({
+  padding: 10,
+  display: 'flex',
+  flexDirection: 'column',
+  gap: 6,
+});
+
 export const empty = style({
   height: 'calc(100% - 44px)',
   minHeight: 260,

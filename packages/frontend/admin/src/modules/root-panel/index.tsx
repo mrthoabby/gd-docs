@@ -49,6 +49,7 @@ const FEATURE_FLAGS: FeatureFlag[] = [
   { key: 'enable_advanced_block_visibility',name: 'Visibilidad avanzada de bloques', desc: 'Control fino de visibilidad por bloque' },
   { key: 'enable_emoji_folder_icon',        name: 'Iconos emoji en carpetas',    desc: 'Permite usar emojis como icono de carpeta' },
   { key: 'enable_emoji_doc_icon',           name: 'Iconos emoji en documentos',  desc: 'Permite usar emojis como icono de documento' },
+  { key: 'require_email_verification',      name: 'Requerir verificación por código', desc: 'Si está activo, login/registro por email exige código OTP. Si está desactivado, entra sin OTP.' },
 ];
 
 // ---------- hook: cargar / guardar flags via API ----------

@@ -341,6 +341,38 @@ export const NavigationPanelTreeNode = ({
     () =>
       (
         [
+          explorerIconConfig
+            ? {
+                index: 1,
+                view: renameableGuard ? (
+                  <Guard
+                    permission={renameableGuard.action}
+                    docId={renameableGuard.docId}
+                  >
+                    {can => (
+                      <MenuItem
+                        key={'navigation-panel-tree-change-icon'}
+                        type={'default'}
+                        prefixIcon={<EditIcon />}
+                        onClick={() => setRenaming(true)}
+                        disabled={!can}
+                      >
+                        {t['com.affine.docIconPicker.placeholder']()}
+                      </MenuItem>
+                    )}
+                  </Guard>
+                ) : (
+                  <MenuItem
+                    key={'navigation-panel-tree-change-icon'}
+                    type={'default'}
+                    prefixIcon={<EditIcon />}
+                    onClick={() => setRenaming(true)}
+                  >
+                    {t['com.affine.docIconPicker.placeholder']()}
+                  </MenuItem>
+                ),
+              }
+            : null,
           renameable
             ? {
                 index: 0,
@@ -375,7 +407,7 @@ export const NavigationPanelTreeNode = ({
             : null,
         ] as (NodeOperation | null)[]
       ).filter((t): t is NodeOperation => t !== null),
-    [renameable, renameableGuard, t]
+    [explorerIconConfig, renameable, renameableGuard, t]
   );
 
   const { menuOperations, inlineOperations } = useMemo(() => {

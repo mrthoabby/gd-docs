@@ -124,12 +124,21 @@ export class AuthController {
       );
     } else {
       await this.sendMagicLink(
+        req,
         res,
         credential.email,
         credential.callbackUrl,
         credential.client_nonce
       );
     }
+  }
+
+  private async requireEmailVerificationEnabled() {
+    const allConfigs = await this.models.appConfig.load();
+    const flag = allConfigs.find(
+      cfg => cfg.id === 'flags.require_email_verification'
+    );
+    return flag ? Boolean(flag.value) : true;
   }
 
   async passwordSignIn(
@@ -145,6 +154,7 @@ export class AuthController {
   }
 
   async sendMagicLink(
+    req: Request,
     res: Response,
     email: string,
     callbackUrl = '/magic-link',
@@ -204,6 +214,19 @@ export class AuthController {
       }
     } else if (user.disabled) {
       throw new WrongSignInCredentials({ email });
+    }
+
+    const requireEmailVerification =
+      await this.requireEmailVerificationEnabled();
+    if (!requireEmailVerification) {
+      const targetUser = user ?? (await this.models.user.fulfill(email));
+      await this.auth.setCookies(req, res, targetUser.id);
+      res.status(HttpStatus.OK).send({
+        id: targetUser.id,
+        email,
+        bypassed: true,
+      });
+      return;
     }
 
     const ttlInSec = 30 * 60;

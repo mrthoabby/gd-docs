@@ -70,6 +70,14 @@
       "type": "Boolean",
       "desc": "Exige que el usuario verifique su email antes de acceder (aún no implementado completamente)."
     },
+    "allowedEmailDomains": {
+      "type": "Array",
+      "desc": "Lista de dominios permitidos para registrar usuarios. Si está vacía (y allowedEmails también), se permite cualquier dominio. Ej: <code>[\"miempresa.com\",\"partner.org\"]</code>."
+    },
+    "allowedEmails": {
+      "type": "Array",
+      "desc": "Lista de correos específicos permitidos para registrar usuarios. Se evalúa junto con allowedEmailDomains. Ej: <code>[\"admin@externo.com\",\"qa@proveedor.org\"]</code>."
+    },
     "passwordRequirements": {
       "type": "Object",
       "desc": "Requisitos de fortaleza de contraseña al crear o cambiar contraseñas. Ej: <code>{\"min\":8,\"max\":32}</code>"
