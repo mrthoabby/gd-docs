@@ -1,0 +1,27 @@
+packages/frontend/core/src/desktop/components/navigation-panel/tree/node.tsx
+  s_064f55b033891f::t_1a583b370dd13f 344-375,410
+packages/frontend/admin/src/modules/root-panel/index.tsx
+  s_064f55b033891f::t_6c5b761b707a91 52
+packages/frontend/core/src/desktop/pages/workspace/container/index.css.ts
+  s_064f55b033891f::t_60e9768bbff1b3 169-241
+packages/frontend/admin/src/config.json
+  s_064f55b033891f::t_f594094e816c1c 73-80
+packages/backend/server/src/core/auth/controller.ts
+  s_064f55b033891f::t_d3ec7b1328825e 127,136-143,157,219-229
+---
+{
+  "schema_version": "authorship/3.0.0",
+  "git_ai_version": "1.5.6",
+  "base_commit_sha": "a3827fffb911f35f8247a37f3f42ae91c208359b",
+  "prompts": {},
+  "sessions": {
+    "s_064f55b033891f": {
+      "agent_id": {
+        "tool": "codex",
+        "id": "019dd0f8-616e-7391-92d5-26e63ce5777b",
+        "model": "gpt-5.3-codex"
+      },
+      "human_author": "Mister Danielsham <danis.abadia@mercadolibre.com.co>"
+    }
+  }
+}
